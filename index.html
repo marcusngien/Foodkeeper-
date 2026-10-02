@@ -88,14 +88,23 @@
         ☰ Menu
       </button>
 
-      <div class="nav-tab-wrap">
-        <button class="nav-tab active" data-view="pantry" onclick="switchView('pantry')">🥦 Pantry</button>
-        <button class="nav-tab" data-view="shopping" onclick="switchView('shopping')">🛒 Shopping List</button>
-        <button class="nav-tab" data-view="waste" onclick="switchView('waste')">🗑️ Waste Log</button>
-        <button class="nav-tab" data-view="recipes" onclick="switchView('recipes')">🍳 Recipes For You</button>
-        <button class="nav-tab" data-view="receipt" onclick="switchView('receipt')">🧾 Scan Receipt</button>
-      </div>
-    </div>
+<div class="nav-tab-wrap">
+  <button class="nav-tab active" data-view="pantry" onclick="switchView('pantry')">Pantry</button>
+
+  <button class="nav-tab" data-view="shopping" onclick="switchView('shopping')">Shopping List</button>
+
+  <button class="nav-tab" data-view="waste" onclick="switchView('waste')">Waste Log</button>
+
+  <button class="nav-tab" data-view="recipes" onclick="switchView('recipes')">Recipes For You</button>
+
+  <button class="nav-tab" data-view="receipt" onclick="switchView('receipt')">Scan Receipt</button>
+
+  <button class="nav-tab" data-view="leaderboard" onclick="switchView('leaderboard')">Leaderboard</button>
+
+  <button class="nav-tab" data-view="awareness" onclick="switchView('awareness')">Awareness</button>
+
+  <button class="nav-tab" data-view="quiz" onclick="switchView('quiz')">Quiz</button>
+</div>
 
     <main class="main">
 
@@ -204,6 +213,15 @@
 
   <div id="leaderboard-container"></div>
 </section>
+
+      <section id="view-awareness" class="view-section" style="display:none;">
+<div id="awareness-container"></div>
+</section>
+ 
+<section id="view-quiz" class="view-section" style="display:none;">
+<div id="quiz-container"></div>
+</section>
+Show more lines
       <section id="view-receipt" class="view-section" style="display: none;">
         <div class="discover-hero-banner">
           <div style="font-size: 32px;">🧾</div>
@@ -307,6 +325,17 @@
           <button class="modal-close" onclick="closePanel()">✕</button>
         </div>
         <div class="panel-body">
+          <div class="section-label">Language</div>
+
+<select id="lang-select"
+        class="form-input"
+        onchange="setLanguage(this.value)">
+
+  <option value="en">English</option>
+  <option value="ms">Bahasa Melayu</option>
+  <option value="zh">中文</option>
+
+</select>
           <div class="section-label">Smart Notifications</div>
           <div class="setting-row">
             <div>
@@ -315,7 +344,6 @@
             </div>
             <button class="toggle off" id="notif-toggle" onclick="toggleNotif()"></button>
           </div>
-          <button class="nav-tab" data-view="leaderboard" onclick="switchView('leaderboard')">🏆 Leaderboard</button>
           <div class="setting-row">
             <div>
               <div class="setting-label">Warning Window Threshold</div>
