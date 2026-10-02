@@ -654,8 +654,18 @@ function render() {
     return matchesQuery && matchesLoc;
   });
 
-  if (sortBy === 'expiry') list.sort((a,b) => new Date(a.expiry) - new Date(b.expiry));
-  else if (sortBy === 'name') list.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+if (sortBy === 'expiry')
+list.sort((a,b) => new Date(a.expiry) - new Date(b.expiry));
+ 
+else if (sortBy === 'name')
+list.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+ 
+else if (sortBy === 'added')
+list.sort((a,b) =>
+(b.added?.seconds || 0) -
+(a.added?.seconds || 0)
+);
+Show more lines
 
   if (list.length === 0) {
     container.innerHTML = `<div class="empty"><div class="empty-icon">🧺</div><p>${query ? 'No matching ingredients found' : 'No ingredients yet — click ➕ Add Item to get started!'}</p></div>`;
