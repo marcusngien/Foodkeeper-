@@ -1,4 +1,4 @@
-cat << 'ENDOFFILE' > /mnt/user-data/outputs/app.js
+
 // ── FIREBASE UTILITY SETUP ──
 const firebaseConfig = {
   apiKey:            "AIzaSyAVCLcRZXQvUvvDm1L20TCY_GPwlX0btfg",
@@ -1112,5 +1112,4 @@ async function addScannedItemsToInventory() {
     if (addBtn) { addBtn.disabled = false; addBtn.textContent = 'Add All Items to Inventory ➕'; }
   }
 }
-ENDOFFILE
-echo "app.js written"
+
