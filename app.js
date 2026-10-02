@@ -665,7 +665,7 @@ list.sort((a,b) =>
 (b.added?.seconds || 0) -
 (a.added?.seconds || 0)
 );
-Show more lines
+
 
   if (list.length === 0) {
     container.innerHTML = `<div class="empty"><div class="empty-icon">🧺</div><p>${query ? 'No matching ingredients found' : 'No ingredients yet — click ➕ Add Item to get started!'}</p></div>`;
