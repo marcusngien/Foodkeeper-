@@ -76,6 +76,22 @@ function setLanguage(lang) {
   applyTranslations();
 }
 
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('fk_theme', next);
+  document.getElementById('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('fk_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = saved === 'dark' ? '☀️' : '🌙';
+}
+
 function applyTranslations() {
   const t = TRANSLATIONS[currentLang];
   const navViews = ['pantry','shopping','waste','recipes','receipt','leaderboard','awareness','quiz'];
