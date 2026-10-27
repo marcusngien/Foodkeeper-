@@ -566,7 +566,7 @@ auth.onAuthStateChanged(async (user) => {
     document.getElementById('user-email').textContent = user.email;
     startListening(user.uid);
     loadLocalData();
-    loadSettings();
+    loadSettings(loadTheme(););
     checkAndNotify();
     if (window.puter) {
       try {
