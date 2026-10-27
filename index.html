@@ -70,6 +70,7 @@
   <div id="app" style="display: none;">
     
     <header class="header">
+      <button class="icon-btn" onclick="toggleTheme()" id="theme-btn" title="Toggle Theme">🌙</button>
       <div class="header-inner">
         <div class="logo">
           <span class="logo-icon">🌿</span>
@@ -78,7 +79,13 @@
         <div class="header-right">
           <span class="user-email" id="user-email"></span>
           <button class="icon-btn" onclick="openPanel()" title="Settings">⚙️</button>
-          <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+          <div class="header-right">
+  <span class="user-email" id="user-email"></span>
+  <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle Theme">🌙</button>
+  <button class="icon-btn" onclick="openPanel()" title="Settings">⚙️</button>
+  <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+</div>
+        
         </div>
       </div>
     </header>
