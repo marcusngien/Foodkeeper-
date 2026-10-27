@@ -46,7 +46,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #171715; 
     --surface: #212120; 
     --surface2: #2a2a28; 
@@ -56,29 +56,79 @@
     --text: #f0ede6; 
     --text2: #9a9890; 
     --text3: #635f5a;
-    
     --green-bg: #162c07; 
     --green-text: #9fd070; 
     --green-border: #2d5a0e;
-    
     --amber-bg: #2e1d00; 
     --amber-text: #f5c96a; 
     --amber-border: #7a4800;
-    
     --red-bg: #2e0d0d;   
     --red-text: #f0a0a0;   
     --red-border: #911f1f;
-    
     --blue-bg: #0d1e40;  
     --blue-text: #99b4f8;  
     --blue-border: #1a4ac0;
-    
     --accent: #6bbb3e; 
     --accent-light: #162c07;
-    
     --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
     --shadow-md: 0 4px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
   }
+}
+
+[data-theme="dark"] {
+  --bg: #171715; 
+  --surface: #212120; 
+  --surface2: #2a2a28; 
+  --surface3: #333330;
+  --border: rgba(255,255,255,0.08); 
+  --border2: rgba(255,255,255,0.15);
+  --text: #f0ede6; 
+  --text2: #9a9890; 
+  --text3: #635f5a;
+  --green-bg: #162c07; 
+  --green-text: #9fd070; 
+  --green-border: #2d5a0e;
+  --amber-bg: #2e1d00; 
+  --amber-text: #f5c96a; 
+  --amber-border: #7a4800;
+  --red-bg: #2e0d0d;   
+  --red-text: #f0a0a0;   
+  --red-border: #911f1f;
+  --blue-bg: #0d1e40;  
+  --blue-text: #99b4f8;  
+  --blue-border: #1a4ac0;
+  --accent: #6bbb3e; 
+  --accent-light: #162c07;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
+}
+
+[data-theme="light"] {
+  --bg: #f5f3ee; 
+  --surface: #ffffff; 
+  --surface2: #eceae3; 
+  --surface3: #e2dfd7;
+  --border: rgba(0,0,0,0.08); 
+  --border2: rgba(0,0,0,0.15);
+  --text: #1c1b18; 
+  --text2: #6b6860; 
+  --text3: #a09e99;
+  --green-bg: #e8f5d9; 
+  --green-text: #2d5a0e; 
+  --green-border: #b8dca0;
+  --amber-bg: #fef3d8; 
+  --amber-text: #754400; 
+  --amber-border: #f5d078;
+  --red-bg: #fde8e8;   
+  --red-text: #911f1f;   
+  --red-border: #f0a0a0;
+  --blue-bg: #e8f0fe;  
+  --blue-text: #1a4ac0;  
+  --blue-border: #99b4f8;
+  --accent: #2d6a2d; 
+  --accent-light: #e8f5d9;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
 }
 
 /* ── BASE INTERFACE ELEMENTS ── */
