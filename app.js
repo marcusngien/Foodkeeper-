@@ -1080,14 +1080,34 @@ function checkAndNotify() {
 }
 
 async function toggleNotif() {
-  if (!('Notification' in window)) { alert('Notifications not supported.'); return; }
+  if (!('Notification' in window)) {
+    alert('This browser does not support notifications. (iPhone: add to Home Screen first)');
+    return;
+  }
+  if (!window.isSecureContext) {
+    alert('Notifications only work on https:// or localhost, not file://');
+    return;
+  }
   const t = document.getElementById('notif-toggle');
+
   if (Notification.permission === 'default') {
     const perm = await Notification.requestPermission();
-    if (perm === 'granted') { t.className = 'toggle on'; sendNotifications(); }
-  } else if (Notification.permission === 'granted') {
+    if (perm !== 'granted') { toast('Permission not granted.'); return; }
+  } else if (Notification.permission === 'denied') {
+    alert('Notifications are blocked. Click the 🔒 icon in the address bar and allow notifications.');
+    return;
+  } else {
     toast('To disable, change permissions in your browser settings.');
-  } else { alert('Notifications blocked. Enable in browser settings.'); }
+    return;
+  }
+
+  t.className = 'toggle on';
+  try {
+    new Notification('Food Keeper', { body: 'Notifications enabled ✅' });
+  } catch (e) {
+    toast('Enabled, but this device cannot show popups.');
+  }
+  sendNotifications();
 }
 
 // ── PUTER（按需登录）──
