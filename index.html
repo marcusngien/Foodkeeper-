@@ -10,9 +10,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
- 
+  <link rel="stylesheet" href="home.css">
+
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%8C%BF%3C%2Ftext%3E%3C%2Fsvg%3E">
 
   <script src="https://js.puter.com/v2/"></script>
@@ -23,12 +24,13 @@
 
   <div id="toast-container"></div>
 
+  <!-- ═══════════ LOGIN ═══════════ -->
   <div class="auth-screen" id="auth-screen">
     <div class="auth-card">
       <div style="margin-bottom: 16px;">
         <a href="./front.html" class="back-link">← Back to Home</a>
       </div>
-      
+
       <div class="auth-logo">
         <span class="auth-logo-icon">🌿</span>
         <h1>Food Keeper</h1>
@@ -67,194 +69,275 @@
   </div>
 
 
+  <!-- ═══════════ APP ═══════════ -->
   <div id="app" style="display: none;">
-    
-  <header class="header">
-  <div class="header-inner">
-    <div class="logo">
-      <span class="logo-icon">🌿</span>
-      <h1>Food Keeper</h1>
-    </div>
-    <div class="header-right">
-      <span class="user-email" id="user-email"></span>
-      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle Theme">🌙</button>
-      <button class="icon-btn" onclick="openPanel()" title="Settings">⚙️</button>
-      <button class="logout-btn" onclick="handleLogout()">Log Out</button>
-    </div>
-  </div>
-</header>
-    
-    <div class="nav-tabs">
-      <button class="nav-hamburger" onclick="document.querySelector('.nav-tab-wrap').classList.toggle('show')">
-        ☰ Menu
-      </button>
 
-<div class="nav-tab-wrap">
-  <button class="nav-tab active" data-view="pantry" onclick="switchView('pantry')">Pantry</button>
-
-  <button class="nav-tab" data-view="shopping" onclick="switchView('shopping')">Shopping List</button>
-
-  <button class="nav-tab" data-view="waste" onclick="switchView('waste')">Waste Log</button>
-
-  <button class="nav-tab" data-view="recipes" onclick="switchView('recipes')">Recipes For You</button>
-
-  <button class="nav-tab" data-view="receipt" onclick="switchView('receipt')">Scan Receipt</button>
-
-  <button class="nav-tab" data-view="leaderboard" onclick="switchView('leaderboard')">Leaderboard</button>
-
-  <button class="nav-tab" data-view="awareness" onclick="switchView('awareness')">Awareness</button>
-
-  <button class="nav-tab" data-view="quiz" onclick="switchView('quiz')">Quiz</button>
-</div>
-</div>
-    <main class="main">
-
-      <section class="stats">
-        <div class="stat">
-          <div class="stat-label">Total Items</div>
-          <div class="stat-value blue" id="stat-total">0</div>
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">🌿</span>
+          <h1>Food Keeper</h1>
         </div>
-        <div class="stat">
-          <div class="stat-label">Expired</div>
-          <div class="stat-value red" id="stat-expired">0</div>
+        <div class="header-right">
+          <span class="user-email" id="user-email"></span>
+          <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle Theme">🌙</button>
+          <button class="icon-btn" onclick="openPanel()" title="Settings">⚙️</button>
+          <button class="logout-btn" onclick="handleLogout()">Log Out</button>
         </div>
-        <div class="stat">
-          <div class="stat-label">Expiring Soon</div>
-          <div class="stat-value amber" id="stat-soon">0</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Monthly Waste</div>
-          <div class="stat-value green" id="stat-saved">0</div>
-        </div>
-      </section>
+      </div>
+    </header>
 
-      <section id="view-pantry" class="view-section">
-        <div class="toolbar">
-          <input type="text" id="search-input" class="search-bar" placeholder="Search ingredients..." oninput="handleSearch(this.value)" />
-          
-          <select id="loc-filter" class="filter-dropdown" onchange="handleLocationFilter(this.value)">
-            <option value="all">All Locations</option>
-            <option value="fridge">Fridge</option>
-            <option value="freezer">Freezer</option>
-            <option value="pantry">Pantry</option>
-          </select>
+    <!-- ═══════════ MAIN PAGE（登录后第一眼）═══════════ -->
+    <div id="home-screen">
+      <div class="home-wrap">
 
-          <select id="sort-filter" class="filter-dropdown" onchange="handleSort(this.value)">
-            <option value="expiry">Sort by Expiry</option>
-            <option value="name">Sort by Name</option>
-            <option value="added">Sort by Date Added</option>
-          </select>
-
-          <button class="action-btn primary" onclick="openModal()">➕ Add Item</button>
-          <button class="action-btn secondary" id="bulk-toggle-btn" onclick="toggleBulkMode()">⚙️ Bulk Actions</button>
+        <div class="home-brand">
+          <!-- 想换成自己的 logo 图片：把下面这行换成
+               <img class="home-logo-img" src="images/logo.png" alt="Food Keeper" /> -->
+          <span class="home-logo">🌿</span>
+          <div class="home-name">Food Keeper</div>
+          <div class="home-tagline" id="home-tagline">Track ingredients, reduce waste</div>
         </div>
 
-        <div class="bulk-bar" id="bulk-bar" style="display: none;">
-          <span id="bulk-count">0 items selected</span>
-          <div style="display: flex; gap: 8px;">
-            <button class="bulk-btn success" onclick="bulkEat()">✅ Used / Consumed</button>
-            <button class="bulk-btn danger" onclick="bulkWaste()">🗑️ Logged as Waste</button>
-            <button class="bulk-btn secondary" onclick="bulkDelete()">Delete</button>
-          </div>
-        </div>
+        <div class="home-grid">
 
-        <div id="food-container">
-          <div class="loading">Loading ingredients...</div>
-        </div>
-      </section>
+          <!-- 左边：Settings + Achievement -->
+          <div class="home-side">
+            <button class="home-side-card" onclick="openPanel()">
+              <span class="home-side-icon">⚙️</span>
+              <span class="home-side-title" id="home-settings-title">Settings</span>
+              <span class="home-side-sub" id="home-settings-sub">Language, notifications, export</span>
+            </button>
 
-      <section id="view-shopping" class="view-section" style="display: none;">
-        <div id="shop-list-container"></div>
-        <div class="shop-add-row">
-          <input class="shop-add-input" type="text" id="shop-input" placeholder="Add custom item..." onkeypress="if(event.key==='Enter') addShopItem()" />
-          <button class="shop-add-btn" onclick="addShopItem()">Add</button>
-        </div>
-        <div style="margin-top: 16px; display: flex; gap: 12px;">
-          <button class="ghost-btn" onclick="clearChecked()" style="flex: 1; justify-content: center;">Clear Checked</button>
-          <button class="ghost-btn" onclick="exportShopList()" style="flex: 1; justify-content: center;">Copy List to Clipboard</button>
-        </div>
-      </section>
-
-      <section id="view-waste" class="view-section" style="display: none;">
-        <div class="waste-stat-grid">
-          <div class="waste-stat-card">
-            <h3>This Month</h3>
-            <div class="num" id="waste-month-count">0</div>
-          </div>
-          <div class="waste-stat-card">
-            <h3>Total History</h3>
-            <div class="num" id="waste-total-count">0</div>
-          </div>
-        </div>
-        <div id="waste-list-container" style="margin-top: 16px;"></div>
-      </section>
-
-      <section id="view-recipes" class="view-section" style="display: none;">
-        
-        <div class="discover-hero-banner">
-          <div style="font-size: 32px;">🍲</div>
-          <div>
-            <h3>Food Keeper AI Recipe Assistant</h3>
-            <p>Analyzes your items expiring within 7 days first to compile an optimized customized menu recipe framework.</p>
-          </div>
-        </div>
-        <button class="btn-primary" style="background: var(--accent); color: white; padding: 14px; font-size: 15px;" onclick="generateAICustomMenu()">
-           Generate Smart Menu Recipes
-        </button>
-        <div id="recipes-list-container" style="margin-top: 16px;"></div>
-      </section>
-            <section id="view-leaderboard" class="view-section" style="display: none;">
-  <div class="discover-hero-banner">
-    <div style="font-size: 32px;">🏆</div>
-    <div>
-      <h3>Your Weekly Waste Leaderboard</h3>
-      <p>Tracks your top 10 worst weeks of food waste this year. Resets every January.</p>
-    </div>
-  </div>
-
-  <div id="leaderboard-container"></div>
-</section>
-
-      <section id="view-awareness" class="view-section" style="display:none;">
-<div id="awareness-container"></div>
-</section>
- 
-<section id="view-quiz" class="view-section" style="display:none;">
-<div id="quiz-container"></div>
-</section>
-
-      <section id="view-receipt" class="view-section" style="display: none;">
-        <div class="discover-hero-banner">
-          <div style="font-size: 32px;">🧾</div>
-          <div>
-            <h3>Receipt Food & Total Cost Scanner</h3>
-            <p>Upload a clear photo of your grocery receipt. Food Keeper AI will isolate food assets, compute individual values, and tally your grand total.</p>
-          </div>
-        </div>
-
-        <div class="receipt-card" style="background: var(--surface); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow);">
-          <div class="form-field">
-            <label class="form-label">Select Receipt Photo</label>
-            <input type="file" id="receipt-file" accept="image/*" class="form-input" onchange="previewReceipt(event)" />
+            <div class="home-side-card locked" onclick="toast('Achievements are coming soon!')">
+              <span class="home-side-icon">🏅</span>
+              <span class="home-side-title" id="home-ach-title">Achievement</span>
+              <span class="home-side-sub" id="home-ach-sub">Coming soon</span>
+              <span class="home-soon-badge">🔒 Soon</span>
+            </div>
           </div>
 
-          <div id="receipt-preview-box" style="display: none; text-align: center; margin: 16px 0; padding: 10px; background: var(--bg); border-radius: var(--radius);">
-            <img id="receipt-img-preview" src="" alt="Receipt view" style="max-width: 100%; max-height: 300px; border-radius: var(--radius); border: 1px solid var(--border);" />
-          </div>
-
-          <button class="btn-primary" id="scan-receipt-btn" style="background: var(--accent); color: white; margin-top: 8px;" onclick="processReceiptImage()">
-            Analyze & Compute Total
+          <!-- 图片 1：Pantry Tracker（图片放 images/pantry-tracker.png）-->
+          <button class="home-card pantry" onclick="openSection('pantry')">
+            <div class="home-card-fallback">🥦</div>
+            <img class="home-card-img" src="images/pantry-tracker.png" alt="Pantry Tracker"
+                 onerror="this.style.display='none'" />
+            <div class="home-card-label">
+              <div class="home-card-title" id="home-pantry-title">Pantry Tracker</div>
+              <div class="home-card-sub" id="home-pantry-sub">Pantry, shopping list, waste log, recipes, receipt scan, leaderboard</div>
+            </div>
           </button>
+
+          <!-- 图片 2：Outside the Kitchen（图片放 images/outside-kitchen.png）-->
+          <button class="home-card outside" onclick="openSection('outside')">
+            <div class="home-card-fallback">🌍</div>
+            <img class="home-card-img" src="images/outside-kitchen.png" alt="Outside the Kitchen"
+                 onerror="this.style.display='none'" />
+            <div class="home-card-label">
+              <div class="home-card-title" id="home-outside-title">Outside the Kitchen</div>
+              <div class="home-card-sub" id="home-outside-sub">Awareness and quiz</div>
+            </div>
+          </button>
+
         </div>
+      </div>
+    </div>
 
-        <div id="receipt-results-container" style="margin-top: 16px;"></div>
-        <button class="btn-primary" id="add-to-inventory-btn" style="display: none; background: var(--text); color: var(--bg); margin-top: 16px;" onclick="addScannedItemsToInventory()">
-          Add All Items to Inventory ➕
-        </button>
-      </section>
 
-    </main>
+    <!-- ═══════════ SECTION 1：PANTRY TRACKER ═══════════ -->
+    <div id="section-pantry" style="display: none;">
 
+      <div class="section-bar">
+        <div class="section-bar-inner">
+          <button class="back-home-btn" id="back-pantry" onclick="goHome()">← Home</button>
+          <span class="section-bar-title" id="bar-pantry-title">Pantry Tracker</span>
+        </div>
+      </div>
+
+      <div class="nav-tabs">
+        <button class="nav-hamburger" onclick="this.nextElementSibling.classList.toggle('show')">☰ Menu</button>
+        <div class="nav-tab-wrap">
+          <button class="nav-tab active" data-view="pantry" onclick="switchView('pantry')">Pantry</button>
+          <button class="nav-tab" data-view="shopping" onclick="switchView('shopping')">Shopping List</button>
+          <button class="nav-tab" data-view="waste" onclick="switchView('waste')">Waste Log</button>
+          <button class="nav-tab" data-view="recipes" onclick="switchView('recipes')">Recipes For You</button>
+          <button class="nav-tab" data-view="receipt" onclick="switchView('receipt')">Scan Receipt</button>
+          <button class="nav-tab" data-view="leaderboard" onclick="switchView('leaderboard')">Leaderboard</button>
+        </div>
+      </div>
+
+      <main class="main">
+
+        <section class="stats">
+          <div class="stat">
+            <div class="stat-label">Total Items</div>
+            <div class="stat-value blue" id="stat-total">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Expired</div>
+            <div class="stat-value red" id="stat-expired">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Expiring Soon</div>
+            <div class="stat-value amber" id="stat-soon">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Monthly Waste</div>
+            <div class="stat-value green" id="stat-saved">0</div>
+          </div>
+        </section>
+
+        <section id="view-pantry" class="view-section">
+          <div class="toolbar">
+            <input type="text" id="search-input" class="search-bar" placeholder="Search ingredients..." oninput="handleSearch(this.value)" />
+
+            <select id="loc-filter" class="filter-dropdown" onchange="handleLocationFilter(this.value)">
+              <option value="all">All Locations</option>
+              <option value="fridge">Fridge</option>
+              <option value="freezer">Freezer</option>
+              <option value="pantry">Pantry</option>
+            </select>
+
+            <select id="sort-filter" class="filter-dropdown" onchange="handleSort(this.value)">
+              <option value="expiry">Sort by Expiry</option>
+              <option value="name">Sort by Name</option>
+              <option value="added">Sort by Date Added</option>
+            </select>
+
+            <button class="action-btn primary" onclick="openModal()">➕ Add Item</button>
+            <button class="action-btn secondary" id="bulk-toggle-btn" onclick="toggleBulkMode()">⚙️ Bulk Actions</button>
+          </div>
+
+          <div class="bulk-bar" id="bulk-bar" style="display: none;">
+            <span id="bulk-count">0 items selected</span>
+            <div style="display: flex; gap: 8px;">
+              <button class="bulk-btn success" onclick="bulkEat()">✅ Used / Consumed</button>
+              <button class="bulk-btn danger" onclick="bulkWaste()">🗑️ Logged as Waste</button>
+              <button class="bulk-btn secondary" onclick="bulkDelete()">Delete</button>
+            </div>
+          </div>
+
+          <div id="food-container">
+            <div class="loading">Loading ingredients...</div>
+          </div>
+        </section>
+
+        <section id="view-shopping" class="view-section" style="display: none;">
+          <div id="shop-list-container"></div>
+          <div class="shop-add-row">
+            <input class="shop-add-input" type="text" id="shop-input" placeholder="Add custom item..." onkeypress="if(event.key==='Enter') addShopItem()" />
+            <button class="shop-add-btn" onclick="addShopItem()">Add</button>
+          </div>
+          <div style="margin-top: 16px; display: flex; gap: 12px;">
+            <button class="ghost-btn" onclick="clearChecked()" style="flex: 1; justify-content: center;">Clear Checked</button>
+            <button class="ghost-btn" onclick="exportShopList()" style="flex: 1; justify-content: center;">Copy List to Clipboard</button>
+          </div>
+        </section>
+
+        <section id="view-waste" class="view-section" style="display: none;">
+          <div class="waste-stat-grid">
+            <div class="waste-stat-card">
+              <h3>This Month</h3>
+              <div class="num" id="waste-month-count">0</div>
+            </div>
+            <div class="waste-stat-card">
+              <h3>Total History</h3>
+              <div class="num" id="waste-total-count">0</div>
+            </div>
+          </div>
+          <div id="waste-list-container" style="margin-top: 16px;"></div>
+        </section>
+
+        <section id="view-recipes" class="view-section" style="display: none;">
+          <div class="discover-hero-banner">
+            <div style="font-size: 32px;">🍲</div>
+            <div>
+              <h3>Food Keeper AI Recipe Assistant</h3>
+              <p>Analyzes your items expiring within 7 days first to compile an optimized customized menu recipe framework.</p>
+            </div>
+          </div>
+          <button class="btn-primary" style="background: var(--accent); color: white; padding: 14px; font-size: 15px;" onclick="generateAICustomMenu()">
+            Generate Smart Menu Recipes
+          </button>
+          <div id="recipes-list-container" style="margin-top: 16px;"></div>
+        </section>
+
+        <section id="view-leaderboard" class="view-section" style="display: none;">
+          <div class="discover-hero-banner">
+            <div style="font-size: 32px;">🏆</div>
+            <div>
+              <h3>Your Weekly Waste Leaderboard</h3>
+              <p>Tracks your top 10 worst weeks of food waste this year. Resets every January.</p>
+            </div>
+          </div>
+          <div id="leaderboard-container"></div>
+        </section>
+
+        <section id="view-receipt" class="view-section" style="display: none;">
+          <div class="discover-hero-banner">
+            <div style="font-size: 32px;">🧾</div>
+            <div>
+              <h3>Receipt Food & Total Cost Scanner</h3>
+              <p>Upload a clear photo of your grocery receipt. Food Keeper AI will isolate food assets, compute individual values, and tally your grand total.</p>
+            </div>
+          </div>
+
+          <div class="receipt-card" style="background: var(--surface); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow);">
+            <div class="form-field">
+              <label class="form-label">Select Receipt Photo</label>
+              <input type="file" id="receipt-file" accept="image/*" class="form-input" onchange="previewReceipt(event)" />
+            </div>
+
+            <div id="receipt-preview-box" style="display: none; text-align: center; margin: 16px 0; padding: 10px; background: var(--bg); border-radius: var(--radius);">
+              <img id="receipt-img-preview" src="" alt="Receipt view" style="max-width: 100%; max-height: 300px; border-radius: var(--radius); border: 1px solid var(--border);" />
+            </div>
+
+            <button class="btn-primary" id="scan-receipt-btn" style="background: var(--accent); color: white; margin-top: 8px;" onclick="processReceiptImage()">
+              Analyze & Compute Total
+            </button>
+          </div>
+
+          <div id="receipt-results-container" style="margin-top: 16px;"></div>
+          <button class="btn-primary" id="add-to-inventory-btn" style="display: none; background: var(--text); color: var(--bg); margin-top: 16px;" onclick="addScannedItemsToInventory()">
+            Add All Items to Inventory ➕
+          </button>
+        </section>
+
+      </main>
+    </div>
+
+
+    <!-- ═══════════ SECTION 2：OUTSIDE THE KITCHEN ═══════════ -->
+    <div id="section-outside" style="display: none;">
+
+      <div class="section-bar">
+        <div class="section-bar-inner">
+          <button class="back-home-btn" id="back-outside" onclick="goHome()">← Home</button>
+          <span class="section-bar-title" id="bar-outside-title">Outside the Kitchen</span>
+        </div>
+      </div>
+
+      <div class="nav-tabs">
+        <button class="nav-hamburger" onclick="this.nextElementSibling.classList.toggle('show')">☰ Menu</button>
+        <div class="nav-tab-wrap">
+          <button class="nav-tab" data-view="awareness" onclick="switchView('awareness')">Awareness</button>
+          <button class="nav-tab" data-view="quiz" onclick="switchView('quiz')">Quiz</button>
+        </div>
+      </div>
+
+      <main class="main">
+        <section id="view-awareness" class="view-section" style="display:none;">
+          <div id="awareness-container"></div>
+        </section>
+
+        <section id="view-quiz" class="view-section" style="display:none;">
+          <div id="quiz-container"></div>
+        </section>
+      </main>
+    </div>
+
+
+    <!-- ═══════════ MODAL: ADD / EDIT ═══════════ -->
     <div class="overlay" id="overlay" onclick="closeModal()">
       <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -266,7 +349,7 @@
             <label class="form-label">Ingredient Name</label>
             <input class="form-input" type="text" id="input-name" placeholder="e.g. Fresh Milk" />
           </div>
-          
+
           <div class="form-field">
             <label class="form-label">Emoji Picker</label>
             <div class="emoji-picker" id="emoji-picker"></div>
@@ -282,10 +365,9 @@
               <input class="form-input" type="date" id="input-expiry" />
             </div>
             <div class="form-field">
-          <label class="form-label">Price (RM)</label>
-          <input class="form-input" type="number" id="input-price" 
-        placeholder="e.g. 5.50" step="0.01" min="0" />
-         </div>
+              <label class="form-label">Price (RM)</label>
+              <input class="form-input" type="number" id="input-price" placeholder="e.g. 5.50" step="0.01" min="0" />
+            </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -319,6 +401,7 @@
       </div>
     </div>
 
+    <!-- ═══════════ SETTINGS PANEL ═══════════ -->
     <div class="overlay" id="panel-overlay" onclick="closePanel()">
       <div class="side-panel" onclick="event.stopPropagation()">
         <div class="panel-header">
@@ -327,16 +410,12 @@
         </div>
         <div class="panel-body">
           <div class="section-label">Language</div>
+          <select id="lang-select" class="form-input" onchange="setLanguage(this.value)">
+            <option value="en">English</option>
+            <option value="ms">Bahasa Melayu</option>
+            <option value="zh">中文</option>
+          </select>
 
-<select id="lang-select"
-        class="form-input"
-        onchange="setLanguage(this.value)">
-
-  <option value="en">English</option>
-  <option value="ms">Bahasa Melayu</option>
-  <option value="zh">中文</option>
-
-</select>
           <div class="section-label">Smart Notifications</div>
           <div class="setting-row">
             <div>
@@ -367,6 +446,5 @@
 
   </div>
 
-  
 </body>
 </html>
