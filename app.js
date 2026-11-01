@@ -1,4 +1,3 @@
-
 // ── FIREBASE UTILITY SETUP ──
 const firebaseConfig = {
   apiKey:            "AIzaSyAVCLcRZXQvUvvDm1L20TCY_GPwlX0btfg",
@@ -70,19 +69,34 @@ const TRANSLATIONS = {
 
 let currentLang = 'en';
 
+// ── SMALL HELPERS ──
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+// 本地时区的 YYYY-MM-DD（避免 UTC 导致马来西亚早上日期变前一天）
+function today() {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+}
+
+// ── LANGUAGE / THEME ──
 function setLanguage(lang) {
   currentLang = lang;
   localStorage.setItem('fk_lang', lang);
   applyTranslations();
+  saveSetting({ lang });
 }
 
 function toggleTheme() {
   const html = document.documentElement;
-  const current = html.getAttribute('data-theme');
-  const next = current === 'dark' ? 'light' : 'dark';
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   html.setAttribute('data-theme', next);
   localStorage.setItem('fk_theme', next);
   document.getElementById('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+  saveSetting({ theme: next });
 }
 
 function loadTheme() {
@@ -95,10 +109,9 @@ function loadTheme() {
 function applyTranslations() {
   const t = TRANSLATIONS[currentLang];
   const navViews = ['pantry','shopping','waste','recipes','receipt','leaderboard','awareness','quiz'];
-  const navKeys  = ['pantry','shopping','waste','recipes','receipt','leaderboard','awareness','quiz'];
-  navViews.forEach((v, i) => {
+  navViews.forEach(v => {
     const el = document.querySelector(`[data-view="${v}"]`);
-    if (el) el.textContent = t[navKeys[i]];
+    if (el) el.textContent = t[v];
   });
   const labels = document.querySelectorAll('.stat-label');
   if (labels[0]) labels[0].textContent = t.totalItems;
@@ -114,8 +127,7 @@ function applyTranslations() {
 }
 
 function loadLanguage() {
-  const saved = localStorage.getItem('fk_lang') || 'en';
-  currentLang = saved;
+  currentLang = localStorage.getItem('fk_lang') || 'en';
   applyTranslations();
 }
 
@@ -146,12 +158,16 @@ const ERROR_MAP = {
 let foods       = [];
 let shopItems   = [];
 let wasteLog    = [];
+let settings    = {};
 let filter      = 'all';
 let catFilter   = 'all';
 let sortBy      = 'expiry';
 let query       = '';
 let currentView = 'pantry';
 let unsubscribe = null;
+let unsubShop   = null;
+let unsubWaste  = null;
+let unsubSettings = null;
 let currentUser = null;
 let editingId   = null;
 let bulkMode    = false;
@@ -186,7 +202,7 @@ let quizCurrent = 0;
 let quizScore   = 0;
 let quizAnswered = false;
 
-// ── LEADERBOARD ──
+// ── LEADERBOARD（直接从云端浪费记录计算）──
 function getWeekNumber(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
@@ -195,40 +211,25 @@ function getWeekNumber(date) {
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
-function saveWeeklyWaste() {
-  if (!currentUser) return;
-  const uid    = currentUser.uid;
-  const year   = new Date().getFullYear();
-  const weekNum = getWeekNumber(new Date());
-  const key    = `fk_leaderboard_${uid}_${year}`;
-
-  const wastedThisWeek = wasteLog
-    .filter(w => {
-      const d = new Date(w.date);
-      return getWeekNumber(d) === weekNum && d.getFullYear() === year;
-    })
-    .reduce((sum, w) => sum + (w.price || 0), 0);
-
-  let board = JSON.parse(localStorage.getItem(key) || '[]');
-  const existing = board.find(e => e.week === weekNum);
-  if (existing) { existing.amount = wastedThisWeek; }
-  else { board.push({ week: weekNum, amount: wastedThisWeek, year }); }
-  localStorage.setItem(key, JSON.stringify(board));
-}
-
 function renderLeaderboard() {
   if (!currentUser) return;
-  const uid  = currentUser.uid;
-  const year = new Date().getFullYear();
-  const key  = `fk_leaderboard_${uid}_${year}`;
   const container = document.getElementById('leaderboard-container');
   if (!container) return;
+  const year = new Date().getFullYear();
 
-  saveWeeklyWaste();
+  const weeks = {};
+  wasteLog.forEach(w => {
+    if (!w.date) return;
+    const d = new Date(w.date);
+    if (d.getFullYear() !== year) return;
+    const wk = getWeekNumber(d);
+    weeks[wk] = (weeks[wk] || 0) + (w.price || 0);
+  });
 
-  let board = JSON.parse(localStorage.getItem(key) || '[]');
-  board.sort((a, b) => b.amount - a.amount);
-  const top10 = board.slice(0, 10);
+  const top10 = Object.entries(weeks)
+    .map(([week, amount]) => ({ week: +week, amount, year }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 10);
 
   if (top10.length === 0) {
     container.innerHTML = `<div class="empty"><div class="empty-icon">🌱</div><p>No waste data yet — start tracking to see your leaderboard!</p></div>`;
@@ -259,14 +260,10 @@ function renderQuiz() {
   const container = document.getElementById('quiz-container');
   if (!container) return;
 
-  const uid = currentUser?.uid;
-  const bestScore = uid ? (parseInt(localStorage.getItem(`fk_quiz_best_${uid}`)) || 0) : 0;
+  const bestScore = settings.quizBest || 0;
 
   if (quizCurrent >= QUIZ_QUESTIONS.length) {
-    if (uid) {
-      const prev = parseInt(localStorage.getItem(`fk_quiz_best_${uid}`)) || 0;
-      if (quizScore > prev) localStorage.setItem(`fk_quiz_best_${uid}`, quizScore);
-    }
+    if (quizScore > bestScore) saveSetting({ quizBest: quizScore });
     const pct = Math.round((quizScore / QUIZ_QUESTIONS.length) * 100);
     const grade = pct >= 90 ? '🌟 Excellent!' : pct >= 70 ? '👍 Good Job!' : pct >= 50 ? '📚 Keep Learning!' : '💪 Try Again!';
     container.innerHTML = `
@@ -464,9 +461,9 @@ function renderAwareness() {
 
 // ── TIME UTILS ──
 function daysLeft(expiry) {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const exp   = new Date(expiry); exp.setHours(0,0,0,0);
-  return Math.round((exp - today) / 86400000);
+  const t = new Date(); t.setHours(0,0,0,0);
+  const exp = new Date(expiry); exp.setHours(0,0,0,0);
+  return Math.round((exp - t) / 86400000);
 }
 
 function badgeInfo(days) {
@@ -476,7 +473,6 @@ function badgeInfo(days) {
   return { cls: 'badge-green', text: `${days}d left` };
 }
 
-function today() { return new Date().toISOString().split('T')[0]; }
 function fmtDate(d) { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); }
 function fmtDateFull(d) { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
 
@@ -521,10 +517,10 @@ function showAuthError(msg) {
 async function handleAuth() {
   const email   = document.getElementById('auth-email').value.trim();
   const pass    = document.getElementById('auth-password').value;
-  const confirm = document.getElementById('auth-confirm').value;
+  const confirmPass = document.getElementById('auth-confirm').value;
   const btn     = document.getElementById('auth-btn');
   if (!email || !pass) { showAuthError('Please fill in email and password'); return; }
-  if (authMode === 'register' && pass !== confirm) { showAuthError('Passwords do not match'); return; }
+  if (authMode === 'register' && pass !== confirmPass) { showAuthError('Passwords do not match'); return; }
   btn.disabled = true;
   btn.textContent = 'Please wait…';
   try {
@@ -532,9 +528,9 @@ async function handleAuth() {
     else await auth.createUserWithEmailAndPassword(email, pass);
   } catch(e) {
     showAuthError(ERROR_MAP[e.code] || e.message);
-    btn.disabled = false;
-    btn.textContent = authMode === 'login' ? 'Log In' : 'Register';
   }
+  btn.disabled = false;
+  btn.textContent = authMode === 'login' ? 'Log In' : 'Register';
 }
 
 async function handleForgot() {
@@ -548,11 +544,16 @@ async function handleForgot() {
   } catch(e) { showAuthError(ERROR_MAP[e.code] || e.message); }
 }
 
+function stopAllListeners() {
+  [unsubscribe, unsubShop, unsubWaste, unsubSettings].forEach(u => u && u());
+  unsubscribe = unsubShop = unsubWaste = unsubSettings = null;
+}
+
 async function handleLogout() {
-  if (unsubscribe) { unsubscribe(); unsubscribe = null; }
-  foods = []; shopItems = []; wasteLog = [];
-  if (document.getElementById('recipes-list-container'))
-    document.getElementById('recipes-list-container').innerHTML = '';
+  stopAllListeners();
+  foods = []; shopItems = []; wasteLog = []; settings = {};
+  const rc = document.getElementById('recipes-list-container');
+  if (rc) rc.innerHTML = '';
   await auth.signOut();
 }
 
@@ -564,26 +565,24 @@ auth.onAuthStateChanged(async (user) => {
     authScreen.style.display = 'none';
     appScreen.style.display  = 'block';
     document.getElementById('user-email').textContent = user.email;
+    loadTheme();            // 先用本地值，避免闪屏，云端设置到了会覆盖
+    initSettingsUI();
     startListening(user.uid);
-    loadLocalData();
-    loadSettings();
-    loadTheme();
+    startCloudSync(user.uid);
     checkAndNotify();
-    if (window.puter) {
-      try {
-        if (!puter.auth.isSignedIn()) await puter.auth.signIn();
-      } catch(e) { console.warn('Puter login failed, app still works:', e); }
-    }
+    // Puter 不再自动登录，用到 AI 功能时才会弹出（见 ensurePuter）
   } else {
     authScreen.style.display = 'flex';
     appScreen.style.display  = 'none';
     currentUser = null;
-    foods = []; shopItems = []; wasteLog = [];
-    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    foods = []; shopItems = []; wasteLog = []; settings = {};
+    stopAllListeners();
   }
 });
 
 // ── FIRESTORE ──
+function userRef() { return db.collection('users').doc(currentUser.uid); }
+
 function startListening(uid) {
   if (unsubscribe) unsubscribe();
   unsubscribe = db.collection('users').doc(uid).collection('foods')
@@ -595,46 +594,141 @@ function startListening(uid) {
 }
 
 async function addFood(data) {
-  await db.collection('users').doc(currentUser.uid).collection('foods').add({
+  await userRef().collection('foods').add({
     ...data, added: firebase.firestore.FieldValue.serverTimestamp()
   });
 }
 
 async function updateFood(docId, data) {
-  await db.collection('users').doc(currentUser.uid).collection('foods').doc(docId).update(data);
+  await userRef().collection('foods').doc(docId).update(data);
 }
 
 async function deleteFood(docId) {
-  await db.collection('users').doc(currentUser.uid).collection('foods').doc(docId).delete();
+  await userRef().collection('foods').doc(docId).delete();
 }
 
-// ── LOCAL STORAGE ──
-function loadLocalData() {
-  const uid = currentUser.uid;
-  shopItems = JSON.parse(localStorage.getItem(`fk_shop_${uid}`) || '[]');
-  wasteLog  = JSON.parse(localStorage.getItem(`fk_waste_${uid}`) || '[]');
-  renderShopList();
-  renderWasteLog();
+// ── CLOUD SYNC（购物清单 / 浪费记录 / 设置）──
+function startCloudSync(uid) {
+  [unsubShop, unsubWaste, unsubSettings].forEach(u => u && u());
+  const ref = db.collection('users').doc(uid);
+
+  unsubShop = ref.collection('data').doc('shop').onSnapshot(snap => {
+    shopItems = snap.exists ? (snap.data().items || []) : [];
+    renderShopList();
+  }, err => console.error(err));
+
+  unsubWaste = ref.collection('waste').orderBy('createdAt', 'desc').onSnapshot(snap => {
+    wasteLog = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderWasteLog();
+    updateStats();
+    if (currentView === 'leaderboard') renderLeaderboard();
+  }, err => console.error(err));
+
+  unsubSettings = ref.collection('data').doc('settings').onSnapshot(snap => {
+    settings = snap.exists ? snap.data() : {};
+    applySettings();
+    if (currentView === 'quiz' && quizCurrent === 0 && !quizAnswered) renderQuiz();
+  }, err => console.error(err));
+
+  migrateLocalData(uid);
 }
 
-function saveShopItems() {
-  localStorage.setItem(`fk_shop_${currentUser.uid}`, JSON.stringify(shopItems));
+function saveSetting(patch) {
+  if (!currentUser) return;
+  Object.assign(settings, patch);
+  userRef().collection('data').doc('settings').set(patch, { merge: true }).catch(console.error);
 }
 
-function saveWasteLog() {
-  localStorage.setItem(`fk_waste_${currentUser.uid}`, JSON.stringify(wasteLog));
+function applySettings() {
+  notifDays = settings.notifDays || 3;
+  const nd = document.getElementById('notif-days');
+  if (nd) nd.value = notifDays;
+
+  if (settings.lang && TRANSLATIONS[settings.lang]) {
+    currentLang = settings.lang;
+    localStorage.setItem('fk_lang', currentLang);
+  }
+  applyTranslations();
+
+  if (settings.theme) {
+    document.documentElement.setAttribute('data-theme', settings.theme);
+    localStorage.setItem('fk_theme', settings.theme);
+    const btn = document.getElementById('theme-btn');
+    if (btn) btn.textContent = settings.theme === 'dark' ? '☀️' : '🌙';
+  }
+  render();
 }
 
-function loadSettings() {
-  const uid = currentUser.uid;
-  notifDays = parseInt(localStorage.getItem(`fk_notifdays_${uid}`) || '3');
-  document.getElementById('notif-days').value = notifDays;
-  document.getElementById('notif-days').onchange = e => {
+function initSettingsUI() {
+  const nd = document.getElementById('notif-days');
+  nd.onchange = e => {
     notifDays = parseInt(e.target.value) || 3;
-    localStorage.setItem(`fk_notifdays_${uid}`, notifDays);
+    saveSetting({ notifDays });
     render();
   };
   loadLanguage();
+}
+
+// 把旧的 localStorage 数据一次性搬上云端（只在原设备会有内容）
+async function migrateLocalData(uid) {
+  const flag = `fk_migrated_${uid}`;
+  if (localStorage.getItem(flag)) return;
+  try {
+    const ref = db.collection('users').doc(uid);
+
+    // 购物清单
+    const localShop = JSON.parse(localStorage.getItem(`fk_shop_${uid}`) || '[]');
+    if (localShop.length) {
+      const doc = await ref.collection('data').doc('shop').get();
+      if (!doc.exists) await ref.collection('data').doc('shop').set({ items: localShop });
+    }
+
+    // 浪费记录
+    const localWaste = JSON.parse(localStorage.getItem(`fk_waste_${uid}`) || '[]');
+    if (localWaste.length) {
+      const existing = await ref.collection('waste').limit(1).get();
+      if (existing.empty) {
+        const base = Date.now();
+        for (let i = 0; i < localWaste.length; i += 400) {
+          const batch = db.batch();
+          localWaste.slice(i, i + 400).forEach((w, j) => {
+            batch.set(ref.collection('waste').doc(), {
+              name: w.name, emoji: w.emoji || '🍽️', date: w.date, price: w.price || 0,
+              createdAt: base - (i + j)   // 保持原本的顺序
+            });
+          });
+          await batch.commit();
+        }
+      }
+    }
+
+    // 设置：测验最高分、提醒天数、语言、主题（云端没有才补）
+    const sDoc = await ref.collection('data').doc('settings').get();
+    const cloud = sDoc.exists ? sDoc.data() : {};
+    const patch = {};
+    const localBest = parseInt(localStorage.getItem(`fk_quiz_best_${uid}`)) || 0;
+    if (localBest > (cloud.quizBest || 0)) patch.quizBest = localBest;
+    const localDays = parseInt(localStorage.getItem(`fk_notifdays_${uid}`));
+    if (localDays && !cloud.notifDays) patch.notifDays = localDays;
+    const localLang = localStorage.getItem('fk_lang');
+    if (localLang && !cloud.lang) patch.lang = localLang;
+    const localTheme = localStorage.getItem('fk_theme');
+    if (localTheme && !cloud.theme) patch.theme = localTheme;
+    if (Object.keys(patch).length) saveSetting(patch);
+
+    localStorage.setItem(flag, '1');
+  } catch (e) { console.error('Migration failed:', e); }
+}
+
+function saveShopItems() {
+  userRef().collection('data').doc('shop').set({ items: shopItems }).catch(console.error);
+}
+
+async function addWasteEntry(f) {
+  await userRef().collection('waste').add({
+    name: f.name, emoji: f.emoji || '🍽️', date: today(),
+    price: f.price || 0, createdAt: Date.now()
+  });
 }
 
 // ── VIEWS ──
@@ -671,18 +765,12 @@ function render() {
     return matchesQuery && matchesLoc;
   });
 
-if (sortBy === 'expiry')
-list.sort((a,b) => new Date(a.expiry) - new Date(b.expiry));
- 
-else if (sortBy === 'name')
-list.sort((a,b) => (a.name||'').localeCompare(b.name||''));
- 
-else if (sortBy === 'added')
-list.sort((a,b) =>
-(b.added?.seconds || 0) -
-(a.added?.seconds || 0)
-);
-
+  if (sortBy === 'expiry')
+    list.sort((a,b) => new Date(a.expiry) - new Date(b.expiry));
+  else if (sortBy === 'name')
+    list.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  else if (sortBy === 'added')
+    list.sort((a,b) => (b.added?.seconds || 0) - (a.added?.seconds || 0));
 
   if (list.length === 0) {
     container.innerHTML = `<div class="empty"><div class="empty-icon">🧺</div><p>${query ? 'No matching ingredients found' : 'No ingredients yet — click ➕ Add Item to get started!'}</p></div>`;
@@ -723,15 +811,15 @@ function foodCardHTML(f, groupClass) {
       <div class="food-emoji">${f.emoji || '🍽️'}</div>
       <div class="food-info">
         <div class="food-name-row">
-          <span class="food-name">${f.name}</span>
-          ${f.qty ? `<span class="food-qty">${f.qty}</span>` : ''}
+          <span class="food-name">${esc(f.name)}</span>
+          ${f.qty ? `<span class="food-qty">${esc(f.qty)}</span>` : ''}
         </div>
         <div class="food-meta">
-          <span>${LOC_ICON[f.location] || '📍'} ${LOC_LABEL[f.location]}</span>
+          <span>${LOC_ICON[f.location] || '📍'} ${LOC_LABEL[f.location] || ''}</span>
           <span class="dot">·</span>
           <span>Exp: ${fmtDate(f.expiry)}</span>
         </div>
-        ${f.note ? `<div class="food-note">${f.note}</div>` : ''}
+        ${f.note ? `<div class="food-note">${esc(f.note)}</div>` : ''}
       </div>
       <div class="card-badge-wrap">
         <span class="badge ${badge.cls}">${badge.text}</span>
@@ -749,7 +837,7 @@ function updateStats() {
   document.getElementById('stat-total').textContent   = foods.length;
   document.getElementById('stat-expired').textContent = foods.filter(f => daysLeft(f.expiry) < 0).length;
   document.getElementById('stat-soon').textContent    = foods.filter(f => { const d = daysLeft(f.expiry); return d >= 0 && d <= notifDays; }).length;
-  const currentMonthStr = new Date().toISOString().substring(0,7);
+  const currentMonthStr = today().substring(0,7);
   const wastedThisMonth = wasteLog.filter(w => w.date?.startsWith(currentMonthStr)).reduce((sum, w) => sum + (w.price || 0), 0);
   document.getElementById('stat-saved').textContent = 'RM ' + wastedThisMonth.toFixed(2);
 }
@@ -771,7 +859,7 @@ function updateBulkBar() {
 async function bulkEat() {
   if (!selectedIds.size) return;
   const batch = Array.from(selectedIds);
-  for (let id of batch) await deleteFood(id);
+  for (const id of batch) await deleteFood(id);
   confetti();
   toast(`Consumed ${batch.length} items`);
   toggleBulkMode();
@@ -780,14 +868,11 @@ async function bulkEat() {
 async function bulkWaste() {
   if (!selectedIds.size) return;
   const batch = Array.from(selectedIds);
-  batch.forEach(id => {
+  for (const id of batch) {
     const f = foods.find(x => x.id === id);
-    if (f) wasteLog.unshift({ name: f.name, emoji: f.emoji || '🍽️', date: today(), price: f.price || 0 });
-  });
-  saveWasteLog();
-  saveWeeklyWaste();
-  renderWasteLog();
-  for (let id of batch) await deleteFood(id);
+    if (f) await addWasteEntry(f);
+    await deleteFood(id);
+  }
   toast(`Logged ${batch.length} items as wasted`);
   toggleBulkMode();
 }
@@ -795,7 +880,7 @@ async function bulkWaste() {
 async function bulkDelete() {
   if (!selectedIds.size || !confirm('Permanently delete selected items?')) return;
   const batch = Array.from(selectedIds);
-  for (let id of batch) await deleteFood(id);
+  for (const id of batch) await deleteFood(id);
   toast(`Deleted ${batch.length} items`);
   toggleBulkMode();
 }
@@ -809,12 +894,7 @@ async function eatFood(id) {
 
 async function wasteFood(id) {
   const f = foods.find(x => x.id === id);
-  if (f) {
-    wasteLog.unshift({ name: f.name, emoji: f.emoji || '🍽️', date: today(), price: f.price || 0 });
-    saveWasteLog();
-    saveWeeklyWaste();
-    renderWasteLog();
-  }
+  if (f) await addWasteEntry(f);
   await deleteFood(id);
   toast('Item logged to waste history.');
 }
@@ -826,10 +906,12 @@ function handleSort(val) { sortBy = val; render(); }
 
 // ── WASTE LOG ──
 function renderWasteLog() {
-  const currentMonthStr = new Date().toISOString().substring(0,7);
+  const currentMonthStr = today().substring(0,7);
   const thisMonth = wasteLog.filter(w => w.date?.startsWith(currentMonthStr));
-  document.getElementById('waste-month-count').textContent = thisMonth.length;
-  document.getElementById('waste-total-count').textContent = wasteLog.length;
+  const mc = document.getElementById('waste-month-count');
+  const tc = document.getElementById('waste-total-count');
+  if (mc) mc.textContent = thisMonth.length;
+  if (tc) tc.textContent = wasteLog.length;
   const container = document.getElementById('waste-list-container');
   if (!container) return;
   if (wasteLog.length === 0) {
@@ -838,9 +920,9 @@ function renderWasteLog() {
   }
   container.innerHTML = wasteLog.map(w => `
     <div class="waste-item">
-      <span class="waste-emoji">${w.emoji}</span>
-      <span class="waste-name">${w.name}</span>
-      ${w.price ? `<span class="waste-price">RM ${(w.price).toFixed(2)}</span>` : ''}
+      <span class="waste-emoji">${w.emoji || '🍽️'}</span>
+      <span class="waste-name">${esc(w.name)}</span>
+      ${w.price ? `<span class="waste-price">RM ${Number(w.price).toFixed(2)}</span>` : ''}
       <span class="waste-item-date">${fmtDateFull(w.date)}</span>
     </div>
   `).join('');
@@ -857,7 +939,7 @@ function renderShopList() {
   container.innerHTML = shopItems.map((item, i) => `
     <div class="shop-item">
       <div class="shop-check ${item.checked ? 'checked' : ''}" onclick="toggleShopCheck(${i})">${item.checked ? '✓' : ''}</div>
-      <span class="shop-name ${item.checked ? 'done' : ''}">${item.name}</span>
+      <span class="shop-name ${item.checked ? 'done' : ''}">${esc(item.name)}</span>
       <button class="shop-del" onclick="removeShopItem(${i})">✕</button>
     </div>
   `).join('');
@@ -958,7 +1040,7 @@ async function saveFood() {
 function exportCSV() {
   const header = ['Name','Category','Location','Expiry','Quantity','Notes','Price (RM)','Days Left'];
   const rows = foods.map(f => [
-    `"${f.name||''}"`, `"${CAT_LABEL[f.category||'other']}"`, `"${LOC_LABEL[f.location]}"`,
+    `"${f.name||''}"`, `"${CAT_LABEL[f.category||'other']}"`, `"${LOC_LABEL[f.location]||''}"`,
     f.expiry, `"${f.qty||''}"`, `"${f.note||''}"`, (f.price||0).toFixed(2), daysLeft(f.expiry)
   ]);
   const csv = [header,...rows].map(r => r.join(',')).join('\n');
@@ -993,7 +1075,7 @@ function checkAndNotify() {
   if (!t) return;
   if (Notification.permission === 'granted') {
     t.className = 'toggle on';
-    setTimeout(sendNotifications, 1500);
+    setTimeout(sendNotifications, 2500);
   } else { t.className = 'toggle off'; }
 }
 
@@ -1008,11 +1090,18 @@ async function toggleNotif() {
   } else { alert('Notifications blocked. Enable in browser settings.'); }
 }
 
+// ── PUTER（按需登录）──
+async function ensurePuter() {
+  if (!window.puter) throw new Error('Puter not loaded');
+  if (!puter.auth.isSignedIn()) await puter.auth.signIn();
+}
+
 // ── AI RECIPES ──
 async function generateAICustomMenu() {
   const outputDiv = document.getElementById('recipes-list-container');
   if (outputDiv) outputDiv.innerHTML = '<div class="loading">Food Keeper AI analyzing your ingredients... Please wait...</div>';
   try {
+    await ensurePuter();   // 放最前面，浏览器才不会拦截登录弹窗
     if (!foods.length) { if (outputDiv) outputDiv.innerHTML = '<div class="empty">🧺 Add ingredients first.</div>'; return; }
     const calcDL = d => d ? Math.ceil((new Date(d) - new Date()) / 86400000) : 999;
     const expiring = foods.filter(f => calcDL(f.expiry) <= 7);
@@ -1078,6 +1167,7 @@ async function processReceiptImage() {
   if (addBtn) addBtn.style.display = 'none';
   if (outputDiv) outputDiv.innerHTML = '<div class="loading">🧠 AI is reading your receipt...</div>';
   try {
+    await ensurePuter();   // 放最前面
     const blob = dataURItoBlob(currentReceiptBase64);
     const file = new File([blob], 'receipt', { type: blob.type });
     const prompt = `You are a receipt parser. Find all food items, filter out non-food items like taxes and services. Estimate expiry days for each item. Output ONLY a valid JSON array:
@@ -1090,8 +1180,9 @@ Categories: dairy, produce, meat, grain, other. Locations: fridge, freezer, pant
     let tableHTML = `<table><tr><th>Food Item</th><th>Price</th><th>Est. Expiry</th><th>Storage</th></tr>`;
     let total = 0;
     scannedReceiptItems.forEach(item => {
-      tableHTML += `<tr><td>${item.emoji||'📦'} ${item.name}</td><td>RM ${item.price.toFixed(2)}</td><td>${item.estimated_expiry_days||7} days</td><td>${LOC_LABEL[item.location]||'Fridge'}</td></tr>`;
-      total += item.price;
+      const price = Number(item.price) || 0;
+      tableHTML += `<tr><td>${esc(item.emoji||'📦')} ${esc(item.name)}</td><td>RM ${price.toFixed(2)}</td><td>${item.estimated_expiry_days||7} days</td><td>${LOC_LABEL[item.location]||'Fridge'}</td></tr>`;
+      total += price;
     });
     tableHTML += `<tr><td><strong>Total</strong></td><td><strong>RM ${total.toFixed(2)}</strong></td><td></td><td></td></tr></table>`;
     if (outputDiv) {
@@ -1114,11 +1205,12 @@ async function addScannedItemsToInventory() {
   if (!scannedReceiptItems.length) return;
   if (addBtn) { addBtn.disabled = true; addBtn.textContent = 'Adding to inventory...'; }
   try {
-    for (let item of scannedReceiptItems) {
+    for (const item of scannedReceiptItems) {
       const exp = new Date();
       exp.setDate(exp.getDate() + (item.estimated_expiry_days || 7));
+      const expStr = new Date(exp.getTime() - exp.getTimezoneOffset() * 60000).toISOString().split('T')[0];
       await addFood({
-        name: item.name, expiry: exp.toISOString().split('T')[0],
+        name: item.name, expiry: expStr,
         emoji: item.emoji || '🍽️', qty: '1', note: 'Auto-added from receipt scan',
         location: item.location || 'pantry', category: item.category || 'other',
         price: parseFloat(item.price) || 0,
@@ -1139,4 +1231,3 @@ async function addScannedItemsToInventory() {
     if (addBtn) { addBtn.disabled = false; addBtn.textContent = 'Add All Items to Inventory ➕'; }
   }
 }
-
