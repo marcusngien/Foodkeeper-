@@ -30,6 +30,16 @@ const TRANSLATIONS = {
     addItem: '➕ Add Item',
     searchPlaceholder: 'Search ingredients...',
     logOut: 'Log Out',
+    homeSettings: 'Settings',
+    homeSettingsSub: 'Language, notifications, export',
+    homeAchievement: 'Achievement',
+    homeAchievementSub: 'Coming soon',
+    homePantry: 'Pantry Tracker',
+    homePantrySub: 'Pantry, shopping list, waste log, recipes, receipt scan, leaderboard',
+    homeOutside: 'Outside the Kitchen',
+    homeOutsideSub: 'Awareness and quiz',
+    backHome: '← Home',
+    homeTagline: 'Track ingredients, reduce waste',
   },
   ms: {
     pantry: '🥦 Pantri',
@@ -47,6 +57,16 @@ const TRANSLATIONS = {
     addItem: '➕ Tambah Item',
     searchPlaceholder: 'Cari bahan...',
     logOut: 'Log Keluar',
+    homeSettings: 'Tetapan',
+    homeSettingsSub: 'Bahasa, notifikasi, eksport',
+    homeAchievement: 'Pencapaian',
+    homeAchievementSub: 'Akan datang',
+    homePantry: 'Penjejak Pantri',
+    homePantrySub: 'Pantri, senarai belanja, log pembaziran, resipi, imbas resit, papan kedudukan',
+    homeOutside: 'Di Luar Dapur',
+    homeOutsideSub: 'Kesedaran dan kuiz',
+    backHome: '← Utama',
+    homeTagline: 'Jejak bahan, kurangkan pembaziran',
   },
   zh: {
     pantry: '🥦 食品储藏',
@@ -64,6 +84,16 @@ const TRANSLATIONS = {
     addItem: '➕ 添加食材',
     searchPlaceholder: '搜索食材...',
     logOut: '退出登录',
+    homeSettings: '设置',
+    homeSettingsSub: '语言、通知、导出',
+    homeAchievement: '成就',
+    homeAchievementSub: '即将推出',
+    homePantry: '食材追踪',
+    homePantrySub: '食品储藏、购物清单、浪费记录、食谱、扫描收据、排行榜',
+    homeOutside: '厨房之外',
+    homeOutsideSub: '意识提升与测验',
+    backHome: '← 主页',
+    homeTagline: '追踪食材，减少浪费',
   }
 };
 
@@ -122,6 +152,19 @@ function applyTranslations() {
   if (searchEl) searchEl.placeholder = t.searchPlaceholder;
   const logoutEl = document.querySelector('.logout-btn');
   if (logoutEl) logoutEl.textContent = t.logOut;
+  const homeMap = {
+    'home-settings-title': 'homeSettings', 'home-settings-sub': 'homeSettingsSub',
+    'home-ach-title': 'homeAchievement',   'home-ach-sub': 'homeAchievementSub',
+    'home-pantry-title': 'homePantry',     'home-pantry-sub': 'homePantrySub',
+    'home-outside-title': 'homeOutside',   'home-outside-sub': 'homeOutsideSub',
+    'home-tagline': 'homeTagline',
+    'back-pantry': 'backHome', 'back-outside': 'backHome',
+    'bar-pantry-title': 'homePantry', 'bar-outside-title': 'homeOutside'
+  };
+  Object.entries(homeMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = t[key];
+  });
   const langSel = document.getElementById('lang-select');
   if (langSel) langSel.value = currentLang;
 }
@@ -565,6 +608,7 @@ auth.onAuthStateChanged(async (user) => {
     authScreen.style.display = 'none';
     appScreen.style.display  = 'block';
     document.getElementById('user-email').textContent = user.email;
+    showSection('home');
     loadTheme();            // 先用本地值，避免闪屏，云端设置到了会覆盖
     initSettingsUI();
     startListening(user.uid);
@@ -734,8 +778,31 @@ async function addWasteEntry(f) {
 // ── VIEWS ──
 const ALL_VIEWS = ['pantry','shopping','waste','recipes','receipt','leaderboard','awareness','quiz'];
 
+const OUTSIDE_VIEWS = ['awareness','quiz'];
+let currentSection = 'home';
+
+function showSection(name) {
+  currentSection = name;
+  const ids = { home: 'home-screen', pantry: 'section-pantry', outside: 'section-outside' };
+  Object.entries(ids).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (key === name) ? '' : 'none';
+  });
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  if (bulkMode) toggleBulkMode();
+  showSection('home');
+}
+
+function openSection(name) {
+  switchView(name === 'outside' ? 'awareness' : 'pantry');
+}
+
 function switchView(viewName) {
   currentView = viewName;
+  showSection(OUTSIDE_VIEWS.includes(viewName) ? 'outside' : 'pantry');
   document.querySelectorAll('.nav-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.view === viewName);
   });
@@ -745,7 +812,7 @@ function switchView(viewName) {
   });
   const statsContainer = document.querySelector('.stats');
   if (statsContainer) {
-    const hideStats = ['shopping','recipes','receipt','leaderboard','awareness','quiz'];
+    const hideStats = ['shopping','recipes','receipt','leaderboard'];
     statsContainer.style.display = hideStats.includes(viewName) ? 'none' : 'grid';
   }
   if (viewName === 'leaderboard') renderLeaderboard();
@@ -1080,34 +1147,14 @@ function checkAndNotify() {
 }
 
 async function toggleNotif() {
-  if (!('Notification' in window)) {
-    alert('This browser does not support notifications. (iPhone: add to Home Screen first)');
-    return;
-  }
-  if (!window.isSecureContext) {
-    alert('Notifications only work on https:// or localhost, not file://');
-    return;
-  }
+  if (!('Notification' in window)) { alert('Notifications not supported.'); return; }
   const t = document.getElementById('notif-toggle');
-
   if (Notification.permission === 'default') {
     const perm = await Notification.requestPermission();
-    if (perm !== 'granted') { toast('Permission not granted.'); return; }
-  } else if (Notification.permission === 'denied') {
-    alert('Notifications are blocked. Click the 🔒 icon in the address bar and allow notifications.');
-    return;
-  } else {
+    if (perm === 'granted') { t.className = 'toggle on'; sendNotifications(); }
+  } else if (Notification.permission === 'granted') {
     toast('To disable, change permissions in your browser settings.');
-    return;
-  }
-
-  t.className = 'toggle on';
-  try {
-    new Notification('Food Keeper', { body: 'Notifications enabled ✅' });
-  } catch (e) {
-    toast('Enabled, but this device cannot show popups.');
-  }
-  sendNotifications();
+  } else { alert('Notifications blocked. Enable in browser settings.'); }
 }
 
 // ── PUTER（按需登录）──
