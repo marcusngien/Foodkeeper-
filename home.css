@@ -1,4 +1,4 @@
-/* ═══════════ HOME (MAIN PAGE) ═══════════ */
+\/* ═══════════ HOME (MAIN PAGE) ═══════════ */
 .home-wrap {
   max-width: 1200px;
   margin: 0 auto;
@@ -186,6 +186,7 @@
   .home-side { flex-direction: column; }
   .home-card { min-height: 240px; }
 }
+
 
 /* ═══════════ SECTION MENUS（卡片菜单）═══════════ */
 .menu-wrap {
