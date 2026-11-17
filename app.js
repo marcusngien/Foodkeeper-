@@ -40,6 +40,7 @@ const TRANSLATIONS = {
     homeOutsideSub: 'Awareness and quiz',
     backHome: '← Home',
     homeTagline: 'Track ingredients, reduce waste',
+    backMenu: '← Back',
   },
   ms: {
     pantry: '🥦 Pantri',
@@ -67,6 +68,7 @@ const TRANSLATIONS = {
     homeOutsideSub: 'Kesedaran dan kuiz',
     backHome: '← Utama',
     homeTagline: 'Jejak bahan, kurangkan pembaziran',
+    backMenu: '← Kembali，
   },
   zh: {
     pantry: '🥦 食品储藏',
@@ -93,6 +95,7 @@ const TRANSLATIONS = {
     homeOutside: '厨房之外',
     homeOutsideSub: '意识提升与测验',
     backHome: '← 主页',
+     backMenu: '← 返回',
     homeTagline: '追踪食材，减少浪费',
   }
 };
