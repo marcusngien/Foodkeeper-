@@ -39,8 +39,8 @@ const TRANSLATIONS = {
     homeOutside: 'Outside the Kitchen',
     homeOutsideSub: 'Awareness and quiz',
     backHome: '← Home',
-    homeTagline: 'Track ingredients, reduce waste',
     backMenu: '← Back',
+    homeTagline: 'Track ingredients, reduce waste',
   },
   ms: {
     pantry: '🥦 Pantri',
@@ -67,8 +67,8 @@ const TRANSLATIONS = {
     homeOutside: 'Di Luar Dapur',
     homeOutsideSub: 'Kesedaran dan kuiz',
     backHome: '← Utama',
+    backMenu: '← Kembali',
     homeTagline: 'Jejak bahan, kurangkan pembaziran',
-    backMenu: '← Kembali，
   },
   zh: {
     pantry: '🥦 食品储藏',
@@ -95,12 +95,45 @@ const TRANSLATIONS = {
     homeOutside: '厨房之外',
     homeOutsideSub: '意识提升与测验',
     backHome: '← 主页',
-     backMenu: '← 返回',
+    backMenu: '← 返回',
     homeTagline: '追踪食材，减少浪费',
   }
 };
 
 let currentLang = 'en';
+
+// ── SECTION MENUS（卡片菜单，新增功能只要在这里加一行）──
+const MENUS = {
+  pantry: [
+    { view: 'pantry',      icon: '🥦', featured: true },
+    { view: 'shopping',    icon: '🛒' },
+    { view: 'waste',       icon: '🗑️' },
+    { view: 'recipes',     icon: '🍳' },
+    { view: 'receipt',     icon: '🧾' },
+    { view: 'leaderboard', icon: '🏆' },
+  ],
+  outside: [
+    { view: 'awareness', icon: '🌍' },
+    { view: 'quiz',      icon: '📝' },
+  ]
+};
+
+function renderMenus() {
+  const t = TRANSLATIONS[currentLang];
+  Object.entries(MENUS).forEach(([section, cards]) => {
+    const el = document.getElementById('menu-' + section);
+    if (!el) return;
+    el.innerHTML = `<div class="menu-grid">` + cards.map(c => `
+      <button class="menu-card ${c.featured ? 'featured' : ''}" onclick="switchView('${c.view}')">
+        <div class="menu-card-fallback">${c.icon}</div>
+        <img class="menu-card-img" src="cards/${c.view}.jpg" alt="" onerror="this.style.display='none'" />
+        <div class="menu-card-label">
+          <div class="menu-card-title">${t[c.view].replace(/^\S+\s+/, '')}</div>
+        </div>
+      </button>
+    `).join('') + `</div>`;
+  });
+}
 
 // ── SMALL HELPERS ──
 function esc(s) {
@@ -141,11 +174,7 @@ function loadTheme() {
 
 function applyTranslations() {
   const t = TRANSLATIONS[currentLang];
-  const navViews = ['pantry','shopping','waste','recipes','receipt','leaderboard','awareness','quiz'];
-  navViews.forEach(v => {
-    const el = document.querySelector(`[data-view="${v}"]`);
-    if (el) el.textContent = t[v];
-  });
+  renderMenus();
   const labels = document.querySelectorAll('.stat-label');
   if (labels[0]) labels[0].textContent = t.totalItems;
   if (labels[1]) labels[1].textContent = t.expired;
@@ -161,7 +190,6 @@ function applyTranslations() {
     'home-pantry-title': 'homePantry',     'home-pantry-sub': 'homePantrySub',
     'home-outside-title': 'homeOutside',   'home-outside-sub': 'homeOutsideSub',
     'home-tagline': 'homeTagline',
-    'back-pantry': 'backHome', 'back-outside': 'backHome',
     'bar-pantry-title': 'homePantry', 'bar-outside-title': 'homeOutside'
   };
   Object.entries(homeMap).forEach(([id, key]) => {
@@ -170,6 +198,7 @@ function applyTranslations() {
   });
   const langSel = document.getElementById('lang-select');
   if (langSel) langSel.value = currentLang;
+  updateBackButtons();
 }
 
 function loadLanguage() {
@@ -209,7 +238,7 @@ let filter      = 'all';
 let catFilter   = 'all';
 let sortBy      = 'expiry';
 let query       = '';
-let currentView = 'pantry';
+let currentView = null;   // null = 在卡片菜单或主页，不在任何具体页面里
 let unsubscribe = null;
 let unsubShop   = null;
 let unsubWaste  = null;
@@ -796,31 +825,55 @@ function showSection(name) {
 
 function goHome() {
   if (bulkMode) toggleBulkMode();
+  currentView = null;
   showSection('home');
 }
 
+// 返回：在页面里就回到卡片菜单，在菜单里就回主页
+function goBack() {
+  if (bulkMode) toggleBulkMode();
+  if (currentView) showMenu(currentSection);
+  else goHome();
+}
+
+function updateBackButtons() {
+  const t = TRANSLATIONS[currentLang];
+  const label = currentView ? t.backMenu : t.backHome;
+  ['back-pantry', 'back-outside'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+}
+
+function showMenu(section) {
+  currentView = null;
+  showSection(section);
+  document.getElementById('menu-' + section).style.display = '';
+  document.getElementById('main-' + section).style.display = 'none';
+  updateBackButtons();
+}
+
 function openSection(name) {
-  switchView(name === 'outside' ? 'awareness' : 'pantry');
+  showMenu(name);
 }
 
 function switchView(viewName) {
   currentView = viewName;
-  showSection(OUTSIDE_VIEWS.includes(viewName) ? 'outside' : 'pantry');
-  document.querySelectorAll('.nav-tab').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.view === viewName);
-  });
+  const section = OUTSIDE_VIEWS.includes(viewName) ? 'outside' : 'pantry';
+  showSection(section);
+  document.getElementById('menu-' + section).style.display = 'none';
+  document.getElementById('main-' + section).style.display = '';
   ALL_VIEWS.forEach(v => {
     const el = document.getElementById('view-' + v);
     if (el) el.style.display = (v === viewName) ? '' : 'none';
   });
+  // 统计数字只在 Pantry 页面显示
   const statsContainer = document.querySelector('.stats');
-  if (statsContainer) {
-    const hideStats = ['shopping','recipes','receipt','leaderboard'];
-    statsContainer.style.display = hideStats.includes(viewName) ? 'none' : 'grid';
-  }
+  if (statsContainer) statsContainer.style.display = viewName === 'pantry' ? 'grid' : 'none';
   if (viewName === 'leaderboard') renderLeaderboard();
   if (viewName === 'awareness')   renderAwareness();
   if (viewName === 'quiz')        renderQuiz();
+  updateBackButtons();
 }
 
 // ── RENDER ──
