@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -149,24 +149,15 @@
 
       <div class="section-bar">
         <div class="section-bar-inner">
-          <button class="back-home-btn" id="back-pantry" onclick="goHome()">← Home</button>
+          <button class="back-home-btn" id="back-pantry" onclick="goBack()">← Home</button>
           <span class="section-bar-title" id="bar-pantry-title">Pantry Tracker</span>
         </div>
       </div>
 
-      <div class="nav-tabs">
-        <button class="nav-hamburger" onclick="this.nextElementSibling.classList.toggle('show')">☰ Menu</button>
-        <div class="nav-tab-wrap">
-          <button class="nav-tab active" data-view="pantry" onclick="switchView('pantry')">Pantry</button>
-          <button class="nav-tab" data-view="shopping" onclick="switchView('shopping')">Shopping List</button>
-          <button class="nav-tab" data-view="waste" onclick="switchView('waste')">Waste Log</button>
-          <button class="nav-tab" data-view="recipes" onclick="switchView('recipes')">Recipes For You</button>
-          <button class="nav-tab" data-view="receipt" onclick="switchView('receipt')">Scan Receipt</button>
-          <button class="nav-tab" data-view="leaderboard" onclick="switchView('leaderboard')">Leaderboard</button>
-        </div>
-      </div>
+      <!-- 卡片菜单（由 app.js 的 renderMenus 生成）-->
+      <div class="menu-wrap" id="menu-pantry"></div>
 
-      <main class="main">
+      <main class="main" id="main-pantry" style="display:none;">
 
         <section class="stats">
           <div class="stat">
@@ -312,20 +303,15 @@
 
       <div class="section-bar">
         <div class="section-bar-inner">
-          <button class="back-home-btn" id="back-outside" onclick="goHome()">← Home</button>
+          <button class="back-home-btn" id="back-outside" onclick="goBack()">← Home</button>
           <span class="section-bar-title" id="bar-outside-title">Outside the Kitchen</span>
         </div>
       </div>
 
-      <div class="nav-tabs">
-        <button class="nav-hamburger" onclick="this.nextElementSibling.classList.toggle('show')">☰ Menu</button>
-        <div class="nav-tab-wrap">
-          <button class="nav-tab" data-view="awareness" onclick="switchView('awareness')">Awareness</button>
-          <button class="nav-tab" data-view="quiz" onclick="switchView('quiz')">Quiz</button>
-        </div>
-      </div>
+      <!-- 卡片菜单（由 app.js 的 renderMenus 生成）-->
+      <div class="menu-wrap" id="menu-outside"></div>
 
-      <main class="main">
+      <main class="main" id="main-outside" style="display:none;">
         <section id="view-awareness" class="view-section" style="display:none;">
           <div id="awareness-container"></div>
         </section>
