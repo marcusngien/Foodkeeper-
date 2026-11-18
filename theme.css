@@ -1,0 +1,176 @@
+/* ═══════════════════════════════════════════════════════════
+   Food Keeper — design system
+   Load AFTER style.css. It swaps the colour tokens and restyles
+   shared components, so every existing page picks up the new look.
+   Palette: green #16865B · yellow #F4C542 · blue #3478F6 · white
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── TOKENS: LIGHT ── */
+:root,
+[data-theme="light"] {
+  --primary-green: #16865B;
+  --accent-yellow: #F4C542;
+  --tech-blue: #3478F6;
+  --background-white: #FFFFFF;
+
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface2: #F7F9F8;
+  --surface3: #E6ECE9;
+  --border: #E6ECE9;
+  --border2: #D2DDD8;
+  --text: #172B24;
+  --text2: #66756F;
+  --text3: #9AA7A1;
+
+  --green-bg: #E7F4EE;  --green-text: #0F6B48;  --green-border: #BFE0D0;
+  --amber-bg: #FDF6DC;  --amber-text: #7A5A00;  --amber-border: #F1DC8F;
+  --blue-bg:  #EAF1FE;  --blue-text:  #2559C7;  --blue-border:  #BCD0FB;
+  /* red is kept only for "expired" and error states */
+  --red-bg:   #FDEEEC;  --red-text:   #B3261E;  --red-border:   #F3C9C4;
+
+  --accent: #16865B;
+  --accent-light: #E7F4EE;
+
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font);
+
+  --shadow: 0 1px 2px rgba(23,43,36,0.04), 0 8px 24px rgba(23,43,36,0.04);
+  --shadow-md: 0 2px 4px rgba(23,43,36,0.04), 0 16px 40px rgba(23,43,36,0.09);
+}
+
+/* ── TOKENS: DARK (same four colours, tuned for dark surfaces) ── */
+[data-theme="dark"] {
+  --bg: #0E1613;
+  --surface: #141F1B;
+  --surface2: #1A2723;
+  --surface3: #26362F;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.16);
+  --text: #E9F2EE;
+  --text2: #9DB0A8;
+  --text3: #6B7F77;
+
+  --green-bg: #0F2A20;  --green-text: #6FD4A6;  --green-border: #1C4D39;
+  --amber-bg: #2B2410;  --amber-text: #F4C542;  --amber-border: #5E4B12;
+  --blue-bg:  #101F3B;  --blue-text:  #8CB4FF;  --blue-border:  #244887;
+  --red-bg:   #2C1514;  --red-text:   #F2A39D;   --red-border:   #6B2A26;
+
+  --accent: #1B9467;
+  --accent-light: #0F2A20;
+
+  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+  --shadow-md: 0 2px 4px rgba(0,0,0,0.3), 0 16px 40px rgba(0,0,0,0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1613;
+    --surface: #141F1B;
+    --surface2: #1A2723;
+    --surface3: #26362F;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.16);
+    --text: #E9F2EE;
+    --text2: #9DB0A8;
+    --text3: #6B7F77;
+
+    --green-bg: #0F2A20;  --green-text: #6FD4A6;  --green-border: #1C4D39;
+    --amber-bg: #2B2410;  --amber-text: #F4C542;  --amber-border: #5E4B12;
+    --blue-bg:  #101F3B;  --blue-text:  #8CB4FF;  --blue-border:  #244887;
+    --red-bg:   #2C1514;  --red-text:   #F2A39D;   --red-border:   #6B2A26;
+
+    --accent: #1B9467;
+    --accent-light: #0F2A20;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+    --shadow-md: 0 2px 4px rgba(0,0,0,0.3), 0 16px 40px rgba(0,0,0,0.4);
+  }
+}
+
+/* page gutter, shared by the nav, home and inner pages (8px grid) */
+:root { --gutter: 72px; }
+@media (max-width: 1024px) { :root { --gutter: 36px; } }
+@media (max-width: 640px)  { :root { --gutter: 20px; } }
+
+
+/* ── GLOBAL ── */
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--tech-blue);
+  outline-offset: 2px;
+}
+
+svg.lucide {
+  width: 1em;
+  height: 1em;
+  stroke-width: 1.75;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* ── SHARED COMPONENTS ── */
+
+/* primary buttons are green */
+.btn-primary,
+.action-btn.primary,
+.shop-add-btn {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary { border-radius: var(--radius); }
+.auth-tab.active { background: var(--accent); color: #fff; }
+.shop-check.checked { background: var(--accent); border-color: var(--accent); color: #fff; }
+.action-btn.secondary.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.auth-screen { background: var(--surface2); }
+.auth-card { border-color: var(--border); }
+
+/* stat cards on the Pantry page */
+.stat {
+  border-radius: 20px;
+  padding: 20px 24px;
+}
+.stat-value {
+  font-family: var(--font);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* food cards: a thin accent edge for the two states that need attention */
+.food-emoji { background: var(--surface2); }
+.food-note  { background: var(--surface2); }
+.food-card.expired-card { border-left: 3px solid var(--red-text); }
+.food-card.soon-card    { border-left: 3px solid var(--accent-yellow); }
+
+/* banners at the top of Recipes / Receipt / Leaderboard */
+.discover-hero-banner,
+[data-theme="dark"] .discover-hero-banner,
+:root:not([data-theme="light"]) .discover-hero-banner {
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  border-radius: 20px;
+}
+.discover-hero-banner h3 { color: var(--text); }
+
+.empty { border-radius: 24px; }
