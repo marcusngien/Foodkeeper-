@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -10,14 +10,15 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="home.css">
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%8C%BF%3C%2Ftext%3E%3C%2Fsvg%3E">
 
   <script src="https://js.puter.com/v2/"></script>
-
+  <script defer src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -72,79 +73,198 @@
   <!-- ═══════════ APP ═══════════ -->
   <div id="app" style="display: none;">
 
-    <header class="header">
-      <div class="header-inner">
-        <div class="logo">
-          <span class="logo-icon">🌿</span>
-          <h1>Food Keeper</h1>
+    <!-- ═══════════ TOP NAVIGATION ═══════════ -->
+    <header class="topnav">
+      <div class="topnav-inner">
+
+        <button class="brand" onclick="goHome()" aria-label="Food Keeper">
+          <span class="brand-mark"><i data-lucide="leaf"></i></span>
+          <span>Food Keeper</span>
+        </button>
+
+        <nav class="topnav-links">
+          <button class="topnav-link active" data-nav="dashboard" data-i18n="navDashboard" onclick="goHome()">Dashboard</button>
+          <button class="topnav-link" data-nav="pantry"    data-i18n="navPantry"    onclick="switchView('pantry')">Pantry</button>
+          <button class="topnav-link" data-nav="discover"  data-i18n="navDiscover"  onclick="switchView('recipes')">Discover</button>
+          <button class="topnav-link" data-nav="insights"  data-i18n="navInsights"  onclick="switchView('waste')">Insights</button>
+        </nav>
+
+        <div class="topnav-right">
+          <button class="icon-btn" onclick="switchView('pantry')" title="Expiring soon" aria-label="Expiring soon">
+            <i data-lucide="bell"></i>
+            <span class="nav-badge" id="nav-badge" style="display:none;">0</span>
+          </button>
+          <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle Theme" aria-label="Toggle Theme"></button>
+          <button class="icon-btn" onclick="openPanel()" title="Settings" aria-label="Settings"><i data-lucide="settings"></i></button>
+          <div class="profile-wrap">
+            <button class="icon-btn" onclick="toggleProfileMenu(event)" title="Account" aria-label="Account"><i data-lucide="user"></i></button>
+            <div class="profile-menu" id="profile-menu" onclick="event.stopPropagation()">
+              <div class="profile-email" id="user-email"></div>
+              <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+            </div>
+          </div>
         </div>
-        <div class="header-right">
-          <span class="user-email" id="user-email"></span>
-          <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle Theme">🌙</button>
-          <button class="icon-btn" onclick="openPanel()" title="Settings">⚙️</button>
-          <button class="logout-btn" onclick="handleLogout()">Log Out</button>
-        </div>
+
       </div>
     </header>
 
-    <!-- ═══════════ MAIN PAGE（登录后第一眼）═══════════ -->
+    <!-- ═══════════ HOME (DASHBOARD) ═══════════ -->
     <div id="home-screen">
       <div class="home-wrap">
 
-        <div class="home-brand">
-          <!-- 想换成自己的 logo 图片：把下面这行换成
-               <img class="home-logo-img" src="logo.png" alt="Food Keeper" /> -->
-          <span class="home-logo">🌿</span>
-          <div class="home-name">Food Keeper</div>
-          <div class="home-tagline" id="home-tagline">Track ingredients, reduce waste</div>
-        </div>
-
-        <div class="home-grid">
-
-          <!-- 左边：Settings + Achievement -->
-          <div class="home-side">
-            <button class="home-side-card" onclick="openPanel()">
-              <span class="home-side-icon">⚙️</span>
-              <span class="home-side-title" id="home-settings-title">Settings</span>
-              <span class="home-side-sub" id="home-settings-sub">Language, notifications, export</span>
-            </button>
-
-            <div class="home-side-card locked" onclick="toast('Achievements are coming soon!')">
-              <span class="home-side-icon">🏅</span>
-              <span class="home-side-title" id="home-ach-title">Achievement</span>
-              <span class="home-side-sub" id="home-ach-sub">Coming soon</span>
-              <span class="home-soon-badge">🔒 Soon</span>
+        <!-- hero -->
+        <section class="hero">
+          <div class="hero-copy">
+            <h1>
+              <span data-i18n="heroTitle1">YOUR FOOD,</span>
+              <span data-i18n="heroTitle2">YOUR PLANET.</span>
+            </h1>
+            <p data-i18n="heroSub">Make every ingredient count. Manage smarter, waste less, and create a more sustainable future.</p>
+            <div class="hero-actions">
+              <button class="btn btn-solid" onclick="switchView('pantry')" data-i18n="ctaPantry">Explore My Pantry</button>
+              <button class="btn btn-ghost" onclick="switchView('recipes')" data-i18n="ctaRecipes">Discover Recipes</button>
             </div>
           </div>
 
-          <!-- 图片 1：Pantry Tracker（图片放 pantry.jpg）-->
-          <button class="home-card pantry" onclick="openSection('pantry')">
-            <div class="home-card-fallback">🥦</div>
-            <img class="home-card-img" src="images/pantry.jpg" alt="Pantry Tracker"
-                 onerror="this.style.display='none'" />
-            <div class="home-card-label">
-              <div class="home-card-title" id="home-pantry-title">Pantry Tracker</div>
-              <div class="home-card-sub" id="home-pantry-sub">Pantry, shopping list, waste log, recipes, receipt scan, leaderboard</div>
-            </div>
-          </button>
+          <div class="hero-visual" aria-hidden="true">
+            <svg class="lines" viewBox="0 0 100 92" preserveAspectRatio="xMidYMid slice">
+              <circle cx="50" cy="46" r="22"></circle>
+              <circle cx="50" cy="46" r="36"></circle>
+              <line x1="50" y1="46" x2="18" y2="20"></line>
+              <line x1="50" y1="46" x2="84" y2="28"></line>
+              <line x1="50" y1="46" x2="22" y2="72"></line>
+              <line x1="50" y1="46" x2="80" y2="70"></line>
+            </svg>
+            <div class="hv-node blue"   style="left:18%; top:22%;"><i data-lucide="sparkles"></i></div>
+            <div class="hv-node yellow" style="left:84%; top:30%;"><i data-lucide="clock"></i></div>
+            <div class="hv-node green"  style="left:22%; top:78%;"><i data-lucide="shopping-cart"></i></div>
+            <div class="hv-node blue"   style="left:80%; top:76%;"><i data-lucide="scan-line"></i></div>
+            <div class="hv-core"><i data-lucide="leaf"></i></div>
+          </div>
+        </section>
 
-          <!-- 图片 2：Outside the Kitchen（图片放 outside.jpg）-->
-          <button class="home-card outside" onclick="openSection('outside')">
-            <div class="home-card-fallback">🌍</div>
-            <img class="home-card-img" src="images/outside.jpg" alt="Outside the Kitchen"
-                 onerror="this.style.display='none'" />
-            <div class="home-card-label">
-              <div class="home-card-title" id="home-outside-title">Outside the Kitchen</div>
-              <div class="home-card-sub" id="home-outside-sub">Awareness and quiz</div>
+        <!-- overview: every number comes from the user's own data -->
+        <section class="overview">
+          <div class="stat-card green">
+            <div class="stat-card-top">
+              <span class="stat-icon"><i data-lucide="package"></i></span>
+              <span class="stat-card-label" data-i18n="statTotal">Total Ingredients</span>
             </div>
-          </button>
+            <div class="stat-card-value" id="home-stat-total">0</div>
+            <div class="stat-card-sub" id="home-stat-total-sub">Items in your kitchen</div>
+          </div>
 
+          <div class="stat-card yellow">
+            <div class="stat-card-top">
+              <span class="stat-icon"><i data-lucide="clock"></i></span>
+              <span class="stat-card-label" data-i18n="statExpiring">Expiring Soon</span>
+            </div>
+            <div class="stat-card-value" id="home-stat-soon">0</div>
+            <div class="stat-card-sub" id="home-stat-soon-sub">Within 3 days</div>
+          </div>
+
+          <div class="stat-card blue">
+            <div class="stat-card-top">
+              <span class="stat-icon"><i data-lucide="recycle"></i></span>
+              <span class="stat-card-label" data-i18n="statFood">Food Saved</span>
+            </div>
+            <div class="stat-card-value" id="home-stat-food">—</div>
+            <div class="stat-card-sub" id="home-stat-food-sub">Mark items as eaten to start</div>
+          </div>
+
+          <div class="stat-card green">
+            <div class="stat-card-top">
+              <span class="stat-icon"><i data-lucide="piggy-bank"></i></span>
+              <span class="stat-card-label" data-i18n="statMoney">Money Saved</span>
+            </div>
+            <div class="stat-card-value" id="home-stat-money">—</div>
+            <div class="stat-card-sub" id="home-stat-money-sub">Mark items as eaten to start</div>
+          </div>
+        </section>
+
+        <!-- bento grid -->
+        <div class="section-head">
+          <h2 data-i18n="bentoHeading">Everything you need</h2>
         </div>
+
+        <section class="bento">
+
+          <article class="bento-card b-pantry b-green">
+            <div class="b-head">
+              <span class="b-icon"><i data-lucide="carrot"></i></span>
+              <h3 data-i18n="homePantry">Pantry Tracker</h3>
+            </div>
+            <p class="b-desc" data-i18n="bentoPantryDesc">See everything you have, and what to use first.</p>
+            <div class="b-meta" id="bento-pantry-meta">0 items · 0 expiring soon</div>
+            <div class="peek" id="bento-pantry-list"></div>
+            <button class="b-action" onclick="switchView('pantry')" data-i18n="bentoPantryBtn">Open Pantry</button>
+          </article>
+
+          <article class="bento-card b-ai b-blue">
+            <div class="b-head">
+              <span class="b-icon"><i data-lucide="sparkles"></i></span>
+              <h3 data-i18n="bentoAiTitle">AI Recipe Assistant</h3>
+              <span class="b-tag">AI</span>
+            </div>
+            <p class="b-desc" data-i18n="bentoAiDesc">Turn ingredients that are about to expire into zero-waste meals.</p>
+            <button class="b-action" onclick="switchView('recipes')" data-i18n="bentoAiBtn">Generate Recipes</button>
+          </article>
+
+          <article class="bento-card b-shop b-green">
+            <div class="b-head">
+              <span class="b-icon"><i data-lucide="shopping-cart"></i></span>
+              <h3 data-i18n="bentoShopTitle">Shopping List</h3>
+            </div>
+            <div class="b-figure" id="bento-shop-num">0</div>
+            <p class="b-desc" id="bento-shop-count">Your list is empty</p>
+            <button class="b-action" onclick="switchView('shopping')" data-i18n="bentoShopBtn">Open List</button>
+          </article>
+
+          <article class="bento-card b-receipt b-blue">
+            <div class="b-head">
+              <span class="b-icon"><i data-lucide="scan-line"></i></span>
+              <h3 data-i18n="bentoReceiptTitle">Receipt Scanner</h3>
+            </div>
+            <p class="b-desc" data-i18n="bentoReceiptDesc">Photograph a receipt and add groceries in seconds.</p>
+            <button class="b-action" onclick="switchView('receipt')" data-i18n="bentoReceiptBtn">Scan Receipt</button>
+          </article>
+
+          <article class="bento-card b-waste b-blue">
+            <div class="b-head">
+              <span class="b-icon"><i data-lucide="bar-chart-3"></i></span>
+              <h3 data-i18n="bentoWasteTitle">Waste Analytics</h3>
+            </div>
+            <div class="b-split">
+              <div class="b-col">
+                <p class="b-desc" data-i18n="bentoWasteDesc">Track how much food value is wasted each month.</p>
+                <div>
+                  <div class="b-meta" data-i18n="bentoThisMonth">This month</div>
+                  <div class="b-figure" id="bento-waste-month">RM 0.00</div>
+                </div>
+                <div class="b-actions">
+                  <button class="b-action" onclick="switchView('waste')" data-i18n="bentoWasteBtn">View Waste Log</button>
+                  <button class="b-link" onclick="switchView('leaderboard')" data-i18n="bentoWasteLink">Leaderboard</button>
+                </div>
+              </div>
+              <div id="bento-waste-chart"></div>
+            </div>
+          </article>
+
+          <article class="bento-card b-outside b-yellow">
+            <div class="b-head">
+              <span class="b-icon"><i data-lucide="globe"></i></span>
+              <h3 data-i18n="homeOutside">Outside the Kitchen</h3>
+            </div>
+            <p class="b-desc" data-i18n="bentoOutsideDesc">Learn why food waste matters, then test what you know.</p>
+            <button class="b-action" onclick="openSection('outside')" data-i18n="bentoOutsideBtn">Start Learning</button>
+          </article>
+
+        </section>
       </div>
     </div>
 
 
-    <!-- ═══════════ SECTION 1：PANTRY TRACKER ═══════════ -->
+    <!-- ═══════════ PANTRY TRACKER PAGES ═══════════ -->
     <div id="section-pantry" style="display: none;">
 
       <div class="section-bar">
@@ -153,9 +273,6 @@
           <span class="section-bar-title" id="bar-pantry-title">Pantry Tracker</span>
         </div>
       </div>
-
-      <!-- 卡片菜单（由 app.js 的 renderMenus 生成）-->
-      <div class="menu-wrap" id="menu-pantry"></div>
 
       <main class="main" id="main-pantry" style="display:none;">
 
@@ -298,7 +415,7 @@
     </div>
 
 
-    <!-- ═══════════ SECTION 2：OUTSIDE THE KITCHEN ═══════════ -->
+    <!-- ═══════════ OUTSIDE THE KITCHEN ═══════════ -->
     <div id="section-outside" style="display: none;">
 
       <div class="section-bar">
@@ -308,7 +425,7 @@
         </div>
       </div>
 
-      <!-- 卡片菜单（由 app.js 的 renderMenus 生成）-->
+      <!-- card menu (built by renderMenus in app.js) -->
       <div class="menu-wrap" id="menu-outside"></div>
 
       <main class="main" id="main-outside" style="display:none;">
