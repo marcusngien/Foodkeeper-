@@ -13,6 +13,7 @@ const auth = firebase.auth();
 const db   = firebase.firestore();
 
 // ── TRANSLATIONS ──
+// Elements with data-i18n="key" in index.html are filled from here.
 const TRANSLATIONS = {
   en: {
     pantry: '🥦 Pantry',
@@ -30,17 +31,54 @@ const TRANSLATIONS = {
     addItem: '➕ Add Item',
     searchPlaceholder: 'Search ingredients...',
     logOut: 'Log Out',
-    homeSettings: 'Settings',
-    homeSettingsSub: 'Language, notifications, export',
-    homeAchievement: 'Achievement',
-    homeAchievementSub: 'Coming soon',
     homePantry: 'Pantry Tracker',
-    homePantrySub: 'Pantry, shopping list, waste log, recipes, receipt scan, leaderboard',
     homeOutside: 'Outside the Kitchen',
-    homeOutsideSub: 'Awareness and quiz',
     backHome: '← Home',
     backMenu: '← Back',
-    homeTagline: 'Track ingredients, reduce waste',
+
+    navDashboard: 'Dashboard', navPantry: 'Pantry', navDiscover: 'Discover', navInsights: 'Insights',
+
+    heroTitle1: 'YOUR FOOD,',
+    heroTitle2: 'YOUR PLANET.',
+    heroSub: 'Make every ingredient count. Manage smarter, waste less, and create a more sustainable future.',
+    ctaPantry: 'Explore My Pantry',
+    ctaRecipes: 'Discover Recipes',
+
+    statTotal: 'Total Ingredients',
+    statTotalSub: 'Items in your kitchen',
+    statTotalEmpty: 'Add your first ingredient',
+    statExpiring: 'Expiring Soon',
+    statExpiringSub: 'Within {n} days',
+    statFood: 'Food Saved',
+    statFoodSub: 'Eaten this month',
+    statMoney: 'Money Saved',
+    statMoneySub: 'Value of food eaten, not wasted',
+    statEmpty: 'Mark items as eaten to start',
+
+    bentoHeading: 'Everything you need',
+    bentoPantryDesc: 'See everything you have, and what to use first.',
+    bentoPantryBtn: 'Open Pantry',
+    bentoNothing: 'No ingredients yet',
+    bentoAiTitle: 'AI Recipe Assistant',
+    bentoAiDesc: 'Turn ingredients that are about to expire into zero-waste meals.',
+    bentoAiBtn: 'Generate Recipes',
+    bentoShopTitle: 'Shopping List',
+    bentoShopBtn: 'Open List',
+    bentoShopEmpty: 'Your list is empty',
+    bentoWasteTitle: 'Waste Analytics',
+    bentoWasteDesc: 'Track how much food value is wasted each month.',
+    bentoWasteBtn: 'View Waste Log',
+    bentoWasteLink: 'Leaderboard',
+    bentoWasteEmpty: 'No waste logged yet. Keep it up!',
+    bentoThisMonth: 'This month',
+    bentoReceiptTitle: 'Receipt Scanner',
+    bentoReceiptDesc: 'Photograph a receipt and add groceries in seconds.',
+    bentoReceiptBtn: 'Scan Receipt',
+    bentoOutsideDesc: 'Learn why food waste matters, then test what you know.',
+    bentoOutsideBtn: 'Start Learning',
+    unitItems: 'items',
+    unitSoon: 'expiring soon',
+    unitToBuy: 'to buy',
   },
   ms: {
     pantry: '🥦 Pantri',
@@ -58,17 +96,54 @@ const TRANSLATIONS = {
     addItem: '➕ Tambah Item',
     searchPlaceholder: 'Cari bahan...',
     logOut: 'Log Keluar',
-    homeSettings: 'Tetapan',
-    homeSettingsSub: 'Bahasa, notifikasi, eksport',
-    homeAchievement: 'Pencapaian',
-    homeAchievementSub: 'Akan datang',
     homePantry: 'Penjejak Pantri',
-    homePantrySub: 'Pantri, senarai belanja, log pembaziran, resipi, imbas resit, papan kedudukan',
     homeOutside: 'Di Luar Dapur',
-    homeOutsideSub: 'Kesedaran dan kuiz',
     backHome: '← Utama',
     backMenu: '← Kembali',
-    homeTagline: 'Jejak bahan, kurangkan pembaziran',
+
+    navDashboard: 'Papan Pemuka', navPantry: 'Pantri', navDiscover: 'Teroka', navInsights: 'Wawasan',
+
+    heroTitle1: 'MAKANAN ANDA,',
+    heroTitle2: 'PLANET ANDA.',
+    heroSub: 'Jadikan setiap bahan berharga. Urus dengan lebih bijak, kurangkan pembaziran dan bina masa depan yang lebih mampan.',
+    ctaPantry: 'Terokai Pantri Saya',
+    ctaRecipes: 'Temui Resipi',
+
+    statTotal: 'Jumlah Bahan',
+    statTotalSub: 'Item di dapur anda',
+    statTotalEmpty: 'Tambah bahan pertama anda',
+    statExpiring: 'Hampir Tamat',
+    statExpiringSub: 'Dalam {n} hari',
+    statFood: 'Makanan Diselamatkan',
+    statFoodSub: 'Dimakan bulan ini',
+    statMoney: 'Wang Dijimatkan',
+    statMoneySub: 'Nilai makanan yang dimakan, bukan dibazirkan',
+    statEmpty: 'Tandakan item sebagai dimakan untuk bermula',
+
+    bentoHeading: 'Semua yang anda perlukan',
+    bentoPantryDesc: 'Lihat semua yang anda ada dan apa yang perlu digunakan dahulu.',
+    bentoPantryBtn: 'Buka Pantri',
+    bentoNothing: 'Belum ada bahan',
+    bentoAiTitle: 'Pembantu Resipi AI',
+    bentoAiDesc: 'Ubah bahan yang hampir tamat menjadi hidangan tanpa pembaziran.',
+    bentoAiBtn: 'Jana Resipi',
+    bentoShopTitle: 'Senarai Belanja',
+    bentoShopBtn: 'Buka Senarai',
+    bentoShopEmpty: 'Senarai anda kosong',
+    bentoWasteTitle: 'Analitik Pembaziran',
+    bentoWasteDesc: 'Jejak nilai makanan yang dibazirkan setiap bulan.',
+    bentoWasteBtn: 'Lihat Log Pembaziran',
+    bentoWasteLink: 'Papan Kedudukan',
+    bentoWasteEmpty: 'Tiada pembaziran direkodkan. Teruskan!',
+    bentoThisMonth: 'Bulan ini',
+    bentoReceiptTitle: 'Pengimbas Resit',
+    bentoReceiptDesc: 'Ambil gambar resit dan tambah barangan dalam beberapa saat.',
+    bentoReceiptBtn: 'Imbas Resit',
+    bentoOutsideDesc: 'Fahami mengapa pembaziran makanan penting, kemudian uji pengetahuan anda.',
+    bentoOutsideBtn: 'Mula Belajar',
+    unitItems: 'item',
+    unitSoon: 'hampir tamat',
+    unitToBuy: 'untuk dibeli',
   },
   zh: {
     pantry: '🥦 食品储藏',
@@ -86,32 +161,63 @@ const TRANSLATIONS = {
     addItem: '➕ 添加食材',
     searchPlaceholder: '搜索食材...',
     logOut: '退出登录',
-    homeSettings: '设置',
-    homeSettingsSub: '语言、通知、导出',
-    homeAchievement: '成就',
-    homeAchievementSub: '即将推出',
     homePantry: '食材追踪',
-    homePantrySub: '食品储藏、购物清单、浪费记录、食谱、扫描收据、排行榜',
     homeOutside: '厨房之外',
-    homeOutsideSub: '意识提升与测验',
     backHome: '← 主页',
     backMenu: '← 返回',
-    homeTagline: '追踪食材，减少浪费',
+
+    navDashboard: '总览', navPantry: '食材', navDiscover: '探索', navInsights: '洞察',
+
+    heroTitle1: '你的食物，',
+    heroTitle2: '你的地球。',
+    heroSub: '让每一份食材都物尽其用。更聪明地管理，减少浪费，创造更可持续的未来。',
+    ctaPantry: '查看我的食材',
+    ctaRecipes: '探索食谱',
+
+    statTotal: '食材总数',
+    statTotalSub: '厨房里的食材',
+    statTotalEmpty: '添加你的第一样食材',
+    statExpiring: '即将过期',
+    statExpiringSub: '{n} 天内',
+    statFood: '拯救的食物',
+    statFoodSub: '本月已吃掉',
+    statMoney: '省下的钱',
+    statMoneySub: '吃掉而非浪费的食物价值',
+    statEmpty: '把食材标记为已吃，数据就会出现',
+
+    bentoHeading: '你需要的一切',
+    bentoPantryDesc: '一眼看清手上有什么，以及该先吃什么。',
+    bentoPantryBtn: '打开食材库',
+    bentoNothing: '还没有食材',
+    bentoAiTitle: 'AI 食谱助手',
+    bentoAiDesc: '把快过期的食材变成零浪费的一餐。',
+    bentoAiBtn: '生成食谱',
+    bentoShopTitle: '购物清单',
+    bentoShopBtn: '打开清单',
+    bentoShopEmpty: '清单是空的',
+    bentoWasteTitle: '浪费分析',
+    bentoWasteDesc: '追踪每个月浪费了多少食物价值。',
+    bentoWasteBtn: '查看浪费记录',
+    bentoWasteLink: '排行榜',
+    bentoWasteEmpty: '还没有浪费记录，继续保持！',
+    bentoThisMonth: '本月',
+    bentoReceiptTitle: '收据扫描',
+    bentoReceiptDesc: '拍下收据，几秒钟加入所有食材。',
+    bentoReceiptBtn: '扫描收据',
+    bentoOutsideDesc: '了解食物浪费为什么重要，再测测你学到了多少。',
+    bentoOutsideBtn: '开始学习',
+    unitItems: '项',
+    unitSoon: '即将过期',
+    unitToBuy: '待购买',
   }
 };
 
+const LOCALES = { en: 'en-GB', ms: 'ms-MY', zh: 'zh-CN' };
+
 let currentLang = 'en';
 
-// ── SECTION MENUS（卡片菜单，新增功能只要在这里加一行）──
+// ── SECTION MENUS（卡片菜单，目前只有 Outside the Kitchen 用）──
 const MENUS = {
-  pantry: [
-    { view: 'pantry',      icon: '🥦', featured: true },
-    { view: 'shopping',    icon: '🛒' },
-    { view: 'waste',       icon: '🗑️' },
-    { view: 'recipes',     icon: '🍳' },
-    { view: 'receipt',     icon: '🧾' },
-    { view: 'leaderboard', icon: '🏆' },
-  ],
   outside: [
     { view: 'awareness', icon: '🌍' },
     { view: 'quiz',      icon: '📝' },
@@ -148,6 +254,33 @@ function today() {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
 }
 
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+// 画出 data-lucide 图标（Lucide 没加载成功时就跳过）
+function refreshIcons() {
+  if (window.lucide && typeof lucide.createIcons === 'function') lucide.createIcons();
+}
+
+// 数字变化时做一个 0.4 秒的滚动
+const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function animateNumber(el, to, { prefix = '', decimals = 0 } = {}) {
+  if (!el) return;
+  const from = parseFloat(el.dataset.v ?? '0') || 0;
+  el.dataset.v = to;
+  const paint = v => { el.textContent = prefix + v.toFixed(decimals); };
+  if (prefersReducedMotion || from === to) { paint(to); return; }
+  const start = performance.now(), dur = 400;
+  const step = now => {
+    const p = Math.min(1, (now - start) / dur);
+    paint(from + (to - from) * p);
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 // ── LANGUAGE / THEME ──
 function setLanguage(lang) {
   currentLang = lang;
@@ -156,25 +289,37 @@ function setLanguage(lang) {
   saveSetting({ lang });
 }
 
+function paintThemeBtn(theme) {
+  const btn = document.getElementById('theme-btn');
+  if (!btn) return;
+  btn.innerHTML = `<i data-lucide="${theme === 'dark' ? 'sun' : 'moon'}"></i>`;
+  refreshIcons();
+}
+
 function toggleTheme() {
   const html = document.documentElement;
   const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   html.setAttribute('data-theme', next);
   localStorage.setItem('fk_theme', next);
-  document.getElementById('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+  paintThemeBtn(next);
   saveSetting({ theme: next });
 }
 
 function loadTheme() {
   const saved = localStorage.getItem('fk_theme') || 'light';
   document.documentElement.setAttribute('data-theme', saved);
-  const btn = document.getElementById('theme-btn');
-  if (btn) btn.textContent = saved === 'dark' ? '☀️' : '🌙';
+  paintThemeBtn(saved);
 }
 
 function applyTranslations() {
   const t = TRANSLATIONS[currentLang];
   renderMenus();
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const val = t[el.dataset.i18n];
+    if (val !== undefined) el.textContent = val;
+  });
+
   const labels = document.querySelectorAll('.stat-label');
   if (labels[0]) labels[0].textContent = t.totalItems;
   if (labels[1]) labels[1].textContent = t.expired;
@@ -182,14 +327,9 @@ function applyTranslations() {
   if (labels[3]) labels[3].textContent = t.monthlyWaste;
   const searchEl = document.getElementById('search-input');
   if (searchEl) searchEl.placeholder = t.searchPlaceholder;
-  const logoutEl = document.querySelector('.logout-btn');
-  if (logoutEl) logoutEl.textContent = t.logOut;
+  document.querySelectorAll('.logout-btn').forEach(el => { el.textContent = t.logOut; });
+
   const homeMap = {
-    'home-settings-title': 'homeSettings', 'home-settings-sub': 'homeSettingsSub',
-    'home-ach-title': 'homeAchievement',   'home-ach-sub': 'homeAchievementSub',
-    'home-pantry-title': 'homePantry',     'home-pantry-sub': 'homePantrySub',
-    'home-outside-title': 'homeOutside',   'home-outside-sub': 'homeOutsideSub',
-    'home-tagline': 'homeTagline',
     'bar-pantry-title': 'homePantry', 'bar-outside-title': 'homeOutside'
   };
   Object.entries(homeMap).forEach(([id, key]) => {
@@ -199,6 +339,7 @@ function applyTranslations() {
   const langSel = document.getElementById('lang-select');
   if (langSel) langSel.value = currentLang;
   updateBackButtons();
+  renderHome();
 }
 
 function loadLanguage() {
@@ -233,15 +374,17 @@ const ERROR_MAP = {
 let foods       = [];
 let shopItems   = [];
 let wasteLog    = [];
+let consumedLog = [];     // 吃掉的食材记录（首页 Food Saved / Money Saved 用）
 let settings    = {};
 let filter      = 'all';
 let catFilter   = 'all';
 let sortBy      = 'expiry';
 let query       = '';
-let currentView = null;   // null = 在卡片菜单或主页，不在任何具体页面里
+let currentView = null;   // null = 在主页或卡片菜单，不在任何具体页面里
 let unsubscribe = null;
 let unsubShop   = null;
 let unsubWaste  = null;
+let unsubConsumed = null;
 let unsubSettings = null;
 let currentUser = null;
 let editingId   = null;
@@ -620,13 +763,13 @@ async function handleForgot() {
 }
 
 function stopAllListeners() {
-  [unsubscribe, unsubShop, unsubWaste, unsubSettings].forEach(u => u && u());
-  unsubscribe = unsubShop = unsubWaste = unsubSettings = null;
+  [unsubscribe, unsubShop, unsubWaste, unsubConsumed, unsubSettings].forEach(u => u && u());
+  unsubscribe = unsubShop = unsubWaste = unsubConsumed = unsubSettings = null;
 }
 
 async function handleLogout() {
   stopAllListeners();
-  foods = []; shopItems = []; wasteLog = []; settings = {};
+  foods = []; shopItems = []; wasteLog = []; consumedLog = []; settings = {};
   const rc = document.getElementById('recipes-list-container');
   if (rc) rc.innerHTML = '';
   await auth.signOut();
@@ -651,7 +794,7 @@ auth.onAuthStateChanged(async (user) => {
     authScreen.style.display = 'flex';
     appScreen.style.display  = 'none';
     currentUser = null;
-    foods = []; shopItems = []; wasteLog = []; settings = {};
+    foods = []; shopItems = []; wasteLog = []; consumedLog = []; settings = {};
     stopAllListeners();
   }
 });
@@ -683,9 +826,9 @@ async function deleteFood(docId) {
   await userRef().collection('foods').doc(docId).delete();
 }
 
-// ── CLOUD SYNC（购物清单 / 浪费记录 / 设置）──
+// ── CLOUD SYNC（购物清单 / 浪费记录 / 吃掉记录 / 设置）──
 function startCloudSync(uid) {
-  [unsubShop, unsubWaste, unsubSettings].forEach(u => u && u());
+  [unsubShop, unsubWaste, unsubConsumed, unsubSettings].forEach(u => u && u());
   const ref = db.collection('users').doc(uid);
 
   unsubShop = ref.collection('data').doc('shop').onSnapshot(snap => {
@@ -698,6 +841,11 @@ function startCloudSync(uid) {
     renderWasteLog();
     updateStats();
     if (currentView === 'leaderboard') renderLeaderboard();
+  }, err => console.error(err));
+
+  unsubConsumed = ref.collection('consumed').orderBy('createdAt', 'desc').onSnapshot(snap => {
+    consumedLog = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderHome();
   }, err => console.error(err));
 
   unsubSettings = ref.collection('data').doc('settings').onSnapshot(snap => {
@@ -729,8 +877,7 @@ function applySettings() {
   if (settings.theme) {
     document.documentElement.setAttribute('data-theme', settings.theme);
     localStorage.setItem('fk_theme', settings.theme);
-    const btn = document.getElementById('theme-btn');
-    if (btn) btn.textContent = settings.theme === 'dark' ? '☀️' : '🌙';
+    paintThemeBtn(settings.theme);
   }
   render();
 }
@@ -807,10 +954,25 @@ async function addWasteEntry(f) {
   });
 }
 
-// ── VIEWS ──
-const ALL_VIEWS = ['pantry','shopping','waste','recipes','receipt','leaderboard','awareness','quiz'];
+// 吃掉的食材也留下一笔记录（首页的 Food Saved / Money Saved 用）
+async function addConsumedEntry(f) {
+  await userRef().collection('consumed').add({
+    name: f.name, emoji: f.emoji || '🍽️', date: today(),
+    price: f.price || 0, category: f.category || 'other', createdAt: Date.now()
+  });
+}
 
+// ── VIEWS / NAVIGATION ──
+const ALL_VIEWS = ['pantry','shopping','waste','recipes','receipt','leaderboard','awareness','quiz'];
 const OUTSIDE_VIEWS = ['awareness','quiz'];
+
+// 每个页面属于顶部导航的哪一项
+const NAV_MAP = {
+  pantry: 'pantry', shopping: 'pantry', receipt: 'pantry',
+  recipes: 'discover', awareness: 'discover', quiz: 'discover',
+  waste: 'insights', leaderboard: 'insights'
+};
+
 let currentSection = 'home';
 
 function showSection(name) {
@@ -821,6 +983,17 @@ function showSection(name) {
     if (el) el.style.display = (key === name) ? '' : 'none';
   });
   window.scrollTo(0, 0);
+  updateNav();
+}
+
+function updateNav() {
+  let active = 'dashboard';
+  if (currentSection !== 'home') {
+    active = currentView ? NAV_MAP[currentView] : 'discover';
+  }
+  document.querySelectorAll('.topnav-link').forEach(b => {
+    b.classList.toggle('active', b.dataset.nav === active);
+  });
 }
 
 function goHome() {
@@ -829,16 +1002,16 @@ function goHome() {
   showSection('home');
 }
 
-// 返回：在页面里就回到卡片菜单，在菜单里就回主页
+// 返回：Outside the Kitchen 的页面回到它的卡片菜单，其余回到首页
 function goBack() {
   if (bulkMode) toggleBulkMode();
-  if (currentView) showMenu(currentSection);
+  if (currentView && currentSection === 'outside') showMenu('outside');
   else goHome();
 }
 
 function updateBackButtons() {
   const t = TRANSLATIONS[currentLang];
-  const label = currentView ? t.backMenu : t.backHome;
+  const label = (currentView && currentSection === 'outside') ? t.backMenu : t.backHome;
   ['back-pantry', 'back-outside'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = label;
@@ -848,8 +1021,10 @@ function updateBackButtons() {
 function showMenu(section) {
   currentView = null;
   showSection(section);
-  document.getElementById('menu-' + section).style.display = '';
-  document.getElementById('main-' + section).style.display = 'none';
+  const menu = document.getElementById('menu-' + section);
+  const main = document.getElementById('main-' + section);
+  if (menu) menu.style.display = '';
+  if (main) main.style.display = 'none';
   updateBackButtons();
 }
 
@@ -858,11 +1033,14 @@ function openSection(name) {
 }
 
 function switchView(viewName) {
+  if (bulkMode && viewName !== 'pantry') toggleBulkMode();
   currentView = viewName;
   const section = OUTSIDE_VIEWS.includes(viewName) ? 'outside' : 'pantry';
   showSection(section);
-  document.getElementById('menu-' + section).style.display = 'none';
-  document.getElementById('main-' + section).style.display = '';
+  const menu = document.getElementById('menu-' + section);
+  const main = document.getElementById('main-' + section);
+  if (menu) menu.style.display = 'none';
+  if (main) main.style.display = '';
   ALL_VIEWS.forEach(v => {
     const el = document.getElementById('view-' + v);
     if (el) el.style.display = (v === viewName) ? '' : 'none';
@@ -874,7 +1052,19 @@ function switchView(viewName) {
   if (viewName === 'awareness')   renderAwareness();
   if (viewName === 'quiz')        renderQuiz();
   updateBackButtons();
+  updateNav();
 }
+
+// 右上角用户选单
+function toggleProfileMenu(e) {
+  e.stopPropagation();
+  const m = document.getElementById('profile-menu');
+  if (m) m.classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  const m = document.getElementById('profile-menu');
+  if (m) m.classList.remove('open');
+});
 
 // ── RENDER ──
 function render() {
@@ -957,12 +1147,107 @@ function foodCardHTML(f, groupClass) {
 }
 
 function updateStats() {
-  document.getElementById('stat-total').textContent   = foods.length;
-  document.getElementById('stat-expired').textContent = foods.filter(f => daysLeft(f.expiry) < 0).length;
-  document.getElementById('stat-soon').textContent    = foods.filter(f => { const d = daysLeft(f.expiry); return d >= 0 && d <= notifDays; }).length;
+  setText('stat-total', foods.length);
+  setText('stat-expired', foods.filter(f => daysLeft(f.expiry) < 0).length);
+  setText('stat-soon', foods.filter(f => { const d = daysLeft(f.expiry); return d >= 0 && d <= notifDays; }).length);
   const currentMonthStr = today().substring(0,7);
   const wastedThisMonth = wasteLog.filter(w => w.date?.startsWith(currentMonthStr)).reduce((sum, w) => sum + (w.price || 0), 0);
-  document.getElementById('stat-saved').textContent = 'RM ' + wastedThisMonth.toFixed(2);
+  setText('stat-saved', 'RM ' + wastedThisMonth.toFixed(2));
+  renderHome();
+}
+
+// ── HOME DASHBOARD（所有数字都来自用户自己的数据）──
+function renderHome() {
+  if (!document.getElementById('home-screen')) return;
+  const t = TRANSLATIONS[currentLang];
+  const monthKey = today().substring(0, 7);
+
+  // 统计卡
+  const soonCount = foods.filter(f => { const d = daysLeft(f.expiry); return d >= 0 && d <= notifDays; }).length;
+  const attention = foods.filter(f => daysLeft(f.expiry) <= notifDays).length;
+
+  animateNumber(document.getElementById('home-stat-total'), foods.length);
+  setText('home-stat-total-sub', foods.length ? t.statTotalSub : t.statTotalEmpty);
+  animateNumber(document.getElementById('home-stat-soon'), soonCount);
+  setText('home-stat-soon-sub', t.statExpiringSub.replace('{n}', notifDays));
+
+  const foodEl  = document.getElementById('home-stat-food');
+  const moneyEl = document.getElementById('home-stat-money');
+  if (consumedLog.length) {
+    const mine = consumedLog.filter(c => c.date?.startsWith(monthKey));
+    animateNumber(foodEl, mine.length);
+    animateNumber(moneyEl, mine.reduce((s, c) => s + (Number(c.price) || 0), 0), { prefix: 'RM ', decimals: 2 });
+    setText('home-stat-food-sub', t.statFoodSub);
+    setText('home-stat-money-sub', t.statMoneySub);
+  } else {
+    [foodEl, moneyEl].forEach(el => { if (el) { el.textContent = '—'; delete el.dataset.v; } });
+    setText('home-stat-food-sub', t.statEmpty);
+    setText('home-stat-money-sub', t.statEmpty);
+  }
+
+  // 导航栏的小铃铛：已过期 + 即将过期的数量
+  const badge = document.getElementById('nav-badge');
+  if (badge) {
+    badge.textContent = attention > 9 ? '9+' : attention;
+    badge.style.display = attention ? '' : 'none';
+  }
+
+  // Pantry 卡：最快过期的三样
+  setText('bento-pantry-meta', `${foods.length} ${t.unitItems} · ${soonCount} ${t.unitSoon}`);
+  const peek = document.getElementById('bento-pantry-list');
+  if (peek) {
+    const next3 = [...foods].sort((a, b) => new Date(a.expiry) - new Date(b.expiry)).slice(0, 3);
+    peek.innerHTML = next3.length
+      ? next3.map(f => {
+          const b = badgeInfo(daysLeft(f.expiry));
+          return `<div class="peek-row">
+            <span class="peek-emoji">${f.emoji || '🍽️'}</span>
+            <span class="peek-name">${esc(f.name)}</span>
+            <span class="badge ${b.cls}">${b.text}</span>
+          </div>`;
+        }).join('')
+      : `<div class="peek-empty">${t.bentoNothing}</div>`;
+  }
+
+  // 购物清单卡
+  const toBuy = shopItems.filter(x => !x.checked).length;
+  animateNumber(document.getElementById('bento-shop-num'), toBuy);
+  setText('bento-shop-count', shopItems.length ? t.unitToBuy : t.bentoShopEmpty);
+
+  renderWasteMini(t, monthKey);
+}
+
+// 浪费分析卡：最近 6 个月的浪费金额
+function renderWasteMini(t, monthKey) {
+  const chart = document.getElementById('bento-waste-chart');
+  if (!chart) return;
+
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    months.push({ key, label: d.toLocaleDateString(LOCALES[currentLang], { month: 'short' }), total: 0 });
+  }
+  wasteLog.forEach(w => {
+    const m = months.find(x => w.date?.startsWith(x.key));
+    if (m) m.total += Number(w.price) || 0;
+  });
+
+  const thisMonth = months.find(m => m.key === monthKey);
+  setText('bento-waste-month', 'RM ' + (thisMonth ? thisMonth.total : 0).toFixed(2));
+
+  const max = Math.max(...months.map(m => m.total));
+  if (max <= 0) {
+    chart.innerHTML = `<div class="mini-chart"><div class="mini-empty">${t.bentoWasteEmpty}</div></div>`;
+    return;
+  }
+  chart.innerHTML = `<div class="mini-chart">` + months.map(m => `
+    <div class="mini-col ${m.key === monthKey ? 'current' : ''}" title="${m.label}: RM ${m.total.toFixed(2)}">
+      <div class="mini-track"><div class="mini-bar" style="height:${Math.max(2, (m.total / max) * 100)}%"></div></div>
+      <span class="mini-label">${m.label}</span>
+    </div>
+  `).join('') + `</div>`;
 }
 
 // ── BULK ──
@@ -982,7 +1267,11 @@ function updateBulkBar() {
 async function bulkEat() {
   if (!selectedIds.size) return;
   const batch = Array.from(selectedIds);
-  for (const id of batch) await deleteFood(id);
+  for (const id of batch) {
+    const f = foods.find(x => x.id === id);
+    if (f) { try { await addConsumedEntry(f); } catch (e) { console.error(e); } }
+    await deleteFood(id);
+  }
   confetti();
   toast(`Consumed ${batch.length} items`);
   toggleBulkMode();
@@ -1010,6 +1299,9 @@ async function bulkDelete() {
 
 // ── FOOD ACTIONS ──
 async function eatFood(id) {
+  const f = foods.find(x => x.id === id);
+  // 记录失败（例如数据库规则不允许）也不能影响“吃掉”本身
+  if (f) { try { await addConsumedEntry(f); } catch (e) { console.error(e); } }
   await deleteFood(id);
   confetti();
   toast('Ingredient consumed!');
@@ -1053,6 +1345,7 @@ function renderWasteLog() {
 
 // ── SHOPPING ──
 function renderShopList() {
+  renderHome();
   const container = document.getElementById('shop-list-container');
   if (!container) return;
   if (shopItems.length === 0) {
@@ -1354,3 +1647,6 @@ async function addScannedItemsToInventory() {
     if (addBtn) { addBtn.disabled = false; addBtn.textContent = 'Add All Items to Inventory ➕'; }
   }
 }
+
+// 页面载入时先把静态图标画出来
+refreshIcons();
