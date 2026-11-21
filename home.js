@@ -47,7 +47,7 @@ function renderSidebar() {
   }
   const t = TRANSLATIONS[currentLang];
   nav.innerHTML = `
-    <button class="sb-brand" onclick="goHome()" aria-label="Food Keeper"><img src="images/logo-lockup.png" alt="Food Keeper" /></button>
+    <button class="sb-brand" onclick="goHome()" aria-label="Food Keeper"><svg viewBox="148 190 1252 480" aria-hidden="true"><use href="#fk-lockup"/></svg></button>
     <div class="sb-group">${NAV_MAIN.map(navBtn).join('')}</div>
     <div class="sb-divider"></div>
     <div class="sb-label">Community</div>
@@ -190,4 +190,20 @@ function renderHome() {
   window.render = () => { _render(); renderHome(); };
   window.renderWasteLog = () => { _renderWaste(); renderHome(); };
   window.applyTranslations = () => { _applyTr(); renderSidebar(); renderHome(); };
+})();
+
+// ── 浏览器标签页图标：用同一个 SVG 现场生成，不需要图片文件 ──
+(function setFavicon() {
+  const link = document.getElementById('fk-favicon'), defs = document.getElementById('fk-defs'), icon = document.getElementById('fk-icon');
+  if (!link || !defs || !icon) return;
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="148 190 490 470">' + defs.outerHTML + icon.outerHTML + '</svg>';
+  const uri = 'data:image/svg+xml,' + encodeURIComponent(svg);
+  link.type = 'image/svg+xml'; link.href = uri;
+  const img = new Image();       // 再转成 PNG，让不支持 SVG 图标的浏览器（如 Safari）也能显示
+  img.onload = () => { try {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    c.getContext('2d').drawImage(img, 0, 0, 64, 64);
+    link.type = 'image/png'; link.href = c.toDataURL('image/png');
+  } catch (e) {} };
+  img.src = uri;
 })();
