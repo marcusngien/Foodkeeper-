@@ -1,296 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <h1 style="text-align: center;">Food Keeper — Reduce Food Waste</h1>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Food Keeper — Reduce Food Waste</title>
-  
-  <!-- fonts and global styles -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  
-  <style>
-    head h1{
-      margin-top: 100px;
-    }
-    /* Dedicated Landing Page  */
-    .landing-wrapper {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Keeper: track ingredients, reduce waste</title>
+<meta name="description" content="Food Keeper keeps your fridge, freezer and pantry in one place, so you can use food before it expires and waste less.">
+<meta name="theme-color" content="#176B45">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fk_theme')||'light')}catch(e){}</script>
+<link rel="icon" id="fk-favicon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+:root{--bg:#F8FAF6;--ink:#14291d;--ink2:#52625a;--line:rgba(20,41,29,.14);--g:#176B45;--g2:#0f4a30;--gt:#E3F1E8;--y:#F4D84A;--yb:#F4D84A;--yt:#FBF3C4;--yi:#7a5c00;--b:#4C91D8;--bt:#E4EFFA;--bd:#245f9e}
+[data-theme="dark"]{--bg:#171715;--ink:#f0ede6;--ink2:#a9b0a6;--line:rgba(255,255,255,.14);--g:#6bbb3e;--gt:#17300c;--yb:#6d5f12;--yt:#3b3511;--yi:#f5d96a;--bt:#12233f;--bd:#99b4f8}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.6 'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{line-height:1.08;letter-spacing:-.03em;font-weight:800}
+ul,ol{list-style:none;padding:0}
+a{color:inherit}
+section{padding:88px 0;scroll-margin-top:68px}
+.wrap{width:min(1120px,100% - 48px);margin-inline:auto}
+.skip{position:absolute;left:-999px;top:8px;background:var(--g);color:#fff;padding:8px 14px;border-radius:8px;z-index:50}
+.skip:focus{left:8px}
+:focus-visible{outline:3px solid var(--b);outline-offset:3px}
+.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 26px;border-radius:10px;font:700 16px 'DM Sans',sans-serif;text-decoration:none;border:2px solid transparent;transition:transform .15s,background .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn-solid{background:var(--g);color:#fff}
+[data-theme="dark"] .btn-solid{color:#0f2a05}
+.btn-line{border-color:var(--g);color:var(--g)}
+.btn-y{background:var(--y);color:#2b2500}
 
-    .hero-section {
-      text-align: center;
-      margin-bottom: 4rem;
-    }
+/* 顶栏 */
+.nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:32px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:20px;letter-spacing:-.03em;color:var(--g)}
+.brand svg{width:36px;height:36px}
+.nav nav{display:flex;gap:28px;margin-left:auto;font-size:15px;font-weight:500}
+.nav nav a{text-decoration:none;color:var(--ink2)}
+.nav nav a:hover{color:var(--g)}
+.nav .btn{padding:9px 18px;font-size:14px}
 
-    .hero-badge {
-      background: var(--accent-light);
-      color: var(--green-text);
-      padding: 6px 16px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 600;
-      display: inline-block;
-      margin-bottom: 1rem;
-    }
+/* 首屏 */
+.hero{padding:72px 0 88px}
+.hero .wrap{display:grid;grid-template-columns:1.15fr 1fr;gap:48px;align-items:center}
+.hero h1{font-size:clamp(46px,7.2vw,92px);color:var(--g);letter-spacing:-.045em}
+.hero p{font-size:clamp(17px,2vw,20px);color:var(--ink2);max-width:34em;margin:24px 0 36px}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap}
+.art{position:relative;aspect-ratio:1;background:var(--bt);border-radius:58% 42% 52% 48%/46% 54% 46% 54%;display:grid;place-items:center}
+.art svg{width:82%;height:auto}
+.art::before{content:"";position:absolute;width:15%;aspect-ratio:1;border-radius:50%;background:var(--y);top:6%;left:10%}
 
-    .hero-section h1 {
-      font-size: 3rem;
-      font-weight: 700;
-      letter-spacing: -1.5px;
-      line-height: 1.1;
-      margin-bottom: 1rem;
-    }
+/* 通用两栏 */
+h2{font-size:clamp(30px,4.2vw,50px)}
+.grid2{display:grid;grid-template-columns:1fr 1.25fr;gap:64px;align-items:start}
+.lead{color:var(--ink2);margin-top:16px;max-width:30em}
 
-    .hero-section p {
-      color: var(--text2);
-      font-size: 1.2rem;
-      max-width: 580px;
-      margin: 0 auto 2rem auto;
-    }
+/* 功能 */
+.feat-list li{display:flex;gap:20px;padding:28px 0;border-top:1px solid var(--line)}
+.feat-list li:last-child{border-bottom:1px solid var(--line)}
+.ico{width:52px;height:52px;border-radius:14px 14px 14px 4px;display:grid;place-items:center;flex-shrink:0}
+.ico .i{width:26px;height:26px}
+.ico.g{background:var(--gt);color:var(--g)}
+.ico.y{background:var(--yt);color:var(--yi)}
+.ico.b{background:var(--bt);color:var(--bd)}
+.feat-list h3{font-size:22px;margin-bottom:6px}
+.feat-list p{color:var(--ink2)}
+.also{margin-top:56px;padding-top:28px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:14px 32px;align-items:center}
+.also h3{font-size:16px;letter-spacing:0}
+.also ul{display:flex;flex-wrap:wrap;gap:12px 28px}
+.also li{display:flex;align-items:center;gap:8px;font-weight:500;color:var(--ink2)}
 
-    .cta-btn-lg {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--text);
-      color: var(--bg);
-      text-decoration: none;
-      padding: 14px 28px;
-      border-radius: var(--radius-lg);
-      font-weight: 500;
-      font-size: 16px;
-      box-shadow: var(--shadow-md);
-      transition: transform 0.2s, opacity 0.15s;
-    }
+/* 现状 */
+.reality{background:var(--gt)}
+.stats{display:grid;grid-template-columns:1.2fr 1fr;gap:56px;margin-top:48px;align-items:end}
+.big{font-size:clamp(96px,17vw,200px);font-weight:800;letter-spacing:-.06em;line-height:.9;color:var(--g)}
+.stat-hero p{font-size:20px;max-width:16em;margin-top:12px}
+.stat-col>div{padding:22px 0;border-top:1px solid var(--line)}
+.num{font-size:clamp(36px,5vw,56px);font-weight:800;letter-spacing:-.04em;line-height:1.1}
+.num.b{color:var(--bd)}
+.num.y{display:inline-block;padding:0 4px;margin-left:-4px;background:linear-gradient(transparent 58%,var(--yb) 58%)}
+.stat-col p{color:var(--ink2);margin-top:8px}
+.note{margin-top:40px;color:var(--ink2);max-width:40em}
 
-    .cta-btn-lg:hover {
-      transform: translateY(-2px);
-      opacity: 0.9;
-    }
+/* 小贴士 */
+.tips{background:var(--bt)}
+.tip-list li{padding:6px 0 6px 24px;border-left:4px solid var(--b)}
+.tip-list li+li{margin-top:28px}
+.tip-list h3{font-size:21px;margin-bottom:6px}
+.tip-list p{color:var(--ink2)}
 
-    /* Infographic Grid Layouts */
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      margin-bottom: 4rem;
-    }
+/* 结尾 */
+.cta{background:var(--g2);color:#fff;padding:72px 0}
+.cta .wrap{display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
+.cta h2{font-size:clamp(28px,4vw,44px);max-width:16em}
+.cta p{color:#cfe6d6;margin-top:12px}
+footer{padding:28px 0;color:var(--ink2);font-size:14px}
+footer .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer .brand{font-size:17px}
+footer .brand svg{width:28px;height:28px}
 
-    @media (max-width: 768px) {
-      .info-grid { grid-template-columns: 1fr; }
-      .hero-section h1 { font-size: 2.2rem; }
-    }
-
-    .info-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 1.8rem;
-      box-shadow: var(--shadow);
-      text-align: center;
-    }
-
-    .info-card .icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      display: block;
-    }
-
-    .info-card h3 {
-      font-size: 1.2rem;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-
-    .info-card p {
-      font-size: 14px;
-      color: var(--text2);
-      line-height: 1.5;
-    }
-
-    /* Statistics Showcase Section */
-    .stats-banner {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius-xl);
-      padding: 2.5rem;
-      margin-bottom: 4rem;
-      box-shadow: var(--shadow);
-    }
-
-    .stats-banner h2 {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      letter-spacing: -0.5px;
-    }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 24px;
-    }
-
-    .stat-box {
-      text-align: center;
-      flex: 1;
-      min-width: 140px;
-    }
-
-    .stat-box .num {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: var(--accent);
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .stat-box .label {
-      font-size: 13px;
-      color: var(--text2);
-      font-weight: 500;
-    }
-
-    /* Guide / Tips Layout */
-    .tips-section {
-      margin-bottom: 4rem;
-    }
-
-    .tips-section h2 {
-      font-size: 1.6rem;
-      margin-bottom: 1.5rem;
-      letter-spacing: -0.5px;
-    }
-
-    .tip-item {
-      display: flex;
-      gap: 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 1.2rem;
-      border-radius: var(--radius-lg);
-      margin-bottom: 12px;
-      align-items: flex-start;
-    }
-
-    .tip-num {
-      background: var(--text);
-      color: var(--bg);
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
-      flex-shrink: 0;
-    }
-
-    .tip-content h4 {
-      font-size: 14.5px;
-      margin-bottom: 4px;
-      font-weight: 600;
-    }
-
-    .tip-content p {
-      font-size: 13.5px;
-      color: var(--text2);
-      line-height: 1.4;
-    }
-  </style>
+@media(max-width:860px){
+  .hero .wrap,.grid2,.stats{grid-template-columns:1fr}
+  .grid2{gap:32px}
+  .hero{padding:40px 0 56px}
+  section{padding:64px 0}
+  .art{max-width:420px;width:100%;margin:0 auto}
+}
+@media(max-width:720px){.nav nav{display:none}.nav .btn{margin-left:auto}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
 
-  <div class="landing-wrapper">
-    
-    <!-- ── hero banner ── -->
-    <header class="hero-section">
-      <span class="hero-badge">Smart Zero-Waste Ecosystem</span>
-      <h2>Track Small, <br>Save Big.</h2>
-      <p>Did you know a third of all food produced globally goes to waste? Take control of your inventory, save money, and cook smarter today.</p>
-      <a href="./index.html" class="cta-btn-lg">
-        Open Food Keeper App <span>→</span>
-      </a>
-    </header>
+<!-- Logo 和图标都是 SVG 画的，不需要图片文件 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs id="fk-defs">
+      <linearGradient id="fkDoor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3aa56b"/><stop offset="1" stop-color="#0f6b45"/></linearGradient>
+      <linearGradient id="fkFrame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46b377"/><stop offset="1" stop-color="#1a7a50"/></linearGradient>
+      <linearGradient id="fkLeafL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#23975f"/><stop offset="1" stop-color="#0f6b45"/></linearGradient>
+      <linearGradient id="fkLeafR" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4c9f3f"/><stop offset="1" stop-color="#b7d43a"/></linearGradient>
+      <linearGradient id="fkRing" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd54a"/><stop offset="1" stop-color="#f7b500"/></linearGradient>
+      <linearGradient id="fkTomato" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a2f"/><stop offset="1" stop-color="#e8501a"/></linearGradient>
+      <linearGradient id="fkCarrot" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f5981a"/><stop offset="1" stop-color="#fdc02f"/></linearGradient>
+      <clipPath id="fkTop"><rect x="395" y="345" width="150" height="115" rx="28"/></clipPath>
+      <clipPath id="fkBot"><rect x="395" y="478" width="150" height="134" rx="26"/></clipPath>
+    </defs>
+  <defs><g id="fk-icon">
+        <path d="M287 222C332 220 374 242 385 306C338 305 296 280 287 222Z" fill="url(#fkLeafL)"/>
+        <path d="M482 198C484 252 450 297 398 304C384 306 385 300 387 292C392 246 432 205 482 198Z" fill="url(#fkLeafR)"/>
+        <path d="M394 301C408 262 428 238 452 220" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+        <path d="M520 280l15-36M551 301l30-18" fill="none" stroke="#ffc928" stroke-width="16" stroke-linecap="round"/>
+        <path d="M213 440C213 365 255 313 322 313C352 313 373 326 385 338V634C385 640 383 642 375 642H272C236 642 213 614 213 578Z" fill="url(#fkDoor)"/>
+        <rect x="274" y="392" width="24" height="110" rx="12" fill="#e6f1e8"/>
+        <path d="M385 346C400 326 426 318 456 318H492C536 318 562 350 562 396V568C562 612 536 640 496 640H385Z" fill="url(#fkFrame)"/>
+        <rect x="395" y="345" width="150" height="115" rx="28" fill="#eef6ee"/>
+        <g clip-path="url(#fkTop)">
+          <circle cx="470" cy="453" r="53" fill="url(#fkTomato)"/>
+          <path d="M470 408c-4-14-18-22-26-21 2 11 11 20 26 21zM472 408c4-14 18-22 26-21-2 11-11 20-26 21z" fill="#2c8a45"/>
+          <path d="M471 408c1-10 5-18 10-26" fill="none" stroke="#2c8a45" stroke-width="5" stroke-linecap="round"/>
+        </g>
+        <rect x="395" y="478" width="150" height="134" rx="26" fill="#eef6ee"/>
+        <g clip-path="url(#fkBot)">
+          <path d="M396 618C406 572 438 528 480 510C502 504 512 522 500 544C484 578 444 608 396 618Z" fill="url(#fkCarrot)"/>
+          <path d="M425 580l22-14M440 556l20-12M463 534l14-9" fill="none" stroke="#e58a12" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+          <path d="M498 516c-2-15-12-26-24-28 0 13 9 24 24 28zM500 518c8-11 20-14 24-11-3 11-12 16-24 11z" fill="#2c8a45"/>
+        </g>
+        <path d="M212 483C170 510 150 545 175 575C205 606 300 600 390 570C480 540 560 490 600 440C612 425 625 410 618 400C610 392 585 388 565 392C575 410 560 440 520 475C470 515 380 555 300 565C240 572 200 568 190 548C185 530 200 505 212 483Z" fill="url(#fkRing)" stroke="#fffdf0" stroke-opacity=".85" stroke-width="3" paint-order="stroke"/>
+      </g></defs>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 8H4c0-1 2-2 2-8z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-plate" viewBox="0 0 24 24"><circle cx="11" cy="13" r="7"/><circle cx="11" cy="13" r="3"/><path d="M19 3v4M17 5h4"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.5 11h10L20 7H6"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></symbol>
+  <symbol id="i-waste" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-14 5.3M4 12a8 8 0 0 1 14-5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4"/><path d="M8 10h8M8 14h8"/></symbol>
+  <symbol id="i-podium" viewBox="0 0 24 24"><path d="M4 20v-8h5v8M9 20V5h6v15M15 20v-9h5v9"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19C5 10 10 5 20 5c0 10-5 15-14 15"/><path d="M5 19 13 11"/></symbol>
+  <symbol id="i-quiz" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17v.01"/></symbol>
+</svg>
 
-    <!-- ── what food keaper does  ── -->
-    <section class="info-grid">
-      <div class="info-card">
-        <span class="icon">🗓️</span>
-        <h3>Smart Tracking</h3>
-        <p>Easily log items based on location like Fridge, Freezer, or Pantry with our recipe scanner</p>
-      </div>
-      <div class="info-card">
-        <span class="icon">🔔</span>
-        <h3>Accurate Expiry Alert</h3>
-        <p>Dynamic warning labels and native desktop push alerts flag assets before they decay past structural baselines.</p>
-      </div>
-      <div class="info-card">
-        <span class="icon">🧠🤖</span>
-        <h3>Custom AI Recipes</h3>
-        <p>Instantly compile customized menu recipes leveraging items nearing their expiry window automatically.</p>
-      </div>
-    </section>
+<a class="skip" href="#main">Skip to content</a>
 
-    <!-- ── analytics of current world food waste ── -->
-    <section class="stats-banner">
-      <h2>The Reality of Household Food Waste</h2>
-      <div class="stat-row">
-        <div class="stat-box">
-          <span class="num">30%</span>
-          <span class="label">Of household waste consists of untouched food assets</span>
-        </div>
-        <div class="stat-box" style="border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
-          <span class="num">RM2,700</span>
-          <span class="label">Average financial loss per family annually on thrown groceries</span>
-        </div>
-        <div class="stat-box">
-          <span class="num">8%</span>
-          <span class="label">Of global greenhouse gas emissions originate from food waste</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── food manangement tips ── -->
-    <section class="tips-section">
-      <h2>Pro Storage Guidelines</h2>
-      
-      <div class="tip-item">
-        <div class="tip-num">1</div>
-        <div class="tip-content">
-          <h4>First In, First Out (FIFO)</h4>
-          <p>Always cycle older ingredients to the front lines of your shelves so they are reached for first during fast-paced cooking sessions.</p>
-        </div>
-      </div>
-
-      <div class="tip-item">
-        <div class="tip-num">2</div>
-        <div class="tip-content">
-          <h4>Ripening Isolation Rule</h4>
-          <p>Keep items like bananas, apples, and tomatoes separated from green leafy vegetables, as their natural ripening gases accelerate spoilage.</p>
-        </div>
-      </div>
-
-      <div class="tip-item">
-        <div class="tip-num">3</div>
-        <div class="tip-content">
-          <h4>Utilize the Freezer Safeguard</h4>
-          <p>If you recognize that a meat profile or a batch of bread won't be used within the week, transfer them into the Freezer node immediately to lock their timeline down.</p>
-        </div>
-      </div>
-    </section>
-
-    
-
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Food Keeper home"><svg viewBox="148 190 490 470" aria-hidden="true"><use href="#fk-icon"/></svg>Food Keeper</a>
+    <nav aria-label="Page sections"><a href="#features">What it does</a><a href="#reality">The problem</a><a href="#tips">Storage tips</a></nav>
+    <a class="btn btn-solid" href="./index.html">Open app</a>
   </div>
+</header>
 
+<main id="main">
+
+  <section class="hero" id="top">
+    <div class="wrap">
+      <div>
+        <h1>Track small.<br>Save big.</h1>
+        <p>A third of all food produced worldwide goes to waste. Take control of your kitchen: know what you have, use it before it expires, and save money while you cook smarter.</p>
+        <div class="cta-row">
+          <a class="btn btn-solid" href="./index.html">Open Food Keeper</a>
+          <a class="btn btn-line" href="#features">See what it does</a>
+        </div>
+      </div>
+      <div class="art" aria-hidden="true"><svg viewBox="148 190 490 470"><use href="#fk-icon"/></svg></div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="grid2">
+        <div>
+          <h2>Everything between the shop and the bin</h2>
+          <p class="lead">Your fridge, freezer and pantry in one place, so you always know what to use first.</p>
+        </div>
+        <ul class="feat-list">
+          <li>
+            <span class="ico g"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg></span>
+            <div><h3>Smart tracking</h3><p>Log each item with its storage spot, quantity, price and expiry date. Scan a grocery receipt to add a whole shop at once.</p></div>
+          </li>
+          <li>
+            <span class="ico y"><svg class="i" aria-hidden="true"><use href="#i-bell"/></svg></span>
+            <div><h3>Expiry alerts</h3><p>Colour-coded labels show what is fresh, expiring soon or already expired, and browser notifications warn you before food goes off.</p></div>
+          </li>
+          <li>
+            <span class="ico b"><svg class="i" aria-hidden="true"><use href="#i-plate"/></svg></span>
+            <div><h3>Recipes from what you have</h3><p>Get recipe ideas built from the items closest to expiring, so nothing gets forgotten at the back of the fridge.</p></div>
+          </li>
+        </ul>
+      </div>
+      <div class="also">
+        <h3>Also inside the app</h3>
+        <ul>
+          <li><svg class="i" aria-hidden="true"><use href="#i-cart"/></svg>Shopping list</li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-waste"/></svg>Waste log</li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-scan"/></svg>Receipt scanner</li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-podium"/></svg>Leaderboard</li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-leaf"/></svg>Awareness</li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-quiz"/></svg>Quiz</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="reality" class="reality">
+    <div class="wrap">
+      <h2>The reality of household food waste</h2>
+      <div class="stats">
+        <div class="stat-hero">
+          <div class="big">1/3</div>
+          <p>of all food produced for people is lost or wasted every year, worldwide.</p>
+        </div>
+        <div class="stat-col">
+          <div><span class="num b">17,000+</span><p>tonnes of food waste generated in Malaysia every day</p></div>
+          <div><span class="num y">8–10%</span><p>of global greenhouse gas emissions come from food waste</p></div>
+        </div>
+      </div>
+      <p class="note">Food that rots in landfill releases methane, a greenhouse gas far more potent than CO₂. Using what you buy is the simplest way to cut it.</p>
+    </div>
+  </section>
+
+  <section id="tips" class="tips">
+    <div class="wrap grid2">
+      <div>
+        <h2>Three storage habits that save food</h2>
+        <p class="lead">Small changes in how you store things make food last longer.</p>
+      </div>
+      <ul class="tip-list">
+        <li><h3>First in, first out</h3><p>Put older items at the front of the shelf so you reach for them first.</p></li>
+        <li><h3>Keep ripeners away from greens</h3><p>Bananas, apples and tomatoes give off a ripening gas that makes leafy vegetables spoil faster, so store them apart.</p></li>
+        <li><h3>Use the freezer as a safety net</h3><p>If meat or bread will not be used this week, freeze it right away.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap">
+      <div>
+        <h2>Start with what is in your fridge today.</h2>
+        <p>Add your first ingredient and see what needs using first.</p>
+      </div>
+      <a class="btn btn-y" href="./index.html">Open Food Keeper</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><svg viewBox="148 190 490 470" aria-hidden="true"><use href="#fk-icon"/></svg>Food Keeper</a>
+    <span>Track ingredients, reduce waste</span>
+    <a href="./index.html">Open the app</a>
+  </div>
+</footer>
+
+<script>
+// 浏览器标签页图标：用同一个 SVG 现场生成
+(function(){var l=document.getElementById('fk-favicon'),d=document.getElementById('fk-defs'),g=document.getElementById('fk-icon');if(!l||!d||!g)return;
+var u='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="148 190 490 470">'+d.outerHTML+g.outerHTML+'</svg>');
+l.type='image/svg+xml';l.href=u;var i=new Image();i.onload=function(){try{var c=document.createElement('canvas');c.width=c.height=64;c.getContext('2d').drawImage(i,0,0,64,64);l.type='image/png';l.href=c.toDataURL('image/png')}catch(e){}};i.src=u})();
+</script>
 </body>
 </html>
