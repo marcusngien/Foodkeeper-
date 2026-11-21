@@ -17,8 +17,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="home.css">
 
-  <link rel="icon" type="image/png" href="images/favicon.png">
-  <link rel="apple-touch-icon" href="images/favicon.png">
+  <link rel="icon" id="fk-favicon" href="data:,">
 
   <script src="https://js.puter.com/v2/"></script>
 
@@ -26,6 +25,55 @@
   <script src="home.js" defer></script>
 </head>
 <body>
+
+  <!-- Logo：用 SVG 画出来的，不需要图片文件（下面各处用 <use href="#fk-..."> 引用）-->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs id="fk-defs">
+      <linearGradient id="fkDoor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3aa56b"/><stop offset="1" stop-color="#0f6b45"/></linearGradient>
+      <linearGradient id="fkFrame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46b377"/><stop offset="1" stop-color="#1a7a50"/></linearGradient>
+      <linearGradient id="fkLeafL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#23975f"/><stop offset="1" stop-color="#0f6b45"/></linearGradient>
+      <linearGradient id="fkLeafR" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4c9f3f"/><stop offset="1" stop-color="#b7d43a"/></linearGradient>
+      <linearGradient id="fkRing" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd54a"/><stop offset="1" stop-color="#f7b500"/></linearGradient>
+      <linearGradient id="fkTomato" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a2f"/><stop offset="1" stop-color="#e8501a"/></linearGradient>
+      <linearGradient id="fkCarrot" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f5981a"/><stop offset="1" stop-color="#fdc02f"/></linearGradient>
+      <clipPath id="fkTop"><rect x="395" y="345" width="150" height="115" rx="28"/></clipPath>
+      <clipPath id="fkBot"><rect x="395" y="478" width="150" height="134" rx="26"/></clipPath>
+    </defs>
+    <defs>
+      <g id="fk-icon">
+        <path d="M287 222C332 220 374 242 385 306C338 305 296 280 287 222Z" fill="url(#fkLeafL)"/>
+        <path d="M482 198C484 252 450 297 398 304C384 306 385 300 387 292C392 246 432 205 482 198Z" fill="url(#fkLeafR)"/>
+        <path d="M394 301C408 262 428 238 452 220" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+        <path d="M520 280l15-36M551 301l30-18" fill="none" stroke="#ffc928" stroke-width="16" stroke-linecap="round"/>
+        <path d="M213 440C213 365 255 313 322 313C352 313 373 326 385 338V634C385 640 383 642 375 642H272C236 642 213 614 213 578Z" fill="url(#fkDoor)"/>
+        <rect x="274" y="392" width="24" height="110" rx="12" fill="#e6f1e8"/>
+        <path d="M385 346C400 326 426 318 456 318H492C536 318 562 350 562 396V568C562 612 536 640 496 640H385Z" fill="url(#fkFrame)"/>
+        <rect x="395" y="345" width="150" height="115" rx="28" fill="#eef6ee"/>
+        <g clip-path="url(#fkTop)">
+          <circle cx="470" cy="453" r="53" fill="url(#fkTomato)"/>
+          <path d="M470 408c-4-14-18-22-26-21 2 11 11 20 26 21zM472 408c4-14 18-22 26-21-2 11-11 20-26 21z" fill="#2c8a45"/>
+          <path d="M471 408c1-10 5-18 10-26" fill="none" stroke="#2c8a45" stroke-width="5" stroke-linecap="round"/>
+        </g>
+        <rect x="395" y="478" width="150" height="134" rx="26" fill="#eef6ee"/>
+        <g clip-path="url(#fkBot)">
+          <path d="M396 618C406 572 438 528 480 510C502 504 512 522 500 544C484 578 444 608 396 618Z" fill="url(#fkCarrot)"/>
+          <path d="M425 580l22-14M440 556l20-12M463 534l14-9" fill="none" stroke="#e58a12" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+          <path d="M498 516c-2-15-12-26-24-28 0 13 9 24 24 28zM500 518c8-11 20-14 24-11-3 11-12 16-24 11z" fill="#2c8a45"/>
+        </g>
+        <path d="M212 483C170 510 150 545 175 575C205 606 300 600 390 570C480 540 560 490 600 440C612 425 625 410 618 400C610 392 585 388 565 392C575 410 560 440 520 475C470 515 380 555 300 565C240 572 200 568 190 548C185 530 200 505 212 483Z" fill="url(#fkRing)" stroke="#fffdf0" stroke-opacity=".85" stroke-width="3" paint-order="stroke"/>
+      </g>
+      <g id="fk-lockup">
+        <use href="#fk-icon"/>
+        <text x="642" y="458" font-size="214" font-weight="800" textLength="480" lengthAdjust="spacingAndGlyphs" style="font-family:'DM Sans',system-ui,sans-serif;fill:var(--fk-ink1,#04472f)">Food</text>
+        <text x="642" y="617" font-size="214" font-weight="800" textLength="735" lengthAdjust="spacingAndGlyphs" style="font-family:'DM Sans',system-ui,sans-serif;fill:var(--fk-ink2,#2f8a40)">Keeper</text>
+      </g>
+      <g id="fk-full">
+        <use href="#fk-lockup"/>
+        <path d="M238 720h94M1240 720h72" fill="none" stroke="#6aa56f" stroke-width="6" stroke-linecap="round"/>
+        <text x="372" y="735" font-size="56" font-weight="500" textLength="832" lengthAdjust="spacingAndGlyphs" style="font-family:'DM Sans',system-ui,sans-serif;fill:var(--fk-ink3,#0f5a3a)">Track ingredients, reduce waste</text>
+      </g>
+    </defs>
+  </svg>
 
   <div id="toast-container"></div>
 
@@ -37,7 +85,7 @@
       </div>
 
       <div class="auth-logo">
-        <h1><img class="auth-logo-img" src="images/logo-full.png" alt="Food Keeper: track ingredients, reduce waste" /></h1>
+        <h1><svg class="auth-logo-svg" viewBox="148 190 1252 580" role="img" aria-label="Food Keeper: track ingredients, reduce waste"><use href="#fk-full"/></svg></h1>
       </div>
 
       <div class="auth-tabs">
@@ -79,7 +127,7 @@
     <header class="header">
       <div class="header-inner">
         <div class="logo">
-          <img class="logo-img" src="images/favicon.png" alt="" />
+          <svg class="logo-img" viewBox="148 190 490 470" aria-hidden="true"><use href="#fk-icon"/></svg>
           <h1>Food Keeper</h1>
         </div>
         <h1 class="page-title" id="page-title"></h1>
