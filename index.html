@@ -1,16 +1,19 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Food Keeper</title>
 
+  <!-- 先设好主题，避免登录页闪烁 -->
+  <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('fk_theme') || 'light'); } catch (e) {}</script>
+
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="home.css">
 
@@ -19,6 +22,7 @@
   <script src="https://js.puter.com/v2/"></script>
 
   <script src="app.js" defer></script>
+  <script src="home.js" defer></script>
 </head>
 <body>
 
@@ -71,13 +75,15 @@
 
   <!-- ═══════════ APP ═══════════ -->
   <div id="app" style="display: none;">
+    <!-- 侧边栏由 home.js 自动插入到这里 -->
 
     <header class="header">
       <div class="header-inner">
         <div class="logo">
-          <span class="logo-icon">🌿</span>
+          <span class="sb-mark" aria-hidden="true"></span>
           <h1>Food Keeper</h1>
         </div>
+        <h1 class="page-title" id="page-title"></h1>
         <div class="header-right">
           <span class="user-email" id="user-email"></span>
           <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle Theme">🌙</button>
@@ -87,60 +93,9 @@
       </div>
     </header>
 
-    <!-- ═══════════ MAIN PAGE（登录后第一眼）═══════════ -->
+    <!-- ═══════════ HOME（内容由 home.js 的 renderHome 生成）═══════════ -->
     <div id="home-screen">
-      <div class="home-wrap">
-
-        <div class="home-brand">
-          <!-- 想换成自己的 logo 图片：把下面这行换成
-               <img class="home-logo-img" src="logo.png" alt="Food Keeper" /> -->
-          <span class="home-logo">🌿</span>
-          <div class="home-name">Food Keeper</div>
-          <div class="home-tagline" id="home-tagline">Track ingredients, reduce waste</div>
-        </div>
-
-        <div class="home-grid">
-
-          <!-- 左边：Settings + Achievement -->
-          <div class="home-side">
-            <button class="home-side-card" onclick="openPanel()">
-              <span class="home-side-icon">⚙️</span>
-              <span class="home-side-title" id="home-settings-title">Settings</span>
-              <span class="home-side-sub" id="home-settings-sub">Language, notifications, export</span>
-            </button>
-
-            <div class="home-side-card locked" onclick="toast('Achievements are coming soon!')">
-              <span class="home-side-icon">🏅</span>
-              <span class="home-side-title" id="home-ach-title">Achievement</span>
-              <span class="home-side-sub" id="home-ach-sub">Coming soon</span>
-              <span class="home-soon-badge">🔒 Soon</span>
-            </div>
-          </div>
-
-          <!-- 图片 1：Pantry Tracker（图片放 pantry.jpg）-->
-          <button class="home-card pantry" onclick="openSection('pantry')">
-            <div class="home-card-fallback">🥦</div>
-            <img class="home-card-img" src="images/pantry.jpg" alt="Pantry Tracker"
-                 onerror="this.style.display='none'" />
-            <div class="home-card-label">
-              <div class="home-card-title" id="home-pantry-title">Pantry Tracker</div>
-              <div class="home-card-sub" id="home-pantry-sub">Pantry, shopping list, waste log, recipes, receipt scan, leaderboard</div>
-            </div>
-          </button>
-
-          <!-- 图片 2：Outside the Kitchen（图片放 outside.jpg）-->
-          <button class="home-card outside" onclick="openSection('outside')">
-            <div class="home-card-fallback">🌍</div>
-            <img class="home-card-img" src="images/outside.jpg" alt="Outside the Kitchen"
-                 onerror="this.style.display='none'" />
-            <div class="home-card-label">
-              <div class="home-card-title" id="home-outside-title">Outside the Kitchen</div>
-              <div class="home-card-sub" id="home-outside-sub">Awareness and quiz</div>
-            </div>
-          </button>
-
-        </div>
-      </div>
+      <div id="home-dashboard"></div>
     </div>
 
 
