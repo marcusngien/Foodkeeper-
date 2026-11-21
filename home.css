@@ -15,7 +15,9 @@
   background: var(--surface); border-right: 1px solid var(--border);
   display: flex; flex-direction: column; padding: 20px 14px; z-index: 30; overflow-y: auto;
 }
-.sb-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; letter-spacing: -0.4px; padding: 0 8px 22px; }
+.sb-brand { display: block; width: 100%; background: none; border: 0; cursor: pointer; padding: 0 6px 20px; }
+.sb-brand img { display: block; width: 100%; max-width: 180px; height: auto; }
+.sb-brand:focus-visible { outline: 2px solid var(--fk-blue); outline-offset: 2px; border-radius: 8px; }
 .sb-mark { width: 26px; height: 26px; background:
   linear-gradient(var(--accent), var(--accent)) 0 0/12px 12px no-repeat,
   linear-gradient(var(--fk-yellow), var(--fk-yellow)) 14px 0/12px 12px no-repeat,
@@ -150,3 +152,9 @@
   .header .logo { display: flex; }
   .page-title { display: none; }
 }
+
+/* ── Logo ── */
+.logo-img { width: 32px; height: 32px; }
+.auth-logo-img { display: block; width: 100%; max-width: 280px; height: auto; margin: 0 auto; }
+[data-theme="dark"] .sb-brand img, [data-theme="dark"] .auth-logo-img { background: #F8FAF6; border-radius: 12px; padding: 6px; }
+[data-theme="dark"] .logo-img { background: #F8FAF6; border-radius: 8px; padding: 3px; }
