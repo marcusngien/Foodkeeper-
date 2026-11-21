@@ -47,7 +47,7 @@ function renderSidebar() {
   }
   const t = TRANSLATIONS[currentLang];
   nav.innerHTML = `
-    <div class="sb-brand"><span class="sb-mark" aria-hidden="true"></span><span>Food Keeper</span></div>
+    <button class="sb-brand" onclick="goHome()" aria-label="Food Keeper"><img src="images/logo-lockup.png" alt="Food Keeper" /></button>
     <div class="sb-group">${NAV_MAIN.map(navBtn).join('')}</div>
     <div class="sb-divider"></div>
     <div class="sb-label">Community</div>
