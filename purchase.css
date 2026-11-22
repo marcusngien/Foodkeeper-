@@ -1,0 +1,55 @@
+/* ═══ Purchases / Spending / Receipt editor — 放在 pages.css 之后加载 ═══
+   只用现有的颜色变量和组件（.toolbar、.overlay、.modal、.pg-card 等），没有新的视觉风格。 */
+
+/* ── Purchase History 列表 ── */
+.pc-sum { font: 600 13px var(--font-mono); color: var(--text); }
+.pc-card { background: var(--surface); border: 1px solid var(--border2); border-left: 4px solid var(--fk-blue); border-radius: 12px; margin-top: 8px; overflow: hidden; }
+.pc-card.src-m { border-left-color: var(--fk-yellow); }
+.pc-head { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: transparent; border: 0; color: var(--text); text-align: left; cursor: pointer; font-family: var(--font); }
+.pc-head:hover { background: var(--surface2); }
+.pc-head:focus-visible, .pc-del:focus-visible { outline: 2px solid var(--fk-blue); outline-offset: -2px; }
+.pc-date { width: 46px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 6px 0; border-radius: 8px; background: var(--surface2); font-size: 11px; color: var(--text2); line-height: 1.1; }
+.pc-date b { font: 600 18px var(--font-mono); color: var(--text); }
+.pc-store { display: block; font-weight: 600; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 12.5px; color: var(--text2); }
+.pc-total { font: 600 16px var(--font-mono); letter-spacing: -.5px; }
+.pc-body { padding: 4px 16px 16px; border-top: 1px solid var(--border); }
+.pc-items { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13.5px; }
+.pc-items th { text-align: left; font-weight: 600; font-size: 12px; color: var(--text2); padding: 6px 4px; border-bottom: 1px solid var(--border2); }
+.pc-items td { padding: 7px 4px; border-bottom: 1px solid var(--border); }
+.pc-items th:last-child, .pc-items td:last-child { text-align: right; font-family: var(--font-mono); }
+.pc-actions { display: flex; gap: 8px; margin-top: 10px; }
+.pc-del:hover { color: var(--red-text); border-color: var(--red-border); background: var(--red-bg); }
+.pc-empty-actions { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+.pg-purchases .toolbar { margin: 0; padding: 10px; background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; }
+.pg-purchases .toolbar .search-bar { min-width: 180px; }
+
+/* ── 弹窗 ── */
+.pc-modal { max-width: 680px; max-height: 92vh; overflow-y: auto; }
+.pcm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0 12px; }
+.pcm-row { display: grid; grid-template-columns: minmax(0, 1fr) 70px 90px 110px 34px; gap: 8px; align-items: center; margin-top: 8px; }
+.pcm-row .form-input { padding: 8px 10px; font-size: 13.5px; }
+.pcm-head { font-size: 12px; color: var(--text2); font-weight: 500; margin-top: 4px; }
+.pcm-total { display: flex; justify-content: flex-end; align-items: baseline; gap: 10px; margin: 14px 0 6px; font-size: 14px; color: var(--text2); }
+.pcm-total b { font: 600 20px var(--font-mono); color: var(--text); letter-spacing: -.5px; }
+@media (max-width: 560px) {
+  .pcm-row { grid-template-columns: minmax(0, 1fr) 60px 80px 34px; }
+  .pcm-row .pcm-cat, .pcm-head span:nth-child(4) { display: none; }
+}
+
+/* ── Spending ── */
+.sp-custom { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--text2); }
+.sp-custom label { display: flex; align-items: center; gap: 8px; }
+.pg-spending .pg-main { gap: 16px; }
+.sp-tall { height: 170px; }
+.sp-short { height: 90px; }
+.pg-delta { font-size: 14px; line-height: 1.5; }
+
+/* ── 收据：可编辑的确认表 ── */
+.sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 12px; }
+.sc-grid { overflow-x: auto; padding-bottom: 4px; }
+.sc-row { display: grid; grid-template-columns: 52px minmax(150px, 1fr) 64px 90px 104px 96px 86px 32px; gap: 8px; align-items: center; margin-top: 8px; min-width: 740px; }
+.sc-row .form-input { padding: 7px 9px; font-size: 13px; }
+.sc-row input[type="checkbox"] { width: 18px; height: 18px; justify-self: center; accent-color: var(--accent); }
+.sc-headrow { margin-top: 0; font-size: 12px; font-weight: 500; color: var(--text2); }
+.sc-headrow span:first-child { text-align: center; }
