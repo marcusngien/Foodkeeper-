@@ -1,6 +1,4 @@
-// home.js — 放在 app.js 后面加载。不改 app.js：只包装现有函数，并渲染新的首页 + 侧边栏。
 
-// ── SVG 图标（统一 24px 线条风格）──
 const IC = {
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/>',
   pantry: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 12h16M9 7.5h6"/>',
