@@ -1,4 +1,3 @@
-
 const IC = {
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/>',
   pantry: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 12h16M9 7.5h6"/>',
@@ -160,7 +159,7 @@ function renderHome() {
     </article>
     <article class="ex-lb">
       <h3>${ic('leaderboard')} Leaderboard</h3>
-      ${lb.length ? `<ol>${lb.map((w, i) => `<li><span>#${i + 1} Week ${w.week}</span><strong>RM ${w.amount.toFixed(2)}</strong></li>`).join('')}</ol>
+      ${lb.length ? `<ol>${lb.map((w, i) => `<li><span>#${i + 1} Week ${w.week}${window.weekRange ? ` <small class="lb-range">${window.weekRange(new Date().getFullYear(), w.week)}</small>` : ''}</span><strong>RM ${w.amount.toFixed(2)}</strong></li>`).join('')}</ol>
         <small>Your heaviest waste weeks this year. Beat them next time.</small>`
       : `<p class="hd-empty">No waste logged this year. That is a great start.</p>`}
       <button class="hd-link" onclick="switchView('leaderboard')">View full leaderboard</button>
