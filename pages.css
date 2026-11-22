@@ -191,12 +191,74 @@
 @media (prefers-reduced-motion: reduce) { .pg-bar > i, .pg-btn { transition: none !important; } }
 
 /* ── Awareness ── */
-.aw-title { font-size: 20px; font-weight: 700; letter-spacing: -.5px; margin: 8px 0 -2px; }
-.aw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
-.aw-grid .pg-card { gap: 8px; }
-.aw-ico { font-size: 26px; line-height: 1; }
-.aw-r { display: flex; gap: 22px; align-items: flex-start; padding: 26px; background: var(--surface); border: 1px solid var(--border2); border-radius: 4px 24px 4px 24px; border-top: 4px solid var(--accent); }
-.aw-r-ico { font-size: 52px; line-height: 1; }
-.aw-r h3 { font-size: 20px; letter-spacing: -.4px; margin-bottom: 8px; }
-.aw-r p { color: var(--text2); font-size: 14.5px; line-height: 1.6; margin-bottom: 12px; }
-@media (max-width: 640px) { .aw-r { flex-direction: column; gap: 12px; } }
+.pg-awareness .pg-main { gap: 40px; }
+.aw-sec { display: flex; flex-direction: column; gap: 18px; }
+.aw-head h3 { font-size: 22px; font-weight: 800; letter-spacing: -.6px; }
+.aw-head p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+.c-r { --c: #e0675f; --ink: #fff; }
+.c-y { --c: var(--fk-yellow); --ink: #2b2500; }
+.c-b { --c: var(--fk-blue); --ink: #0b2540; }
+.c-g { --c: var(--accent); --ink: #fff; }
+.c-n { --c: var(--text); --ink: var(--bg); }
+[data-theme="dark"] .c-g { --ink: #0f2a05; }
+
+.aw-tile { width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 14px 14px 14px 4px; background: var(--c); color: var(--ink); }
+.aw-tile.big { width: 76px; height: 76px; border-radius: 22px 22px 22px 6px; }
+.aw-tile.big svg { width: 36px; height: 36px; }
+
+/* 原因：一张大卡 + 小卡，高度不一样，不再是整齐的一排 */
+.aw-bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.aw-card { display: flex; flex-direction: column; gap: 12px; padding: 22px; background: var(--surface); border: 1px solid var(--border2); border-top: 3px solid var(--c); border-radius: 4px 4px 16px 16px; }
+.aw-card.feat { grid-column: span 2; background: color-mix(in srgb, var(--c) 11%, var(--surface)); border-radius: 4px 28px 4px 28px; padding: 26px; }
+.aw-card.wide { grid-column: span 3; flex-direction: row; align-items: center; gap: 18px; background: color-mix(in srgb, var(--c) 10%, var(--surface)); border-radius: 28px 4px 28px 4px; }
+.aw-card-top { display: flex; align-items: center; gap: 14px; }
+.aw-card h4 { font-size: 16.5px; font-weight: 700; letter-spacing: -.3px; line-height: 1.25; }
+.aw-card p { color: var(--text2); font-size: 14px; line-height: 1.6; max-width: 56ch; }
+.aw-card.wide h4 { margin-bottom: 4px; }
+.aw-vs { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.aw-vs > div { display: grid; grid-template-columns: 64px 1fr 36px; gap: 12px; align-items: center; font-size: 13px; color: var(--text2); }
+.aw-vs b { font: 600 13px var(--font-mono); color: var(--text); text-align: right; }
+.aw-vs .pg-bar { height: 10px; }
+.aw-vs .pg-bar > i { min-width: 6px; }
+
+/* 5R：左边选择列表，右边按颜色变化的详情面板 */
+.aw-r5 { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 20px; align-items: stretch; }
+.aw-r5-list { display: flex; flex-direction: column; gap: 8px; }
+.aw-r5-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border2); border-left: 4px solid transparent; border-radius: 12px; background: var(--surface); color: var(--text); text-align: left; cursor: pointer; font-family: var(--font); transition: background .15s, border-color .15s; }
+.aw-r5-item .aw-tile { width: 36px; height: 36px; border-radius: 11px 11px 11px 3px; }
+.aw-r5-item b { display: block; font-size: 14.5px; }
+.aw-r5-item small { color: var(--text2); font-size: 12px; }
+.aw-r5-item:hover { background: var(--surface2); }
+.aw-r5-item.on { border-left-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--surface)); }
+.aw-r5-item:focus-visible, .aw-go:focus-visible { outline: 2px solid var(--fk-blue); outline-offset: 2px; }
+.aw-r5-panel { display: flex; gap: 24px; align-items: flex-start; padding: 32px; background: color-mix(in srgb, var(--c) 13%, var(--surface)); border-radius: 4px 28px 4px 28px; }
+.aw-r5-body { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; min-width: 0; }
+.aw-r5-body h3 { font-size: 24px; font-weight: 800; letter-spacing: -.7px; line-height: 1.15; }
+.aw-r5-body p { color: var(--text2); font-size: 15px; line-height: 1.65; max-width: 52ch; }
+.aw-tip { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px dashed var(--border2); font-size: 13.5px; line-height: 1.5; }
+.aw-tip svg { flex-shrink: 0; color: var(--text2); margin-top: 1px; }
+.aw-r5-panel .pg-btn.solid { margin-top: 4px; }
+
+/* 右侧快捷入口 */
+.aw-gos { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.aw-go { width: 100%; display: flex; align-items: center; gap: 12px; padding: 11px 12px; border: 0; border-radius: 10px; background: color-mix(in srgb, var(--surface) 70%, transparent); color: var(--text); font: 500 14px var(--font); text-align: left; cursor: pointer; transition: background .15s; }
+.aw-go span { flex: 1; }
+.aw-go svg:last-child { color: var(--text2); }
+.aw-go:hover { background: var(--surface); }
+
+@media (max-width: 960px) {
+  .aw-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .aw-card.feat, .aw-card.wide { grid-column: span 2; }
+  .aw-r5 { grid-template-columns: 1fr; }
+  .aw-r5-list { flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+  .aw-r5-item { flex-shrink: 0; border-left-width: 1px; border-bottom: 4px solid transparent; }
+  .aw-r5-item.on { border-left-color: var(--border2); border-bottom-color: var(--c); }
+  .aw-r5-item small { display: none; }
+}
+@media (max-width: 640px) {
+  .aw-bento { grid-template-columns: 1fr; }
+  .aw-card.feat, .aw-card.wide { grid-column: auto; }
+  .aw-card.wide { flex-direction: column; align-items: flex-start; }
+  .aw-r5-panel { flex-direction: column; padding: 22px; gap: 16px; }
+}
