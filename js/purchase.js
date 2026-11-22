@@ -1,6 +1,10 @@
 // purchases.js — 放在 pages.js 后面加载（app.js → home.js → pages.js → purchases.js）
-// 新增：Purchase History、Monthly Spending、收据扫描的「检查并确认」流程。
-// 不修改 app.js / home.js / pages.js：只注册新页面、包装 addScannedItemsToInventory / processReceiptImage。
+// Purchase History、Monthly Spending、收据扫描的「检查并确认」流程，以及 Purchases ↔ Pantry 的双向连接：
+//   · 每一件加入 pantry 的食物都带 purchaseId + purchaseItemId（来源购买记录）
+//   · Purchases 页面每一行显示它现在的状态：未加入 / In pantry / Wasted / Used up，并能一键加入 pantry
+//   · Pantry 卡片显示「🧾 店名 · 日期」，点一下跳到那张购买记录
+//   · 浪费记录带着来源链接，Spending 页面对比「花了多少 vs 浪费多少」
+// app.js 只改了两处：addWasteEntry（带来源链接）和 foodCardHTML（显示来源标签）。
 (function () {
   'use strict';
 
@@ -20,6 +24,20 @@
   const locOpts = sel => ['fridge', 'freezer', 'pantry'].map(l => `<option value="${l}" ${l === sel ? 'selected' : ''}>${LOC_LABEL[l]}</option>`).join('');
   const kpi = (v, l) => `<div class="pg-kpi"><span class="pg-kpi-num">${v}</span><span class="pg-kpi-lbl">${l}</span></div>`;
   const card = (t, b, tint = '') => `<section class="pg-card ${tint}"><h4>${t}</h4>${b}</section>`;
+
+  // 购买记录里每一行商品的稳定 ID（pantry 靠它回头找到来源）
+  const newItemId = () => 'pi_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  // Firestore 不接受 undefined，所以统一用这个函数整理商品行
+  const cleanItem = i => ({ id: i.id || newItemId(), name: i.name, qty: i.qty, price: i.price, category: i.category, emoji: i.emoji || '', inPantry: !!i.inPantry });
+  // 加入 pantry 时的默认存放位置和保质天数（可在弹窗里改）
+  const LOC_BY_CAT = { produce: 'fridge', dairy: 'fridge', meat: 'fridge', grain: 'pantry', other: 'pantry' };
+  const SHELF_DAYS = {
+    fridge:  { produce: 7,  dairy: 7,  meat: 3,  grain: 14,  other: 7 },
+    freezer: { produce: 90, dairy: 60, meat: 90, grain: 90,  other: 90 },
+    pantry:  { produce: 5,  dairy: 30, meat: 30, grain: 180, other: 90 }
+  };
+  const expiryFor = (loc, cat) => { const d = new Date(); d.setDate(d.getDate() + ((SHELF_DAYS[loc] || SHELF_DAYS.pantry)[cat] ?? 7)); return ymd(d); };
+  const _render = window.render, _renderWaste = window.renderWasteLog;   // 原来的 pantry / waste 渲染函数（文件末尾会包装）
 
   // ═════════ 1. 把新页面注册进现有框架 ═════════
   const T_PURCHASES = { en: '🧾 Purchases', ms: '🧾 Pembelian', zh: '🧾 购买记录' };
@@ -101,8 +119,24 @@
           <div id="pcm-items"></div>
           <button class="ghost-btn" type="button" onclick="pcAddRow()" style="margin-top:8px">+ Add item</button>
           <div class="pcm-total">Total <b id="pcm-total">RM 0.00</b></div>
+          <label class="pcm-pantry" id="pcm-pantry-wrap"><input type="checkbox" id="pcm-pantry" /> <span>Also add these items to my pantry <small class="pg-muted">(you choose storage and expiry next)</small></span></label>
           <div class="auth-error" id="pcm-error"></div>
           <button class="btn-primary" id="pcm-save" onclick="pcSave()" style="background:var(--accent);color:#fff">Save purchase</button>
+        </div>
+      </div>
+    </div>`);
+
+  // 弹窗：把购买记录里的商品加入 pantry（选存放位置和过期日）
+  $('app').insertAdjacentHTML('beforeend', `
+    <div class="overlay" id="pp-overlay" onclick="ppClose()">
+      <div class="modal pc-modal" onclick="event.stopPropagation()">
+        <div class="modal-header"><h2>Add to pantry</h2><button class="modal-close" onclick="ppClose()">✕</button></div>
+        <div class="modal-body">
+          <p class="pg-muted" id="pp-sub"></p>
+          <div class="pp-row pp-head"><span></span><span>Item</span><span>Qty</span><span>Storage</span><span>Expires</span></div>
+          <div id="pp-rows"></div>
+          <div class="auth-error" id="pp-error"></div>
+          <button class="btn-primary" id="pp-save" onclick="ppSave()" style="background:var(--accent);color:#fff">Add to pantry</button>
         </div>
       </div>
     </div>`);
@@ -121,14 +155,14 @@
     purchases = []; loadError = false; open.clear();
     if (user) {
       unsub = db.collection('users').doc(user.uid).collection('purchases').orderBy('date', 'desc')
-        .onSnapshot(snap => { purchases = snap.docs.map(d => ({ id: d.id, ...d.data() })); loadError = false; renderAll(); },
+        .onSnapshot(snap => { purchases = snap.docs.map(d => ({ id: d.id, ...d.data() })); loadError = false; renderAll(); if (_render) _render(); },
           err => { console.error('purchases listener', err); loadError = true; renderAll(); });
     }
     renderAll();
   });
 
   function toDoc(f) {
-    const items = f.items.map(i => ({ name: i.name, qty: i.qty, price: i.price, category: i.category }));
+    const items = f.items.map(cleanItem);
     return {
       date: f.date, retailer: f.retailer || '', receiptRef: f.receiptRef || null,
       items, total: r2(items.reduce((s, i) => s + i.price, 0)), currency: 'MYR',
@@ -206,26 +240,46 @@
     }).join('');
   }
 
+  // 这一行商品现在在哪：none = 还没加入 pantry；in = 还在 pantry；waste = 被记为浪费；used = 吃完/移除
+  function itemStatus(p, i) {
+    if (!i.id || !i.inPantry) return { k: 'none' };
+    const food = foods.find(f => f.purchaseId === p.id && f.purchaseItemId === i.id);
+    if (food) return { k: 'in', food };
+    if (wasteLog.some(w => w.purchaseId === p.id && w.purchaseItemId === i.id)) return { k: 'waste' };
+    return { k: 'used' };
+  }
+
+  function statusCell(p, i, idx) {
+    const st = itemStatus(p, i);
+    if (st.k === 'in') { const b = badgeInfo(daysLeft(st.food.expiry)); return `<button class="pc-st in ${b.cls}" onclick="pcFindInPantry('${p.id}', ${idx})" title="Show in pantry">In pantry · ${b.text}</button>`; }
+    if (st.k === 'waste') return '<span class="pc-st waste">Wasted</span>';
+    if (st.k === 'used') return '<span class="pc-st used">Used up</span>';
+    return `<button class="pc-st add" onclick="pcToPantry('${p.id}', ${idx})">+ Add to pantry</button>`;
+  }
+
   function cardHTML(p) {
-    const d = parseYMD(p.date), isOpen = open.has(p.id), n = (p.items || []).length;
-    return `<article class="pc-card ${p.source === 'receipt' ? 'src-r' : 'src-m'}">
+    const d = parseYMD(p.date), isOpen = open.has(p.id), items = p.items || [], n = items.length;
+    const sts = items.map(i => itemStatus(p, i));
+    const nIn = sts.filter(s => s.k === 'in').length, nPend = sts.filter(s => s.k === 'none').length;
+    return `<article class="pc-card ${p.source === 'receipt' ? 'src-r' : 'src-m'}" id="pc-${p.id}">
       <button class="pc-head" onclick="pcToggle('${p.id}')" aria-expanded="${isOpen}">
         <span class="pc-date"><b>${d.getDate()}</b>${d.toLocaleDateString('en-GB', { month: 'short' })}</span>
         <span class="pg-grow"><span class="pc-store">${esc(p.retailer || 'Unknown store')}</span>
-          <span class="pc-meta">${n} item${n === 1 ? '' : 's'} <span class="pg-tag">${p.source === 'receipt' ? 'Receipt scan' : 'Added by hand'}</span></span></span>
+          <span class="pc-meta">${n} item${n === 1 ? '' : 's'}${nIn ? ` · <span class="pc-in-count">${nIn} in pantry</span>` : ''} <span class="pg-tag">${p.source === 'receipt' ? 'Receipt scan' : 'Added by hand'}</span></span></span>
         <span class="pc-total">${RM(p.total)}</span>
       </button>
       ${isOpen ? `<div class="pc-body">
-        <table class="pc-items"><tr><th>Item</th><th>Qty</th><th>Category</th><th>Price</th></tr>
-        ${(p.items || []).map(i => `<tr><td>${esc(i.name)}</td><td>${esc(i.qty)}</td><td>${CAT_LABEL[i.category] || 'Other'}</td><td>${RM(i.price)}</td></tr>`).join('')}</table>
+        <table class="pc-items"><tr><th>Item</th><th>Qty</th><th>Category</th><th>Pantry</th><th>Price</th></tr>
+        ${items.map((i, idx) => `<tr><td>${esc(i.name)}</td><td>${esc(i.qty)}</td><td>${CAT_LABEL[i.category] || 'Other'}</td><td class="pc-stcell">${statusCell(p, i, idx)}</td><td>${RM(i.price)}</td></tr>`).join('')}</table>
         ${p.receiptRef ? `<p class="pg-muted">Receipt reference: ${esc(p.receiptRef)}</p>` : ''}
-        <div class="pc-actions"><button class="ghost-btn" onclick="pcOpen('${p.id}')">Edit</button><button class="ghost-btn pc-del" onclick="pcDelete('${p.id}')">Delete</button></div>
+        <div class="pc-actions">${nPend ? `<button class="pg-btn solid" onclick="pcToPantry('${p.id}')">Add ${nPend === n ? 'all' : nPend} to pantry</button>` : ''}<button class="ghost-btn" onclick="pcOpen('${p.id}')">Edit</button><button class="ghost-btn pc-del" onclick="pcDelete('${p.id}')">Delete</button></div>
       </div>` : ''}
     </article>`;
   }
 
   window.pcDelete = async id => {
-    if (!confirm('Delete this purchase record? Your pantry is not affected.')) return;
+    const nLinked = foods.filter(f => f.purchaseId === id).length;
+    if (!confirm(nLinked ? `Delete this purchase record? ${nLinked} item${nLinked > 1 ? 's' : ''} from it will stay in your pantry, but will no longer show where they came from.` : 'Delete this purchase record? Your pantry is not affected.')) return;
     try { await col().doc(id).delete(); open.delete(id); toast('Purchase deleted'); }
     catch (e) { console.error(e); toast('Could not delete. Try again.'); }
   };
@@ -244,9 +298,10 @@
   };
 
   // ═════════ 4. 新增 / 编辑弹窗 ═════════
-  const rowHTML = (it = {}) => `<div class="pcm-row"><input class="form-input pcm-name" placeholder="Item name" value="${esc(it.name || '')}" /><input class="form-input pcm-qty" type="number" min="0" step="any" value="${it.qty ?? 1}" /><input class="form-input pcm-price" type="number" min="0" step="0.01" placeholder="0.00" value="${it.price ?? ''}" /><select class="form-input pcm-cat">${catOpts(it.category || 'other')}</select><button type="button" class="icon-btn pcm-del" aria-label="Remove item">✕</button></div>`;
+  const rowHTML = (it = {}) => `<div class="pcm-row" data-iid="${esc(it.id || newItemId())}" data-emoji="${esc(it.emoji || '')}" data-inpantry="${it.inPantry ? 1 : 0}"><input class="form-input pcm-name" placeholder="Item name" value="${esc(it.name || '')}" /><input class="form-input pcm-qty" type="number" min="0" step="any" value="${it.qty ?? 1}" /><input class="form-input pcm-price" type="number" min="0" step="0.01" placeholder="0.00" value="${it.price ?? ''}" /><select class="form-input pcm-cat">${catOpts(it.category || 'other')}</select><button type="button" class="icon-btn pcm-del" aria-label="Remove item">✕</button></div>`;
   window.pcAddRow = () => { $('pcm-items').insertAdjacentHTML('beforeend', rowHTML()); };
   const readRows = () => [...$('pcm-items').querySelectorAll('.pcm-row')].map(r => ({
+    id: r.dataset.iid, emoji: r.dataset.emoji || '', inPantry: r.dataset.inpantry === '1',
     name: r.querySelector('.pcm-name').value.trim(), qty: num(r.querySelector('.pcm-qty').value) || 1,
     price: r2(num(r.querySelector('.pcm-price').value)), category: r.querySelector('.pcm-cat').value,
     _blank: !r.querySelector('.pcm-name').value.trim() && !r.querySelector('.pcm-price').value
@@ -256,7 +311,7 @@
   $('pcm-items').addEventListener('click', e => {
     if (!e.target.closest('.pcm-del')) return;
     const rows = $('pcm-items').querySelectorAll('.pcm-row');
-    if (rows.length > 1) e.target.closest('.pcm-row').remove(); else rows[0].querySelectorAll('input').forEach(i => i.value = '');
+    if (rows.length > 1) e.target.closest('.pcm-row').remove(); else { const r0 = rows[0]; r0.querySelectorAll('input').forEach(i => i.value = ''); r0.dataset.iid = newItemId(); r0.dataset.emoji = ''; r0.dataset.inpantry = '0'; }
     updateTotal();
   });
   const showErr = m => { const e = $('pcm-error'); e.textContent = m; e.className = 'auth-error' + (m ? ' show' : ''); };
@@ -273,8 +328,15 @@
     $('pcm-items').innerHTML = (p && p.items.length ? p.items : [{}]).map(rowHTML).join('');
     showErr('');
     updateTotal();
+    $('pcm-pantry-wrap').style.display = p ? 'none' : '';            // 只有新增时才问
+    $('pcm-pantry').checked = !p;
     $('pc-overlay').classList.add('open');
   };
+  // 日期是几天前的旧账 → 食物多半已经吃完，默认不勾
+  $('pcm-date').addEventListener('change', () => {
+    const d = $('pcm-date').value;
+    if (validYMD(d)) $('pcm-pantry').checked = Math.round((parseYMD(today()) - parseYMD(d)) / 864e5) <= 2;
+  });
   window.pcClose = () => $('pc-overlay').classList.remove('open');
 
   window.pcSave = async () => {
@@ -288,9 +350,19 @@
     saving = true; $('pcm-save').disabled = true;
     try {
       const f = { date, retailer: $('pcm-retailer').value.trim(), receiptRef: $('pcm-ref').value.trim(), items };
-      if (editingId) await col().doc(editingId).update(toDoc(f));
-      else await col().doc(draftId).set({ ...toDoc(f), userId: currentUser.uid, source: 'manual', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-      pcClose(); toast(editingId ? 'Purchase updated' : 'Purchase saved');
+      const doc = toDoc(f), wasEditing = !!editingId, toPantry = !wasEditing && $('pcm-pantry').checked;
+      if (wasEditing) {
+        const old = purchases.find(x => x.id === editingId);
+        await col().doc(editingId).update(doc);
+        // 价格改了 → pantry 里对应食物的价格跟着改（库存价值、浪费金额才对得上）
+        if (old) for (const it of doc.items) {
+          const prev = (old.items || []).find(o => o.id === it.id);
+          if (!prev || prev.price === it.price) continue;
+          for (const food of foods.filter(x => x.purchaseId === editingId && x.purchaseItemId === it.id)) await updateFood(food.id, { price: it.price }).catch(console.error);
+        }
+      } else await col().doc(draftId).set({ ...doc, userId: currentUser.uid, source: 'manual', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      pcClose(); toast(wasEditing ? 'Purchase updated' : 'Purchase saved');
+      if (toPantry) openPantryModal({ id: draftId, date, retailer: f.retailer, items: doc.items }, doc.items.map((it, i) => ({ it, i })));
     } catch (e) { console.error(e); showErr('Could not save. Check your connection and try again.'); }
     saving = false; $('pcm-save').disabled = false;
   };
@@ -373,6 +445,11 @@
       card('This month vs last month', `<div class="pg-kpi-num">${RM(tt)}</div>
         <p class="pg-muted">${lm.length ? `Last month: ${RM(lt)} over ${lm.length} purchase${lm.length > 1 ? 's' : ''}.` : 'No purchases saved for last month.'}</p>
         ${ch === null ? '' : `<p class="pg-delta">${ch === 0 ? 'Same as last month.' : `${Math.abs(ch)}% ${ch > 0 ? 'more' : 'less'} than last month.`}</p>`}`, 'tint-yellow') +
+      card('Spent vs wasted', (() => {
+        const wasted = wasteLog.filter(w => w.date && w.date >= from && w.date <= to).reduce((s, w) => s + (Number(w.price) || 0), 0);
+        const nW = wasteLog.filter(w => w.date && w.date >= from && w.date <= to).length;
+        return `<div class="pg-kpi-num">${RM(wasted)}</div><p class="pg-muted">${nW} item${nW === 1 ? '' : 's'} logged as waste in this range${total > 0 ? `, about ${Math.round(wasted / total * 100)}% of the ${RM(total)} you spent` : ''}.</p>`;
+      })()) +
       card('Biggest category changes', diffs.length && lm.length
         ? `<ul class="pg-mini">${diffs.map(([c, v]) => `<li><span class="pg-emo">${CAT_ICON[c] || '📦'}</span><span class="pg-grow">${CAT_LABEL[c] || 'Other'}</span><b>${v >= 0 ? '+' : '−'}${RM(Math.abs(v))}</b></li>`).join('')}</ul>`
         : '<p class="pg-muted">Needs purchases from both months to compare.</p>') +
@@ -405,7 +482,7 @@
 
   function scanRow(it) {
     const days = parseInt(it.estimated_expiry_days) || 7;
-    return `<div class="sc-row" data-emoji="${esc(it.emoji || '🍽️')}">
+    return `<div class="sc-row" data-iid="${newItemId()}" data-emoji="${esc(it.emoji || '🍽️')}">
       <input type="checkbox" class="sc-add" checked title="Add to pantry" aria-label="Add to pantry" />
       <input class="form-input sc-name" value="${esc(it.name || '')}" aria-label="Item name" />
       <input class="form-input sc-qty" type="number" min="0" step="any" value="${num(it.quantity) || 1}" aria-label="Quantity" />
@@ -458,7 +535,7 @@
       name: r.querySelector('.sc-name').value.trim(), qty: num(r.querySelector('.sc-qty').value) || 1,
       price: r2(num(r.querySelector('.sc-price').value)), category: r.querySelector('.sc-cat').value,
       location: r.querySelector('.sc-loc').value, days: Math.max(parseInt(r.querySelector('.sc-days').value) || 7, 0),
-      emoji: r.dataset.emoji, add: r.querySelector('.sc-add').checked
+      id: r.dataset.iid, emoji: r.dataset.emoji, add: r.querySelector('.sc-add').checked
     })).filter(i => i.name);
     const date = $('sc-date').value, retailer = $('sc-retailer').value.trim();
     if (!rows.length) { alert('There are no items to save.'); return; }
@@ -471,9 +548,11 @@
     savingScan = true;
     const btn = $('add-to-inventory-btn');
     if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    // 先存购买记录（inPantry 先全是 false，等食物真的写进 pantry 后再标记）
+    const items = rows.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price, category: i.category, emoji: i.emoji, inPantry: false }));
     try {
       // 固定 ID：同一张收据无论点几次确认，都只会写入同一份文档
-      await col().doc(scan.id).set({ ...toDoc({ date, retailer, receiptRef: scan.file, items: rows }), userId: currentUser.uid, source: 'receipt', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      await col().doc(scan.id).set({ ...toDoc({ date, retailer, receiptRef: scan.file, items }), userId: currentUser.uid, source: 'receipt', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     } catch (e) {
       console.error(e);
       toast('Could not save the purchase, so nothing was added to your pantry. Try again.');
@@ -481,23 +560,126 @@
       if (btn) { btn.disabled = false; btn.textContent = 'Save purchase & add to pantry'; }
       return;
     }
-    let added = 0;
-    try {
-      for (const it of rows.filter(i => i.add)) {
-        const exp = new Date(); exp.setDate(exp.getDate() + it.days);
-        await addFood({
-          name: it.name, expiry: ymd(exp), emoji: it.emoji, qty: String(it.qty), note: 'Auto-added from receipt scan',
-          location: it.location, category: it.category, price: it.price
-        });
-        added++;
-      }
-    } catch (e) { console.error(e); toast(`Purchase saved, but only ${added} item(s) reached your pantry.`); savingScan = false; if (btn) { btn.disabled = false; } return; }
+    // 再把勾选的行加入 pantry，并且和这张购买记录连起来
+    const entries = rows.map((r, i) => r.add ? { i, name: r.name, qty: r.qty, location: r.location, expiry: (() => { const e = new Date(); e.setDate(e.getDate() + r.days); return ymd(e); })() } : null).filter(Boolean);
+    const sid = scan.id, res = await addItemsToPantry(sid, items, entries);
     savingScan = false;
     if (btn) btn.disabled = false;
-    resetReceiptUI();
-    toast(`Purchase saved. ${added} item${added === 1 ? '' : 's'} added to your pantry.`);
+    resetReceiptUI();      // 购买记录已经存好了：剩下没加进去的可以到 Purchases 页面再加，避免重复添加
+    if (res.error) { toast(`Purchase saved, but only ${res.added} of ${entries.length} item(s) reached your pantry. Add the rest from the Purchases page.`, 5000); switchView('purchases'); open.add(sid); renderPurchases(); return; }
+    toast(`Purchase saved. ${res.added} item${res.added === 1 ? '' : 's'} added to your pantry.`);
     switchView('pantry');
   };
+
+  // ═════════ 7. Purchases ↔ Pantry 连接 ═════════
+  // 把一批商品写进 pantry（每件食物带着 purchaseId + purchaseItemId），再回头把购买记录里这些行标记为 inPantry。
+  // entries: [{ i: 商品在 items 里的位置, name, qty, location, expiry }]
+  async function addItemsToPantry(pid, items, entries) {
+    const next = items.map(cleanItem);            // 旧记录没有 ID 的行在这里补上
+    const done = new Set(); let error = null;
+    for (const e of entries) {
+      const it = next[e.i];
+      try {
+        await addFood({
+          name: e.name, expiry: e.expiry, emoji: it.emoji || CAT_ICON[it.category] || '🍽️', qty: String(e.qty),
+          note: 'From purchase', location: e.location, category: it.category, price: it.price,
+          purchaseId: pid, purchaseItemId: it.id
+        });
+        done.add(e.i);
+      } catch (ex) { console.error(ex); error = ex; break; }
+    }
+    if (done.size) {
+      try {
+        await col().doc(pid).update({ items: next.map((it, i) => ({ ...it, inPantry: it.inPantry || done.has(i) })), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      } catch (ex) { console.error(ex); error = error || ex; }
+    }
+    return { added: done.size, error };
+  }
+
+  // Pantry 卡片上的来源标签
+  window.pcChip = f => {
+    if (!f.purchaseId) return '';
+    const p = purchases.find(x => x.id === f.purchaseId);
+    return p ? `<button class="pc-chip" onclick="pcJump('${p.id}')" title="Open this purchase">🧾 ${esc(p.retailer || 'Purchase')} · ${fmtDate(p.date)}</button>` : '';
+  };
+
+  // Pantry → 购买记录
+  window.pcJump = id => {
+    if (bulkMode) return;
+    switchView('purchases');
+    open.add(id);
+    ['pc-q', 'pc-year', 'pc-month', 'pc-from', 'pc-to'].forEach(i => $(i).value = '');
+    renderPurchases();
+    const el = $('pc-' + id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  // 购买记录 → Pantry（直接过滤出那件食物）
+  window.pcFindInPantry = (pid, idx) => {
+    const p = purchases.find(x => x.id === pid), it = p && p.items[idx];
+    if (!it) return;
+    const food = foods.find(f => f.purchaseId === pid && f.purchaseItemId === it.id);
+    const q = food ? food.name : it.name;
+    switchView('pantry');
+    $('search-input').value = q; handleSearch(q);
+    $('loc-filter').value = 'all'; handleLocationFilter('all');
+  };
+
+  // 「加入 pantry」弹窗
+  let pp = null, ppSaving = false;
+  const ppErr = m => { const e = $('pp-error'); e.textContent = m; e.className = 'auth-error' + (m ? ' show' : ''); };
+  window.pcToPantry = (pid, idx) => {
+    const p = purchases.find(x => x.id === pid); if (!p) return;
+    const list = (p.items || []).map((it, i) => ({ it, i })).filter(x => itemStatus(p, x.it).k === 'none' && (idx === undefined || x.i === idx));
+    if (!list.length) { toast('Everything here is already in your pantry'); return; }
+    openPantryModal(p, list);
+  };
+  function openPantryModal(p, list) {
+    pp = { p };
+    $('pp-sub').textContent = `From ${p.retailer || 'your purchase'} on ${fmtDateFull(p.date)}. Untick anything you do not want in your pantry (for example food that is already eaten).`;
+    $('pp-rows').innerHTML = list.map(({ it, i }) => {
+      const cat = CATS.includes(it.category) ? it.category : 'other', loc = LOC_BY_CAT[cat];
+      return `<div class="pp-row" data-i="${i}" data-cat="${cat}">
+        <input type="checkbox" class="pp-on" checked aria-label="Add to pantry" />
+        <input class="form-input pp-name" value="${esc(it.name)}" aria-label="Item name" />
+        <input class="form-input pp-qty" value="${esc(it.qty)}" aria-label="Quantity" />
+        <select class="form-input pp-loc" aria-label="Storage">${locOpts(loc)}</select>
+        <input class="form-input pp-exp" type="date" value="${expiryFor(loc, cat)}" aria-label="Expiry date" /></div>`;
+    }).join('');
+    ppErr('');
+    $('pp-save').disabled = false; $('pp-save').textContent = 'Add to pantry';
+    $('pp-overlay').classList.add('open');
+  }
+  $('pp-rows').addEventListener('input', e => { if (e.target.classList.contains('pp-exp')) e.target.dataset.dirty = '1'; });
+  $('pp-rows').addEventListener('change', e => {       // 换存放位置 → 如果过期日还没被手动改过，就按新位置重新估算
+    if (!e.target.classList.contains('pp-loc')) return;
+    const row = e.target.closest('.pp-row'), exp = row.querySelector('.pp-exp');
+    if (!exp.dataset.dirty) exp.value = expiryFor(e.target.value, row.dataset.cat);
+  });
+  window.ppClose = () => { $('pp-overlay').classList.remove('open'); pp = null; };
+  window.ppSave = async () => {
+    if (ppSaving || !pp) return;
+    const entries = [...$('pp-rows').querySelectorAll('.pp-row')].filter(r => r.querySelector('.pp-on').checked).map(r => ({
+      i: +r.dataset.i, name: r.querySelector('.pp-name').value.trim(), qty: r.querySelector('.pp-qty').value.trim() || '1',
+      location: r.querySelector('.pp-loc').value, expiry: r.querySelector('.pp-exp').value
+    }));
+    if (!entries.length) return ppErr('Tick at least one item, or close this window.');
+    if (entries.some(e => !e.name)) return ppErr('Give every ticked item a name.');
+    if (entries.some(e => !validYMD(e.expiry))) return ppErr('Pick an expiry date for every ticked item.');
+    ppSaving = true; $('pp-save').disabled = true; $('pp-save').textContent = 'Adding...';
+    const { p } = pp;
+    const res = await addItemsToPantry(p.id, p.items, entries);
+    ppSaving = false;
+    if (res.error) {
+      $('pp-save').disabled = false; $('pp-save').textContent = 'Add to pantry';
+      if (!res.added) return ppErr('Could not add to your pantry. Check your connection and try again.');
+      ppClose(); toast(`Only ${res.added} of ${entries.length} item(s) reached your pantry. Add the rest again from this purchase.`, 5000); return;
+    }
+    ppClose(); toast(`${res.added} item${res.added === 1 ? '' : 's'} added to your pantry.`);
+  };
+
+  // 食物被吃掉 / 记为浪费 / 过期日变化 → app.js 会重画 pantry，这里顺带刷新购买记录里的状态
+  if (_render) window.render = function () { _render.apply(this, arguments); try { renderAll(); } catch (e) { console.error(e); } };
+  if (_renderWaste) window.renderWasteLog = function () { _renderWaste.apply(this, arguments); try { renderAll(); } catch (e) { console.error(e); } };
 
   // 初始化：重画侧边栏（加入两个新入口）和当前语言
   try { renderSidebar(); } catch (e) { console.error(e); }
