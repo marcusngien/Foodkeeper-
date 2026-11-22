@@ -73,7 +73,7 @@
   let isAdmin = false, ws = null, bizView = 'biz-home', pendingType = null, ready = false, failsafe = null;
   let unsubs = [];
   let form = null;                                      // 企业档案表单的临时状态（待上传的文件、Logo）
-  let adminList = [], adminSel = null, adminFilter = 'pending_review', adminErr = '', unsubAdmin = null;
+  let adminList = [], adminSel = null, adminFilter = 'all', adminErr = '', unsubAdmin = null, autoApprove = false, unsubSet = null;
   let busy = false;
 
   const uidNow = () => (auth.currentUser || {}).uid;
@@ -196,6 +196,7 @@
   function stopAll() {
     unsubs.forEach(u => { try { u(); } catch (e) {} }); unsubs = [];
     if (unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
+    if (unsubSet) { unsubSet(); unsubSet = null; } autoApprove = false;
     accDoc = biz = ver = null; seen = { acc: false, biz: false }; bizError = false; isAdmin = false; ws = null; ready = false; form = null;
     adminList = []; adminSel = null; busy = false;
     clearTimeout(failsafe); document.body.classList.remove('fk-acct-loading');
@@ -427,9 +428,10 @@
     else if (s === 'verified') h = b('bf-save-min', 'solid', 'Save changes') + b('bf-reopen', 'line', 'Edit all details (needs re-review)');
     else h = b('bf-submit', 'solid', 'Submit for review') + b('bf-draft', 'line', 'Save draft') + (s === 'none' ? b('bf-later', 'line', 'Finish later') : '');
     if (isAdmin && ['none', 'draft', 'rejected'].includes(s)) h += b('bf-instant', 'line', 'Admin: save & verify now');
+    if (isAdmin && s === 'pending_review') h += b('bf-approve-now', 'solid', 'Admin: verify now');
     el.innerHTML = h;
     const on = (id, fn) => { const x = $(id); if (x) x.addEventListener('click', fn); };
-    on('bf-submit', () => saveBusiness(true)); on('bf-draft', () => saveBusiness(false)); on('bf-instant', () => saveBusiness(false, true));
+    on('bf-submit', () => saveBusiness(true)); on('bf-draft', () => saveBusiness(false)); on('bf-instant', () => saveBusiness(false, true)); on('bf-approve-now', approveOwn);
     on('bf-save-min', saveMinor); on('bf-reopen', reopenAll); on('bf-withdraw', withdraw);
     on('bf-later', () => { form = null; bizGo('biz-home'); });
   }
@@ -498,7 +500,7 @@
     if (instant && !confirm('Save this organisation and mark it Verified right away, without review?')) return;
     if (submit && !confirm('Submit your organisation for review? It becomes read-only while it is being reviewed, and you can withdraw it at any time.')) return;
     showFormErr(''); setBusy(true, submit ? 'Submitting…' : 'Saving…');
-    let stage = 'account type';
+    let stage = 'account type', auto = false;
     try {
       await ensureAccountDoc(uid);
       stage = 'organisation profile';
@@ -516,15 +518,31 @@
       // 步骤 C：提交审核
       stage = 'submit';
       if (instant) await bizRef(uid).update({ status: 'verified', reviewedAt: stamp(), reviewedBy: uid, verifiedAt: stamp(), updatedAt: stamp() });
-      else if (submit) await bizRef(uid).update({ status: 'pending_review', submittedAt: stamp(), updatedAt: stamp() });
+      else if (submit) {
+        try { const cfg = await db.collection('settings').doc('business').get(); auto = cfg.exists && cfg.data().autoApprove === true; } catch (e) { console.error(e); }
+        if (auto) await bizRef(uid).update({ status: 'verified', submittedAt: stamp(), verifiedAt: stamp(), autoVerified: true, updatedAt: stamp() });
+        else await bizRef(uid).update({ status: 'pending_review', submittedAt: stamp(), updatedAt: stamp() });
+      }
       form = null; busy = false;
-      toast(instant ? 'Verified' : submit ? 'Submitted for review' : 'Draft saved');
+      toast(instant || auto ? 'Verified' : submit ? 'Submitted for review' : 'Draft saved');
       bizGo(instant ? 'biz-home' : submit ? 'biz-home' : 'biz-profile');
     } catch (e) {
       console.error(e);
       busy = false; renderActions();
       showFormErr(e.code === 'permission-denied' ? `The server refused this change (step: ${stage}). Publish the latest firestore.rules in Firebase, wait a few seconds, reload and try again.` : 'Could not save. Check your connection and try again.');
     }
+  }
+
+  async function approveOwn() {      // 管理员：自己的申请审核中 → 直接通过
+    if (busy || !isAdmin || !confirm('Mark this organisation as Verified right away?')) return;
+    const uid = uidNow(); busy = true;
+    try {
+      const batch = db.batch();
+      batch.update(bizRef(uid), { status: 'verified', reviewedAt: stamp(), reviewedBy: uid, verifiedAt: stamp(), updatedAt: stamp() });
+      batch.set(verRef(uid), { review: { note: '', by: (auth.currentUser || {}).email || uid, at: Date.now(), status: 'verified' } }, { merge: true });
+      await batch.commit();
+      form = null; busy = false; toast('Verified'); bizGo('biz-home');
+    } catch (e) { console.error(e); busy = false; showFormErr('Could not verify. Try again.'); }
   }
 
   async function saveMinor() {      // Verified：只改联系方式 / 简介 / 地址 / Logo
@@ -576,6 +594,9 @@
 
   // ═════════ 7. 管理员审核（只有带 admin 声明的账号才看得到；真正的权限由 Firestore 规则把关）═════════
   function renderAdmin(root) {
+    if (!unsubSet) unsubSet = db.collection('settings').doc('business').onSnapshot(
+      s => { autoApprove = !!(s.exists && s.data().autoApprove === true); if (bizView === 'biz-admin' && ready) drawAdmin($('biz-root')); },
+      e => console.error('settings', e));
     if (!unsubAdmin) {
       unsubAdmin = db.collection('businesses').orderBy('updatedAt', 'desc').onSnapshot(
         snap => { adminList = snap.docs.map(d => ({ uid: d.id, ...d.data() })); adminErr = ''; if (bizView === 'biz-admin' && ready) drawAdmin($('biz-root')); },
@@ -591,7 +612,9 @@
     root.innerHTML = `<section class="pg-view pg-biz">
       ${hero('blue', 'Verification review', 'Approve, reject or suspend organisation profiles. Rejections and suspensions need a note the organisation can read.')}
       ${adminErr ? `<div class="auth-error show">${esc(adminErr)}</div>` : ''}
-      <div class="pg-chips">${[['pending_review', 'Pending Review'], ['verified', 'Verified'], ['rejected', 'Rejected'], ['suspended', 'Suspended'], ['draft', 'Draft'], ['all', 'All']].map(([k, l]) => `<button class="pg-chip blue ${adminFilter === k ? 'on' : ''}" onclick="adminFilterSet('${k}')">${l}${k === 'all' ? '' : ` (${counts(k)})`}</button>`).join('')}</div>
+      ${card('Registration mode', `<p class="pg-muted">${autoApprove ? '<b>Auto-approve is ON.</b> New business accounts go live the moment they submit. You can still see, suspend or reject any of them below.' : '<b>Auto-approve is OFF.</b> New business accounts wait for your review.'}</p>
+        <div class="adm-actions"><button class="pg-btn ${autoApprove ? 'line' : 'solid'}" onclick="adminToggleAuto()">${autoApprove ? 'Turn off auto-approve' : 'Turn on auto-approve'}</button>${autoApprove && counts('pending_review') ? `<button class="pg-btn line" onclick="adminApproveAllPending()">Approve ${counts('pending_review')} pending now</button>` : ''}</div>`, autoApprove ? 'tint-green' : '')}
+      <div class="pg-chips">${[['pending_review', 'Pending Review'], ['verified', 'Verified'], ['rejected', 'Rejected'], ['suspended', 'Suspended'], ['draft', 'Draft'], ['all', 'All']].map(([k, l]) => `<button class="pg-chip blue ${adminFilter === k ? 'on' : ''}" onclick="adminFilterSet('${k}')">${l} (${k === 'all' ? adminList.length : counts(k)})</button>`).join('')}</div>
       <div class="pg-body"><div class="pg-main">
         ${rows.length ? rows.map(b => `<button class="adm-row ${b.uid === adminSel ? 'on' : ''}" onclick="adminPick('${b.uid}')"><span class="pg-grow"><b>${esc(b.orgName || '(no name)')}</b><small>${esc(TYPE_LABEL[b.orgType] || '')} · ${esc([b.district, b.state].filter(Boolean).join(', '))} · ${(b.capabilities || []).map(k => CAPS[k] ? CAPS[k].label : k).join(', ')}</small></span>${chip(b.status || 'draft')}</button>`).join('') : '<div class="empty"><div class="empty-icon">🗂️</div><p>Nothing in this list.</p></div>'}
       </div><aside class="pg-side" id="adm-side">${cur ? '<p class="pg-muted">Loading…</p>' : card('Details', '<p class="pg-muted">Pick an organisation to review it.</p>')}</aside></div></section>`;
@@ -624,6 +647,26 @@
       try { window.open(await firebase.storage().ref(a.dataset.doc).getDownloadURL(), '_blank', 'noopener'); } catch (err) { console.error(err); toast('Could not open that file.'); }
     }));
   }
+  window.adminToggleAuto = async function () {
+    if (busy || !isAdmin) return;
+    const next = !autoApprove; busy = true;
+    try {
+      await db.collection('settings').doc('business').set({ autoApprove: next, updatedAt: stamp(), by: (auth.currentUser || {}).email || '' }, { merge: true });
+      toast(next ? 'Auto-approve is on' : 'Auto-approve is off');
+    } catch (e) { console.error(e); toast('Could not change this setting. Publish the latest firestore.rules first.', 4200); }
+    busy = false;
+  };
+  window.adminApproveAllPending = async function () {
+    const list = adminList.filter(b => (b.status || 'draft') === 'pending_review').slice(0, 400);
+    if (busy || !isAdmin || !list.length || !confirm('Approve ' + list.length + ' pending organisation(s) now?')) return;
+    busy = true;
+    try {
+      const batch = db.batch(), u = auth.currentUser;
+      list.forEach(b => batch.update(bizRef(b.uid), { status: 'verified', reviewedAt: stamp(), reviewedBy: u.uid, verifiedAt: stamp(), updatedAt: stamp() }));
+      await batch.commit(); toast('Approved ' + list.length);
+    } catch (e) { console.error(e); toast('Could not approve them. Try again.'); }
+    busy = false;
+  };
   window.adminSet = async function (status) {
     if (busy || !adminSel) return;
     const note = ($('adm-note') || {}).value ? $('adm-note').value.trim() : '';
