@@ -803,7 +803,9 @@ function saveShopItems() {
 async function addWasteEntry(f) {
   await userRef().collection('waste').add({
     name: f.name, emoji: f.emoji || '🍽️', date: today(),
-    price: f.price || 0, createdAt: Date.now()
+    price: f.price || 0, createdAt: Date.now(),
+    // 来源购买记录（没有就是 null）：让 Purchases 页面能显示「这一项最后被浪费了」
+    purchaseId: f.purchaseId || null, purchaseItemId: f.purchaseItemId || null
   });
 }
 
@@ -943,6 +945,7 @@ function foodCardHTML(f, groupClass) {
           <span>Exp: ${fmtDate(f.expiry)}</span>
         </div>
         ${f.note ? `<div class="food-note">${esc(f.note)}</div>` : ''}
+        ${window.pcChip ? window.pcChip(f) : ''}
       </div>
       <div class="card-badge-wrap">
         <span class="badge ${badge.cls}">${badge.text}</span>
