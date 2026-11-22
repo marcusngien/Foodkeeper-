@@ -486,8 +486,26 @@
   body.appendChild(main);
   const side = document.createElement('aside');
   side.className = 'pg-side';
-  side.id = 'pg-side-awareness';
   body.appendChild(side);
+
+  // ── 线条图标（代替 emoji）──
+  const svg = (d, s = 24) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const P = {
+    coin: '<circle cx="12" cy="12" r="9"/><path d="M14.6 9.3c-.6-.8-1.6-1.3-2.6-1.3-1.5 0-2.6.8-2.6 2s1.1 1.7 2.6 2 2.6.8 2.6 2-1.1 2-2.6 2c-1 0-2-.5-2.6-1.3M12 5.5V8M12 16v2.5"/>',
+    therm: '<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 9v7"/>',
+    land: '<path d="M2.5 20 9 9l4.5 7L16 12l5.5 8z"/><path d="M2.5 20h19"/>',
+    drop: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/><path d="M9.5 15a2.8 2.8 0 0 0 2.5 2.5"/>',
+    bowl: '<path d="M3 12h18a9 9 0 0 1-18 0z"/><path d="M8 8c0-2 2-2 2-4M13 8c0-2 2-2 2-4"/>',
+    sprout: '<path d="M12 21v-9"/><path d="M12 12c0-4 3-6 7-6 0 4-3 6-7 6z"/><path d="M12 15c0-3-2-5-6-5 0 3 2 5 6 5z"/>',
+    refuse: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
+    reduce: '<path d="M3.5 7l6 6 4-4 7 7"/><path d="M20.5 11v5h-5"/>',
+    recycle: '<path d="M20 12a8 8 0 0 1-14 5.3M4 12a8 8 0 0 1 14-5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>',
+    repair: '<rect x="6" y="8" width="12" height="13" rx="3"/><path d="M8 8V4.5h8V8M6 13h12"/>',
+    think: '<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>',
+    bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+    arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>'
+  };
+  const tile = (k, c, s = 24) => `<span class="aw-tile ${c}">${svg(P[k], s)}</span>`;
 
   view.insertAdjacentHTML('beforeend', `
     <header class="pg-hero tone-yellow">
@@ -509,21 +527,12 @@
     </section>`);
   view.appendChild(body);
 
-  const WHY = [
-    ['💸', 'It costs you money', 'Families pay for food that is never eaten. Over a lifetime that adds up to tens of thousands of ringgit.', 'tint-yellow'],
-    ['🌡️', 'It heats the planet', 'Food rotting in landfill produces methane, a greenhouse gas about 80 times stronger than CO₂ over 20 years.', ''],
-    ['🏔️', 'It fills our landfills', 'Food is one of the biggest parts of Malaysia\'s solid waste. Landfills pollute soil and groundwater and take up land.', ''],
-    ['💧', 'It wastes resources', 'Every discarded item also wastes the water, energy and land used to grow, move and store it.', 'tint-blue'],
-    ['🍽️', 'It sits next to hunger', 'Millions of people go hungry while food is thrown away. Cutting household waste is also about fairness.', ''],
-    ['🧒', 'It shapes the next generation', 'Children who grow up in waste-aware homes keep those habits for life.', 'tint-green']
-  ];
-
   const R = [
-    { k: 'Refuse', i: '🚫', h: 'Say no to what you do not need', p: 'Skip impulse buys and promo bundles that lead to overbuying. Look in your pantry before you shop.', tip: 'Never shop when hungry. You will buy more than you need.', go: ['shopping', 'Open shopping list'] },
-    { k: 'Reduce', i: '📉', h: 'Buy less, waste less', p: 'Buy only what you will eat, cook smaller portions, watch expiry dates and plan your meals for the week.', tip: 'A shopping list stops over-buying. Food Keeper has one built in.', go: ['shopping', 'Plan a shopping list'] },
-    { k: 'Recycle', i: '♻️', h: 'Give scraps a second life', p: 'Compost food scraps, reuse packaging, and turn peels and bones into stock instead of binning them.', tip: 'Composting scraps cuts the methane that landfills produce.', go: ['recipes', 'Get a zero-waste menu'] },
-    { k: 'Repair', i: '🔧', h: 'Make food last longer', p: 'Store food properly, freeze it, pickle it or ferment it. Wilted vegetables often revive in cold water.', tip: 'Move items that expire soon to the front of the fridge.', go: ['pantry', 'Check my pantry'] },
-    { k: 'Reconsider', i: '🤔', h: 'Think before you act', p: 'Is that second pack really needed? Is the deal worth it if half of it gets thrown away?', tip: 'Ask yourself: will I actually eat this before it expires?', go: ['waste', 'Review my waste log'] }
+    { k: 'Refuse', s: 'Say no to extras', i: 'refuse', c: 'c-r', h: 'Say no to what you do not need', p: 'Skip impulse buys and promo bundles that lead to overbuying. Look in your pantry before you shop.', tip: 'Never shop when hungry. You will buy more than you need.', go: ['shopping', 'Open shopping list'] },
+    { k: 'Reduce', s: 'Buy and cook less', i: 'reduce', c: 'c-y', h: 'Buy less, waste less', p: 'Buy only what you will eat, cook smaller portions, watch expiry dates and plan your meals for the week.', tip: 'A shopping list stops over-buying. Food Keeper has one built in.', go: ['shopping', 'Plan a shopping list'] },
+    { k: 'Recycle', s: 'Give scraps a new life', i: 'recycle', c: 'c-g', h: 'Give scraps a second life', p: 'Compost food scraps, reuse packaging, and turn peels and bones into stock instead of binning them.', tip: 'Composting scraps cuts the methane that landfills produce.', go: ['recipes', 'Get a zero-waste menu'] },
+    { k: 'Repair', s: 'Make food last', i: 'repair', c: 'c-b', h: 'Make food last longer', p: 'Store food properly, freeze it, pickle it or ferment it. Wilted vegetables often revive in cold water.', tip: 'Move items that expire soon to the front of the fridge.', go: ['pantry', 'Check my pantry'] },
+    { k: 'Reconsider', s: 'Pause before you buy', i: 'think', c: 'c-n', h: 'Think before you act', p: 'Is that second pack really needed? Is the deal worth it if half of it gets thrown away?', tip: 'Ask yourself: will I actually eat this before it expires?', go: ['waste', 'Review my waste log'] }
   ];
   let ri = 0;
   window.pgR = i => { ri = i; window.renderAwareness(); };
@@ -532,21 +541,59 @@
     const c = $('awareness-container');
     if (!c) return;
     const r = R[ri];
-    c.innerHTML = `
-      <h3 class="aw-title">Why it matters</h3>
-      <div class="aw-grid">${WHY.map(w => `<article class="pg-card ${w[3]}"><span class="aw-ico">${w[0]}</span><h4>${w[1]}</h4><p class="pg-muted">${w[2]}</p></article>`).join('')}</div>
 
-      <h3 class="aw-title">The 5R framework: what you can do</h3>
-      <div class="pg-chips">${R.map((x, i) => `<button class="pg-chip ${i === ri ? 'on' : ''}" onclick="pgR(${i})">${x.i} ${x.k}</button>`).join('')}</div>
-      <article class="aw-r">
-        <div class="aw-r-ico">${r.i}</div>
-        <div class="pg-grow">
-          <h3>${r.k}: ${r.h}</h3>
-          <p>${r.p}</p>
-          <div class="pg-have">💡 ${r.tip}</div>
-          <button class="pg-btn solid" style="margin-top:14px" onclick="switchView('${r.go[0]}')">${r.go[1]}</button>
+    c.innerHTML = `
+    <section class="aw-sec">
+      <div class="aw-head"><h3>Why it matters</h3><p>Six reasons a full bin is worth caring about.</p></div>
+      <div class="aw-bento">
+        <article class="aw-card c-b feat">
+          <div class="aw-card-top">${tile('therm', 'c-b')}<h4>It heats the planet</h4></div>
+          <p>Food rotting in landfill releases methane, a greenhouse gas about 80 times stronger than CO₂ over 20 years.</p>
+          <div class="aw-vs">
+            <div><span>CO₂</span><div class="pg-bar"><i style="width:1.25%"></i></div><b>1×</b></div>
+            <div><span>Methane</span><div class="pg-bar warn"><i style="width:100%"></i></div><b>80×</b></div>
+          </div>
+        </article>
+        <article class="aw-card c-y">
+          <div class="aw-card-top">${tile('coin', 'c-y')}<h4>It costs you money</h4></div>
+          <p>Families pay for food that is never eaten. Over a lifetime that adds up to tens of thousands of ringgit.</p>
+        </article>
+        <article class="aw-card c-g">
+          <div class="aw-card-top">${tile('land', 'c-g')}<h4>It fills our landfills</h4></div>
+          <p>Food is one of the biggest parts of Malaysia's solid waste. Landfills pollute soil and groundwater and take up land.</p>
+        </article>
+        <article class="aw-card c-b">
+          <div class="aw-card-top">${tile('drop', 'c-b')}<h4>It wastes resources</h4></div>
+          <p>Every discarded item also wastes the water, energy and land used to grow, move and store it.</p>
+        </article>
+        <article class="aw-card c-y">
+          <div class="aw-card-top">${tile('bowl', 'c-y')}<h4>It sits next to hunger</h4></div>
+          <p>Millions of people go hungry while food is thrown away. Cutting household waste is also about fairness.</p>
+        </article>
+        <article class="aw-card c-g wide">
+          ${tile('sprout', 'c-g', 28)}
+          <div><h4>It shapes the next generation</h4><p>Children who grow up in waste-aware homes keep those habits for life. Every small change you make at home is one they copy.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="aw-sec">
+      <div class="aw-head"><h3>The 5R framework</h3><p>Pick one to see what it means and where to do it in Food Keeper.</p></div>
+      <div class="aw-r5">
+        <div class="aw-r5-list" role="group" aria-label="5R steps">
+          ${R.map((x, i) => `<button class="aw-r5-item ${x.c} ${i === ri ? 'on' : ''}" onclick="pgR(${i})" aria-pressed="${i === ri}">${tile(x.i, x.c, 20)}<span><b>${x.k}</b><small>${x.s}</small></span></button>`).join('')}
         </div>
-      </article>`;
+        <article class="aw-r5-panel ${r.c}">
+          ${tile(r.i, r.c, 34).replace('aw-tile', 'aw-tile big')}
+          <div class="aw-r5-body">
+            <h3>${r.h}</h3>
+            <p>${r.p}</p>
+            <div class="aw-tip">${svg(P.bulb, 20)}<span>${r.tip}</span></div>
+            <button class="pg-btn solid" onclick="switchView('${r.go[0]}')">${r.go[1]}</button>
+          </div>
+        </article>
+      </div>
+    </section>`;
 
     // 右侧：你自己的数字 vs 马来西亚平均
     const year = new Date().getFullYear(), mk = today().slice(0, 7);
@@ -557,14 +604,12 @@
     const verdict = !wasteLog.length
       ? 'Log what you throw away and your own numbers appear here.'
       : mo <= avgMonth ? `You are ${fmtRM(avgMonth - mo)} under the average household this month.` : `You are ${fmtRM(mo - avgMonth)} over the average household this month.`;
+    const go = (ico, txt, v) => `<li><button class="aw-go" onclick="switchView('${v}')">${ic(ico, 20)}<span>${txt}</span>${svg(P.arrow, 16)}</button></li>`;
     side.innerHTML =
       card('You vs the average household', `<div class="pg-kpi-num">${fmtRM(mo)}</div>
         <div class="pg-row"><div class="pg-row-top"><span>This month</span><b>average ${fmtRM(avgMonth)}</b></div><div class="pg-bar ${mo > avgMonth ? 'warn' : ''}"><i style="width:${pct}%"></i></div></div>
         <p class="pg-muted">${verdict}</p><p class="pg-muted">Wasted so far in ${year}: <b>${fmtRM(yr)}</b></p>`, 'tint-yellow') +
-      card('Start small', `<ul class="pg-mini">
-        <li><span class="pg-emo">🥦</span><span class="pg-grow">Add what is in your fridge</span><button class="hd-link" onclick="switchView('pantry')">Go</button></li>
-        <li><span class="pg-emo">🧾</span><span class="pg-grow">Scan your next receipt</span><button class="hd-link" onclick="switchView('receipt')">Go</button></li>
-        <li><span class="pg-emo">📝</span><span class="pg-grow">Test what you learned</span><button class="hd-link" onclick="switchView('quiz')">Go</button></li></ul>`, 'tint-green');
+      card('Start small', `<ul class="aw-gos">${go('pantry', 'Add what is in your fridge', 'pantry')}${go('receipt', 'Scan your next receipt', 'receipt')}${go('quiz', 'Test what you learned', 'quiz')}</ul>`, 'tint-green');
   };
 
   window.renderAwareness();
