@@ -189,3 +189,14 @@
   .pg-kpi, .pg-view > .stats .stat { border-right: 0; border-bottom: 1px solid var(--border); }
 }
 @media (prefers-reduced-motion: reduce) { .pg-bar > i, .pg-btn { transition: none !important; } }
+
+/* ── Awareness ── */
+.aw-title { font-size: 20px; font-weight: 700; letter-spacing: -.5px; margin: 8px 0 -2px; }
+.aw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.aw-grid .pg-card { gap: 8px; }
+.aw-ico { font-size: 26px; line-height: 1; }
+.aw-r { display: flex; gap: 22px; align-items: flex-start; padding: 26px; background: var(--surface); border: 1px solid var(--border2); border-radius: 4px 24px 4px 24px; border-top: 4px solid var(--accent); }
+.aw-r-ico { font-size: 52px; line-height: 1; }
+.aw-r h3 { font-size: 20px; letter-spacing: -.4px; margin-bottom: 8px; }
+.aw-r p { color: var(--text2); font-size: 14.5px; line-height: 1.6; margin-bottom: 12px; }
+@media (max-width: 640px) { .aw-r { flex-direction: column; gap: 12px; } }
