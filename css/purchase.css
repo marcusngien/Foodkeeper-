@@ -53,3 +53,37 @@
 .sc-row input[type="checkbox"] { width: 18px; height: 18px; justify-self: center; accent-color: var(--accent); }
 .sc-headrow { margin-top: 0; font-size: 12px; font-weight: 500; color: var(--text2); }
 .sc-headrow span:first-child { text-align: center; }
+
+/* ── Purchases ↔ Pantry 连接 ── */
+/* Pantry 卡片上的来源标签 */
+.pc-chip { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; padding: 3px 9px; border: 1px solid var(--border2); border-radius: 999px; background: var(--surface2); color: var(--text2); font: 500 11.5px var(--font); cursor: pointer; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-chip:hover { border-color: var(--fk-blue); color: var(--text); }
+.pc-chip:focus-visible, .pc-st:focus-visible { outline: 2px solid var(--fk-blue); outline-offset: 1px; }
+body.bulk-active .pc-chip { pointer-events: none; }
+
+/* Purchases 里每一行的 pantry 状态 */
+.pc-items th:nth-last-child(2), .pc-items td.pc-stcell { text-align: left; font-family: var(--font); white-space: nowrap; }
+.pc-st { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font: 500 12px var(--font); }
+button.pc-st { cursor: pointer; }
+.pc-st.add { background: transparent; border-style: dashed; color: var(--text); }
+.pc-st.add:hover { border-color: var(--accent); color: var(--accent); }
+.pc-st.in.badge-green { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+.pc-st.in.badge-amber { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+.pc-st.in.badge-red   { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red-border); }
+.pc-st.waste { background: var(--red-bg); color: var(--red-text); border-color: var(--red-border); }
+.pc-in-count { color: var(--green-text); font-weight: 600; }
+
+/* 手动新增弹窗里的「同时加入 pantry」 */
+.pcm-pantry { display: flex; align-items: flex-start; gap: 8px; margin: 4px 0 10px; font-size: 13.5px; cursor: pointer; }
+.pcm-pantry input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); }
+
+/* 「加入 pantry」弹窗 */
+.pp-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) 70px 104px 138px; gap: 8px; align-items: center; margin-top: 8px; }
+.pp-row .form-input { padding: 8px 10px; font-size: 13.5px; }
+.pp-row input[type="checkbox"] { width: 18px; height: 18px; justify-self: center; accent-color: var(--accent); }
+.pp-head { font-size: 12px; color: var(--text2); font-weight: 500; margin-top: 10px; }
+@media (max-width: 560px) {
+  .pp-row { grid-template-columns: 26px minmax(0, 1fr) 56px 94px; }
+  .pp-row .pp-exp, .pp-head span:nth-child(5) { grid-column: 2 / -1; }
+  .pp-head span:nth-child(5) { display: none; }
+}
