@@ -335,6 +335,69 @@
         <li><span class="pg-emo">🥶</span><span class="pg-grow">Freeze leftovers within two days</span></li></ul>`);
   }
 
+  // ═════════ Leaderboard：周日期 + 日历 ═════════
+  const p2 = n => String(n).padStart(2, '0');
+  const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const dKey = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+  const sMon = d => d.toLocaleDateString('en-GB', { month: 'short' });
+  // ISO 第 n 周（周一开始，和 getWeekNumber 一致）的日期范围，例如 "16–22 Nov" / "30 Nov – 6 Dec"
+  window.weekRange = function (year, n) {
+    const j4 = new Date(year, 0, 4), mon = new Date(year, 0, 4 - ((j4.getDay() + 6) % 7) + (n - 1) * 7), sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+    return mon.getMonth() === sun.getMonth() ? `${mon.getDate()}–${sun.getDate()} ${sMon(sun)}` : `${mon.getDate()} ${sMon(mon)} – ${sun.getDate()} ${sMon(sun)}`;
+  };
+  const weekRange = window.weekRange;
+
+  let calY = null, calM = null, calSel = null;      // 日历正在显示的年月 / 选中的日期
+  window.lbCal = function (delta) {
+    const now = new Date();
+    if (delta === 0) { calY = now.getFullYear(); calM = now.getMonth(); calSel = dKey(now); }
+    else { const d = new Date(calY, calM + delta, 1); calY = d.getFullYear(); calM = d.getMonth(); calSel = null; }
+    renderLeaderboard();
+  };
+  window.lbPick = function (k) { calSel = calSel === k ? null : k; renderLeaderboard(); };
+
+  function calendarCard() {
+    const now = new Date(), todayK = dKey(now);
+    if (calY === null) { calY = now.getFullYear(); calM = now.getMonth(); calSel = todayK; }
+    const byDay = {};
+    wasteLog.forEach(w => { if (!w.date) return; (byDay[w.date] = byDay[w.date] || []).push(w); });
+    const dayTotal = k => sum(byDay[k] || []);
+
+    const first = new Date(calY, calM, 1), lead = (first.getDay() + 6) % 7, nDays = new Date(calY, calM + 1, 0).getDate();
+    const rows = Math.ceil((lead + nDays) / 7);
+    let monthMax = 0, monthSum = 0, monthN = 0;
+    for (let d = 1; d <= nDays; d++) { const k = calY + '-' + p2(calM + 1) + '-' + p2(d), t = dayTotal(k); monthMax = Math.max(monthMax, t); monthSum += t; monthN += (byDay[k] || []).length; }
+
+    let grid = '<span class="cal-h">Wk</span>' + ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => `<span class="cal-h">${d}</span>`).join('');
+    for (let r = 0; r < rows; r++) {
+      const mon = new Date(calY, calM, 1 - lead + r * 7);
+      let wk = 0, cells = '';
+      for (let c = 0; c < 7; c++) {
+        const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + c), k = dKey(d), t = dayTotal(k), inM = d.getMonth() === calM, fut = k > todayK;
+        wk += t;
+        let lv = '';
+        if (t > 0) { const x = t / (monthMax || t); lv = !inM ? 'l2' : x <= .25 ? 'l1' : x <= .5 ? 'l2' : x <= .75 ? 'l3' : 'l4'; }
+        const tip = `${d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}${t ? ': ' + fmtRM(t) : fut ? '' : ': nothing wasted'}`;
+        cells += `<button type="button" class="cal-day ${lv} ${inM ? '' : 'out'} ${k === todayK ? 'today' : ''} ${k === calSel ? 'sel' : ''}" ${fut ? 'disabled' : ''} onclick="lbPick('${k}')" title="${tip}" aria-label="${tip}"><span class="cal-n">${d.getDate()}</span>${t ? `<small>${Math.round(t)}</small>` : ''}</button>`;
+      }
+      grid += `<span class="cal-wk"><b>W${getWeekNumber(mon)}</b></span>` + cells;
+    }
+
+    let detail = '<p class="pg-muted cal-detail">Tap a day to see what was wasted.</p>';
+    if (calSel) {
+      const items = byDay[calSel] || [], lbl = parseYMD(calSel).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+      detail = `<div class="cal-detail"><div class="cal-detail-h"><b>${lbl}</b><span>${items.length ? fmtRM(sum(items)) : ''}</span></div>` + (items.length
+        ? items.map(w => `<div class="waste-item"><span class="waste-emoji">${esc(w.emoji || '🍽️')}</span><span class="waste-name">${esc(w.name)}</span>${w.price ? `<span class="waste-price">${fmtRM(w.price)}</span>` : ''}</div>`).join('')
+        : '<p class="pg-muted">Nothing wasted on this day. 🌱</p>') + '</div>';
+    }
+    const atNow = calY === now.getFullYear() && calM === now.getMonth();
+    const title = new Date(calY, calM, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    return card('Waste calendar', `<div class="cal-head"><button type="button" class="ghost-btn" onclick="lbCal(-1)" aria-label="Previous month">‹</button><b>${title}</b><button type="button" class="ghost-btn" onclick="lbCal(1)" aria-label="Next month" ${atNow ? 'disabled' : ''}>›</button><button type="button" class="ghost-btn" onclick="lbCal(0)">Today</button></div>
+      <div class="cal-grid">${grid}</div>
+      <p class="pg-muted cal-sum">${monthN ? `${fmtRM(monthSum)} wasted across ${monthN} item${monthN === 1 ? '' : 's'} in ${title}.` : `Nothing wasted in ${title}.`} The number on a day is RM wasted that day.</p>
+      ${detail}`);
+  }
+
   // ═════════ Leaderboard（整页重写）═════════
   window.renderLeaderboard = function () {
     if (!currentUser) return;
@@ -364,7 +427,7 @@
     }
     const thisW = wk[cw] || 0, lastW = wk[cw - 1] || 0;
 
-    strip.innerHTML = kpi(fmtRM(total), `Wasted in ${year}`) + kpi(max ? fmtRM(max) : 'RM 0.00', max ? `Heaviest week (week ${ranked[0].n})` : 'Heaviest week') +
+    strip.innerHTML = kpi(fmtRM(total), `Wasted in ${year}`) + kpi(max ? fmtRM(max) : 'RM 0.00', max ? `Heaviest week (week ${ranked[0].n} · ${weekRange(year, ranked[0].n)})` : 'Heaviest week') +
       kpi(clean, 'Weeks with no waste') + kpi(streak, 'Current clean streak');
 
     // 一年 52 周的色块
@@ -374,15 +437,15 @@
       let cls = '';
       if (n > cw) cls = 'fut';
       else if (a > 0) { const r = a / max; cls = r <= .25 ? 'l1' : r <= .5 ? 'l2' : r <= .75 ? 'l3' : 'l4'; }
-      cells.push(`<div class="pg-cell ${cls}" title="Week ${n}${n <= cw ? ': ' + fmtRM(a) : ''}"></div>`);
+      cells.push(`<div class="pg-cell ${cls}" title="Week ${n} (${weekRange(year, n)})${n <= cw ? ': ' + fmtRM(a) : ''}"></div>`);
     }
     const heat = card(`Your ${year}, week by week`, `<div class="pg-heat">${cells.join('')}</div>
       <div class="pg-legend">Clean <span class="pg-cell"></span><span class="pg-cell l1"></span><span class="pg-cell l2"></span><span class="pg-cell l3"></span><span class="pg-cell l4"></span> Heavy</div>`);
 
     const rank = ranked.length
-      ? card('Your 10 heaviest weeks', `<ol class="lb-list2">${ranked.map((r, i) => `<li><span class="lb-n">${i + 1}</span><div><div class="lb-top"><b>Week ${r.n}</b><span>${fmtRM(r.a)}</span></div><div class="pg-bar warn"><i style="width:${Math.round(r.a / max * 100)}%"></i></div></div></li>`).join('')}</ol>`)
+      ? card('Your 10 heaviest weeks', `<ol class="lb-list2">${ranked.map((r, i) => `<li><span class="lb-n">${i + 1}</span><div><div class="lb-top"><b>Week ${r.n} <small class="lb-range">${weekRange(year, r.n)}</small></b><span>${fmtRM(r.a)}</span></div><div class="pg-bar warn"><i style="width:${Math.round(r.a / max * 100)}%"></i></div></div></li>`).join('')}</ol>`)
       : `<div class="empty"><div class="empty-icon">🌱</div><p>No waste logged this year. Log items in the Waste Log and your weeks show up here.</p></div>`;
-    c.innerHTML = heat + rank;
+    c.innerHTML = calendarCard() + heat + rank;
 
     let delta;
     if (!thisW && !lastW) delta = '<p class="pg-delta good">Nothing wasted this week or last week. Keep it going.</p>';
@@ -391,7 +454,7 @@
 
     const badge = (on, ico, txt) => `<div class="pg-badge ${on ? 'on' : ''}"><i>${ico}</i>${txt}</div>`;
     box.innerHTML =
-      card('This week', `<div class="pg-kpi-num">${fmtRM(thisW)}</div>${delta}`, 'tint-yellow') +
+      card(`This week <span class="lb-range">${weekRange(year, cw)}</span>`, `<div class="pg-kpi-num">${fmtRM(thisW)}</div>${delta}`, 'tint-yellow') +
       card('Clean streak', `<div class="pg-flame">${streak}<small>week${streak === 1 ? '' : 's'} in a row</small></div><p class="pg-muted">Weeks in a row with nothing logged as waste.</p>`) +
       card('Badges', `<div class="pg-badges">${badge(clean >= 1, '🌱', 'First clean week')}${badge(streak >= 4, '🔥', '4-week clean streak')}${badge(streak >= 8, '🏅', '8-week clean streak')}${badge(thisW === 0 && lastW > 0, '💚', 'Beat last week')}</div>`, 'tint-green');
   };
