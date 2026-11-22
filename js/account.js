@@ -426,9 +426,10 @@
     else if (s === 'suspended') h = '';
     else if (s === 'verified') h = b('bf-save-min', 'solid', 'Save changes') + b('bf-reopen', 'line', 'Edit all details (needs re-review)');
     else h = b('bf-submit', 'solid', 'Submit for review') + b('bf-draft', 'line', 'Save draft') + (s === 'none' ? b('bf-later', 'line', 'Finish later') : '');
+    if (isAdmin && ['none', 'draft', 'rejected'].includes(s)) h += b('bf-instant', 'line', 'Admin: save & verify now');
     el.innerHTML = h;
     const on = (id, fn) => { const x = $(id); if (x) x.addEventListener('click', fn); };
-    on('bf-submit', () => saveBusiness(true)); on('bf-draft', () => saveBusiness(false));
+    on('bf-submit', () => saveBusiness(true)); on('bf-draft', () => saveBusiness(false)); on('bf-instant', () => saveBusiness(false, true));
     on('bf-save-min', saveMinor); on('bf-reopen', reopenAll); on('bf-withdraw', withdraw);
     on('bf-later', () => { form = null; bizGo('biz-home'); });
   }
@@ -487,14 +488,20 @@
     return out;
   }
 
-  async function saveBusiness(submit) {
+  async function saveBusiness(submit, instant) {      // instant = 管理员专用：不用审核，直接 Verified
     if (busy) return;
-    const uid = uidNow(), d = readForm(), err = validate(d, submit);
+    if (instant && !isAdmin) return;
+    const uid = uidNow(), d = readForm();
+    if (instant && !d.regNo) d.regNo = '(admin approved)';
+    const err = validate(d, submit || instant);
     if (err) return showFormErr(err);
+    if (instant && !confirm('Save this organisation and mark it Verified right away, without review?')) return;
     if (submit && !confirm('Submit your organisation for review? It becomes read-only while it is being reviewed, and you can withdraw it at any time.')) return;
     showFormErr(''); setBusy(true, submit ? 'Submitting…' : 'Saving…');
+    let stage = 'account type';
     try {
       await ensureAccountDoc(uid);
+      stage = 'organisation profile';
       const s = bizStatus();
       // 步骤 A：保存档案（一律先存成 Draft；Rejected 也在这里回到 Draft）
       if (s === 'none') await bizRef(uid).set({ ...mainDoc(d, uid), status: 'draft', createdAt: stamp() });
@@ -503,17 +510,20 @@
       let newDocs = [];
       try { newDocs = await uploadDocs(uid); } catch (e) { console.error(e); showFormErr(e.message && !/storage\//.test(e.message) ? e.message : 'The documents could not be uploaded. Your details are saved. Check that Firebase Storage is enabled, then try again.'); setBusy(false); form.queue = []; form.rendered = false; return; }
       const docs = form.docs.concat(newDocs);
+      stage = 'verification details';
       await verRef(uid).set({ regNo: d.regNo, docs }, { merge: true });
       if (typeof firebase.storage === 'function') form.removed.forEach(x => firebase.storage().ref(x.path).delete().catch(() => {}));
       // 步骤 C：提交审核
-      if (submit) await bizRef(uid).update({ status: 'pending_review', submittedAt: stamp(), updatedAt: stamp() });
+      stage = 'submit';
+      if (instant) await bizRef(uid).update({ status: 'verified', reviewedAt: stamp(), reviewedBy: uid, verifiedAt: stamp(), updatedAt: stamp() });
+      else if (submit) await bizRef(uid).update({ status: 'pending_review', submittedAt: stamp(), updatedAt: stamp() });
       form = null; busy = false;
-      toast(submit ? 'Submitted for review' : 'Draft saved');
-      bizGo(submit ? 'biz-home' : 'biz-profile');
+      toast(instant ? 'Verified' : submit ? 'Submitted for review' : 'Draft saved');
+      bizGo(instant ? 'biz-home' : submit ? 'biz-home' : 'biz-profile');
     } catch (e) {
       console.error(e);
       busy = false; renderActions();
-      showFormErr(e.code === 'permission-denied' ? 'The server refused this change. If you just edited a verified or pending profile, reload and try again. Otherwise publish the latest firestore.rules.' : 'Could not save. Check your connection and try again.');
+      showFormErr(e.code === 'permission-denied' ? `The server refused this change (step: ${stage}). Publish the latest firestore.rules in Firebase, wait a few seconds, reload and try again.` : 'Could not save. Check your connection and try again.');
     }
   }
 
