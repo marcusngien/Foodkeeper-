@@ -90,6 +90,7 @@
   // 给以后的功能用：这个账号现在能不能以某个角色行动（必须是 Verified 且有这个能力）
   window.fkAccount = {
     type: acctType, business: () => biz, status: bizStatus,
+    view: () => bizView, workspace: () => ws, refresh: () => { if (ready && ws === 'business') renderBiz(); },
     can: cap => !!biz && bizStatus() === 'verified' && (biz.capabilities || []).includes(cap)
   };
 
@@ -143,10 +144,11 @@
   window.showSection = function (name) { _showSection(name); $('section-business').style.display = name === 'business' ? '' : 'none'; };
 
   const _navLabel = window.navLabel;
-  window.navLabel = id => BIZ_LABEL[id] || _navLabel(id);
+  const MK_VIEWS = ['biz-mine', 'biz-board', 'biz-deals'];
+  window.navLabel = id => BIZ_LABEL[id] || (MK_VIEWS.includes(id) && window.fkMarket && window.fkMarket.label(id)) || _navLabel(id);
 
   const _goHome = window.goHome;
-  window.goHome = function () { if (ws === 'business') bizGo(biz || acctType() === 'business' && !biz ? (biz ? 'biz-home' : 'biz-profile') : 'biz-home'); else _goHome(); };
+  window.goHome = function () { if (ws === 'business') bizGo(biz ? 'biz-home' : 'biz-profile'); else _goHome(); };
 
   const _renderSidebar = window.renderSidebar;
   window.renderSidebar = function () {
@@ -154,18 +156,21 @@
     const nav = $('sidebar'); if (!nav || !ws) return;
     const t = acctType(), bottom = nav.querySelector('.sb-bottom');
     if (ws === 'business') {
-      const item = v => `<button class="nav-item" data-v="${v}" onclick="bizGo('${v}')">${ic(v)}<span>${BIZ_LABEL[v]}</span></button>`;
+      const item = (v, l) => `<button class="nav-item" data-v="${v}" onclick="bizGo('${v}')">${ic(v)}<span>${esc(l || BIZ_LABEL[v])}</span></button>`;
+      const mk = (window.fkMarket ? window.fkMarket.nav() : []).map(([v, l]) => item(v, l)).join('');
       const logo = biz && biz.logo ? `<img class="sb-org-logo" src="${esc(biz.logo)}" alt="" />` : '';
       nav.innerHTML = `
         <button class="sb-brand" onclick="goHome()" aria-label="Food Keeper"><svg viewBox="148 190 1252 480" aria-hidden="true"><use href="#fk-lockup"/></svg></button>
         <div class="sb-org">${logo}<div><b>${esc(biz ? biz.orgName : 'Your organisation')}</b>${chip(bizStatus())}</div></div>
-        <div class="sb-group">${item('biz-home')}${item('biz-profile')}${isAdmin ? item('biz-admin') : ''}</div>
+        <div class="sb-group">${item('biz-home')}${mk}${item('biz-profile')}${isAdmin ? item('biz-admin') : ''}</div>
         <div class="sb-bottom">
           ${t === 'individual' ? `<button class="nav-item" onclick="setWorkspace('personal')">${ic('swap')}<span>Back to personal</span></button>` : ''}
           <button class="nav-item" onclick="openPanel()">${ic('settings')}<span>${esc(TRANSLATIONS[currentLang].homeSettings)}</span></button>
         </div>`;
+      nav.dataset.ws = 'business';
       setNav(bizView);
     } else if (bottom && t === 'individual') {
+      nav.dataset.ws = 'personal';
       bottom.insertAdjacentHTML('afterbegin', `<button class="nav-item" onclick="setWorkspace('business')">${ic('biz-profile')}<span>${biz ? 'Business workspace' : 'Apply for Business'}</span></button>`);
     }
   };
@@ -245,6 +250,7 @@
 
   window.bizGo = function (v) {
     if (v === 'biz-admin' && !isAdmin) v = 'biz-home';
+    if (MK_VIEWS.includes(v) && !(window.fkMarket && window.fkMarket.nav().some(n => n[0] === v))) v = 'biz-home';
     if (v !== bizView || v === 'biz-profile') form = null;
     bizView = v; ws = 'business';
     showSection('business'); renderSidebar(); renderBiz(); window.scrollTo(0, 0);
@@ -253,6 +259,7 @@
     const root = $('biz-root'); if (!root) return;
     if (bizView === 'biz-profile') renderForm(root);
     else if (bizView === 'biz-admin') renderAdmin(root);
+    else if (MK_VIEWS.includes(bizView) && window.fkMarket) window.fkMarket.render(bizView, root);
     else renderHome(root);
   }
 
@@ -299,6 +306,7 @@
       <div class="pg-body">
         <div class="pg-main">
           ${review ? card(s === 'rejected' ? 'Feedback from the review team' : 'Note from the review team', `<p>${esc(review.note)}</p><p class="pg-muted">${esc(review.by || '')}${review.at ? ' · ' + fmtTs({ seconds: review.at / 1000 }) : ''}</p>`, 'tint-yellow') : ''}
+          ${window.fkMarket ? window.fkMarket.homeCard() : ''}
           ${card('Roles', caps)}
           ${biz ? card('Organisation', `<dl class="biz-dl"><dt>Type</dt><dd>${esc(TYPE_LABEL[f.orgType] || f.orgType || '–')}</dd><dt>Location</dt><dd>${esc([f.district, f.state].filter(Boolean).join(', ') || '–')}</dd><dt>Contact</dt><dd>${esc(c.person || '–')}${c.phone ? ' · ' + esc(c.phone) : ''}${c.email ? '<br>' + esc(c.email) : ''}</dd><dt>About</dt><dd>${esc(f.description || '–')}</dd></dl>`) : ''}
         </div>
