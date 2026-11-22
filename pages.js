@@ -463,3 +463,109 @@
     refreshAll();
   };
 })();
+
+
+// ═════════ Awareness（单独的一段，接在 pages.js 最后）═════════
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const fmtRM = n => 'RM ' + (Number(n) || 0).toFixed(2);
+  const kpi = (v, l) => `<div class="pg-kpi"><span class="pg-kpi-num">${v}</span><span class="pg-kpi-lbl">${l}</span></div>`;
+  const card = (t, b, tint = '') => `<section class="pg-card ${tint}"><h4>${t}</h4>${b}</section>`;
+
+  const view = $('view-awareness');
+  if (!view || view.dataset.pg) return;
+  view.dataset.pg = '1';
+  view.classList.add('pg-view', 'pg-awareness');
+
+  const main = document.createElement('div');
+  main.className = 'pg-main';
+  Array.from(view.children).forEach(k => main.appendChild(k));
+  const body = document.createElement('div');
+  body.className = 'pg-body';
+  body.appendChild(main);
+  const side = document.createElement('aside');
+  side.className = 'pg-side';
+  side.id = 'pg-side-awareness';
+  body.appendChild(side);
+
+  view.insertAdjacentHTML('beforeend', `
+    <header class="pg-hero tone-yellow">
+      <div>
+        <h2>One third of the world's food is wasted.</h2>
+        <p>The problem is big, but most of it starts in ordinary kitchens. That is also where it is easiest to fix.</p>
+        <div class="pg-actions">
+          <button class="pg-btn yellow" onclick="switchView('pantry')">Open my pantry</button>
+          <button class="pg-btn line" onclick="switchView('quiz')">Take the quiz</button>
+        </div>
+      </div>
+      <div class="pg-art" aria-hidden="true"><svg viewBox="0 0 160 110" fill="none" stroke="var(--tone)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="80" cy="56" r="40"/><path d="M40 56h80M80 16c-16 18-16 62 0 80M80 16c16 18 16 62 0 80"/><path d="M118 20c0-10 8-14 18-14 0 10-6 16-18 14z" stroke="#4C91D8"/></svg></div>
+    </header>
+    <section class="pg-strip">
+      ${kpi('1/3', 'of food produced is wasted every year')}
+      ${kpi('17,000+', 'tonnes wasted in Malaysia daily')}
+      ${kpi('RM624', 'wasted per Malaysian household a year')}
+      ${kpi('8–10%', 'of global greenhouse gases')}
+    </section>`);
+  view.appendChild(body);
+
+  const WHY = [
+    ['💸', 'It costs you money', 'Families pay for food that is never eaten. Over a lifetime that adds up to tens of thousands of ringgit.', 'tint-yellow'],
+    ['🌡️', 'It heats the planet', 'Food rotting in landfill produces methane, a greenhouse gas about 80 times stronger than CO₂ over 20 years.', ''],
+    ['🏔️', 'It fills our landfills', 'Food is one of the biggest parts of Malaysia\'s solid waste. Landfills pollute soil and groundwater and take up land.', ''],
+    ['💧', 'It wastes resources', 'Every discarded item also wastes the water, energy and land used to grow, move and store it.', 'tint-blue'],
+    ['🍽️', 'It sits next to hunger', 'Millions of people go hungry while food is thrown away. Cutting household waste is also about fairness.', ''],
+    ['🧒', 'It shapes the next generation', 'Children who grow up in waste-aware homes keep those habits for life.', 'tint-green']
+  ];
+
+  const R = [
+    { k: 'Refuse', i: '🚫', h: 'Say no to what you do not need', p: 'Skip impulse buys and promo bundles that lead to overbuying. Look in your pantry before you shop.', tip: 'Never shop when hungry. You will buy more than you need.', go: ['shopping', 'Open shopping list'] },
+    { k: 'Reduce', i: '📉', h: 'Buy less, waste less', p: 'Buy only what you will eat, cook smaller portions, watch expiry dates and plan your meals for the week.', tip: 'A shopping list stops over-buying. Food Keeper has one built in.', go: ['shopping', 'Plan a shopping list'] },
+    { k: 'Recycle', i: '♻️', h: 'Give scraps a second life', p: 'Compost food scraps, reuse packaging, and turn peels and bones into stock instead of binning them.', tip: 'Composting scraps cuts the methane that landfills produce.', go: ['recipes', 'Get a zero-waste menu'] },
+    { k: 'Repair', i: '🔧', h: 'Make food last longer', p: 'Store food properly, freeze it, pickle it or ferment it. Wilted vegetables often revive in cold water.', tip: 'Move items that expire soon to the front of the fridge.', go: ['pantry', 'Check my pantry'] },
+    { k: 'Reconsider', i: '🤔', h: 'Think before you act', p: 'Is that second pack really needed? Is the deal worth it if half of it gets thrown away?', tip: 'Ask yourself: will I actually eat this before it expires?', go: ['waste', 'Review my waste log'] }
+  ];
+  let ri = 0;
+  window.pgR = i => { ri = i; window.renderAwareness(); };
+
+  window.renderAwareness = function () {
+    const c = $('awareness-container');
+    if (!c) return;
+    const r = R[ri];
+    c.innerHTML = `
+      <h3 class="aw-title">Why it matters</h3>
+      <div class="aw-grid">${WHY.map(w => `<article class="pg-card ${w[3]}"><span class="aw-ico">${w[0]}</span><h4>${w[1]}</h4><p class="pg-muted">${w[2]}</p></article>`).join('')}</div>
+
+      <h3 class="aw-title">The 5R framework: what you can do</h3>
+      <div class="pg-chips">${R.map((x, i) => `<button class="pg-chip ${i === ri ? 'on' : ''}" onclick="pgR(${i})">${x.i} ${x.k}</button>`).join('')}</div>
+      <article class="aw-r">
+        <div class="aw-r-ico">${r.i}</div>
+        <div class="pg-grow">
+          <h3>${r.k}: ${r.h}</h3>
+          <p>${r.p}</p>
+          <div class="pg-have">💡 ${r.tip}</div>
+          <button class="pg-btn solid" style="margin-top:14px" onclick="switchView('${r.go[0]}')">${r.go[1]}</button>
+        </div>
+      </article>`;
+
+    // 右侧：你自己的数字 vs 马来西亚平均
+    const year = new Date().getFullYear(), mk = today().slice(0, 7);
+    const yr = wasteLog.filter(w => w.date && w.date.startsWith(String(year))).reduce((s, w) => s + (Number(w.price) || 0), 0);
+    const mo = wasteLog.filter(w => w.date && w.date.startsWith(mk)).reduce((s, w) => s + (Number(w.price) || 0), 0);
+    const avgMonth = 624 / 12;
+    const pct = Math.min(Math.round(mo / avgMonth * 100), 100);
+    const verdict = !wasteLog.length
+      ? 'Log what you throw away and your own numbers appear here.'
+      : mo <= avgMonth ? `You are ${fmtRM(avgMonth - mo)} under the average household this month.` : `You are ${fmtRM(mo - avgMonth)} over the average household this month.`;
+    side.innerHTML =
+      card('You vs the average household', `<div class="pg-kpi-num">${fmtRM(mo)}</div>
+        <div class="pg-row"><div class="pg-row-top"><span>This month</span><b>average ${fmtRM(avgMonth)}</b></div><div class="pg-bar ${mo > avgMonth ? 'warn' : ''}"><i style="width:${pct}%"></i></div></div>
+        <p class="pg-muted">${verdict}</p><p class="pg-muted">Wasted so far in ${year}: <b>${fmtRM(yr)}</b></p>`, 'tint-yellow') +
+      card('Start small', `<ul class="pg-mini">
+        <li><span class="pg-emo">🥦</span><span class="pg-grow">Add what is in your fridge</span><button class="hd-link" onclick="switchView('pantry')">Go</button></li>
+        <li><span class="pg-emo">🧾</span><span class="pg-grow">Scan your next receipt</span><button class="hd-link" onclick="switchView('receipt')">Go</button></li>
+        <li><span class="pg-emo">📝</span><span class="pg-grow">Test what you learned</span><button class="hd-link" onclick="switchView('quiz')">Go</button></li></ul>`, 'tint-green');
+  };
+
+  window.renderAwareness();
+})();
