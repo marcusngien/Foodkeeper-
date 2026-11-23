@@ -34,9 +34,9 @@
     suspended:      'This organisation is suspended. Contact the Food Keeper team.'
   };
   const CAPS = {
-    receiver: { label: 'Receiver', icon: '🤲', text: 'Browse donations, accept offers and confirm what you receive.' },
-    seller:   { label: 'Seller',   icon: '🏪', text: 'Publish surplus food for donation or sale, and review interest.' },
-    buyer:    { label: 'Buyer',    icon: '♻️', text: 'Browse commercial food-resource listings and express interest.' }
+    receiver: { label: 'Receiver', icon: ic('hand'), text: 'Browse donations, accept offers and confirm what you receive.' },
+    seller:   { label: 'Seller',   icon: ic('store'), text: 'Publish surplus food for donation or sale, and review interest.' },
+    buyer:    { label: 'Buyer',    icon: ic('recycle'), text: 'Browse commercial food-resource listings and express interest.' }
   };
   const ORG_TYPES = [
     ['Community receivers', [['orphanage', 'Orphanage', 'receiver'], ['elderly_home', 'Elderly care home', 'receiver'], ['charity', 'Charitable organisation', 'receiver'], ['community_inst', 'Other community institution', 'receiver']]],
@@ -278,7 +278,7 @@
       ['Registration or licence number', !!(ver && ver.regNo)],
       ['Supporting documents (recommended)', !!(ver && (ver.docs || []).length)]
     ];
-    return `<ul class="biz-check">${items.map(([t, ok]) => `<li class="${ok ? 'ok' : ''}"><i>${ok ? '✓' : ''}</i>${t}</li>`).join('')}</ul>`;
+    return `<ul class="biz-check">${items.map(([t, ok]) => `<li class="${ok ? 'ok' : ''}"><i>${ok ? ic('check') : ''}</i>${t}</li>`).join('')}</ul>`;
   }
 
   function renderHome(root) {
@@ -413,7 +413,7 @@
   function renderDocs() {
     const ul = $('bf-docs'); if (!ul) return;
     const canEdit = !$('bf-docs-file').disabled;
-    const row = (name, meta, key) => `<li><span class="bf-doc-n">📄 ${esc(name)}</span><small>${meta}</small>${canEdit ? `<button type="button" class="icon-btn" data-rm="${key}" aria-label="Remove ${esc(name)}">✕</button>` : ''}</li>`;
+    const row = (name, meta, key) => `<li><span class="bf-doc-n">${ic('file')} ${esc(name)}</span><small>${meta}</small>${canEdit ? `<button type="button" class="icon-btn" data-rm="${key}" aria-label="Remove ${esc(name)}">${ic('x')}</button>` : ''}</li>`;
     ul.innerHTML = form.docs.map((d, i) => row(d.name, `${Math.max(1, Math.round((d.size || 0) / 1024))} KB · saved`, 'd:' + i)).join('') +
       form.queue.map((f, i) => row(f.name, `${Math.max(1, Math.round(f.size / 1024))} KB · will upload on save`, 'q:' + i)).join('') ||
       '<li class="pg-muted">No documents attached.</li>';
@@ -616,7 +616,7 @@
         <div class="adm-actions"><button class="pg-btn ${autoApprove ? 'line' : 'solid'}" onclick="adminToggleAuto()">${autoApprove ? 'Turn off auto-approve' : 'Turn on auto-approve'}</button>${autoApprove && counts('pending_review') ? `<button class="pg-btn line" onclick="adminApproveAllPending()">Approve ${counts('pending_review')} pending now</button>` : ''}</div>`, autoApprove ? 'tint-green' : '')}
       <div class="pg-chips">${[['pending_review', 'Pending Review'], ['verified', 'Verified'], ['rejected', 'Rejected'], ['suspended', 'Suspended'], ['draft', 'Draft'], ['all', 'All']].map(([k, l]) => `<button class="pg-chip blue ${adminFilter === k ? 'on' : ''}" onclick="adminFilterSet('${k}')">${l} (${k === 'all' ? adminList.length : counts(k)})</button>`).join('')}</div>
       <div class="pg-body"><div class="pg-main">
-        ${rows.length ? rows.map(b => `<button class="adm-row ${b.uid === adminSel ? 'on' : ''}" onclick="adminPick('${b.uid}')"><span class="pg-grow"><b>${esc(b.orgName || '(no name)')}</b><small>${esc(TYPE_LABEL[b.orgType] || '')} · ${esc([b.district, b.state].filter(Boolean).join(', '))} · ${(b.capabilities || []).map(k => CAPS[k] ? CAPS[k].label : k).join(', ')}</small></span>${chip(b.status || 'draft')}</button>`).join('') : '<div class="empty"><div class="empty-icon">🗂️</div><p>Nothing in this list.</p></div>'}
+        ${rows.length ? rows.map(b => `<button class="adm-row ${b.uid === adminSel ? 'on' : ''}" onclick="adminPick('${b.uid}')"><span class="pg-grow"><b>${esc(b.orgName || '(no name)')}</b><small>${esc(TYPE_LABEL[b.orgType] || '')} · ${esc([b.district, b.state].filter(Boolean).join(', '))} · ${(b.capabilities || []).map(k => CAPS[k] ? CAPS[k].label : k).join(', ')}</small></span>${chip(b.status || 'draft')}</button>`).join('') : '<div class="empty"><div class="empty-icon">' + ic('folder') + '</div><p>Nothing in this list.</p></div>'}
       </div><aside class="pg-side" id="adm-side">${cur ? '<p class="pg-muted">Loading…</p>' : card('Details', '<p class="pg-muted">Pick an organisation to review it.</p>')}</aside></div></section>`;
     if (cur) drawAdminDetail(cur);
   }
@@ -628,7 +628,7 @@
     let v = {}; try { const s = await verRef(b.uid).get(); v = s.exists ? s.data() : {}; } catch (e) { console.error(e); }
     if (adminSel !== b.uid || !$('adm-side')) return;
     const c = b.contact || {}, st = b.status || 'draft';
-    const docs = (v.docs || []).map((d, i) => `<li><a href="#" data-doc="${esc(d.path)}" class="adm-doc">📄 ${esc(d.name)}</a></li>`).join('') || '<li class="pg-muted">No documents.</li>';
+    const docs = (v.docs || []).map((d, i) => `<li><a href="#" data-doc="${esc(d.path)}" class="adm-doc">${ic('file')} ${esc(d.name)}</a></li>`).join('') || '<li class="pg-muted">No documents.</li>';
     $('adm-side').innerHTML = card(esc(b.orgName || 'Organisation'), `${chip(st)}
       <dl class="biz-dl"><dt>Type</dt><dd>${esc(TYPE_LABEL[b.orgType] || b.orgType || '–')}</dd><dt>Roles</dt><dd>${(b.capabilities || []).map(k => CAPS[k] ? CAPS[k].label : k).join(', ') || '–'}</dd>
       <dt>Region</dt><dd>${esc([b.district, b.state].filter(Boolean).join(', ') || '–')}</dd><dt>Contact</dt><dd>${esc(c.person || '–')} · ${esc(c.phone || '')}<br>${esc(c.email || '')}${c.website ? '<br>' + esc(c.website) : ''}</dd>
