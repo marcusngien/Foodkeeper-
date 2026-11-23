@@ -118,7 +118,7 @@
 .pg-recipes .discover-hero-banner, .pg-receipt .discover-hero-banner, .pg-leaderboard .discover-hero-banner { display: none; }
 .pg-recipes #recipes-list-container { margin-top: 0 !important; }
 .pg-recipes #recipes-list-container:empty { padding: 44px 20px; text-align: center; border: 2px dashed var(--border2); border-radius: 16px; color: var(--text2); font-size: 14px; }
-.pg-recipes #recipes-list-container:empty::before { content: "🍲  Your menu will show up here.\A Pick a style, then tap Generate."; white-space: pre-line; line-height: 1.8; }
+.pg-recipes #recipes-list-container:empty::before { content: "Your menu will show up here.\A Pick a style, then tap Generate."; white-space: pre-line; line-height: 1.8; }
 
 /* ── Receipt ── */
 .pg-steps { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border2); border-bottom: 1px solid var(--border2); }
