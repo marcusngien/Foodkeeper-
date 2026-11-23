@@ -15,19 +15,19 @@ const db   = firebase.firestore();
 // ── TRANSLATIONS ──
 const TRANSLATIONS = {
   en: {
-    pantry: '🥦 Pantry',
-    shopping: '🛒 Shopping List',
-    waste: '🗑️ Waste Log',
-    recipes: '🍳 Recipes For You',
-    receipt: '🧾 Scan Receipt',
-    leaderboard: '🏆 Leaderboard',
-    awareness: '🌍 Awareness',
-    quiz: '📝 Quiz',
+    pantry: 'Pantry',
+    shopping: 'Shopping List',
+    waste: 'Waste Log',
+    recipes: 'Recipes For You',
+    receipt: 'Scan Receipt',
+    leaderboard: 'Leaderboard',
+    awareness: 'Awareness',
+    quiz: 'Quiz',
     totalItems: 'Total Items',
     expired: 'Expired',
     expiringSoon: 'Expiring Soon',
     monthlyWaste: 'Monthly Waste',
-    addItem: '➕ Add Item',
+    addItem: 'Add Item',
     searchPlaceholder: 'Search ingredients...',
     logOut: 'Log Out',
     homeSettings: 'Settings',
@@ -43,19 +43,19 @@ const TRANSLATIONS = {
     homeTagline: 'Track ingredients, reduce waste',
   },
   ms: {
-    pantry: '🥦 Pantri',
-    shopping: '🛒 Senarai Belanja',
-    waste: '🗑️ Log Pembaziran',
-    recipes: '🍳 Resipi Untuk Anda',
-    receipt: '🧾 Imbas Resit',
-    leaderboard: '🏆 Papan Kedudukan',
-    awareness: '🌍 Kesedaran',
-    quiz: '📝 Kuiz',
+    pantry: 'Pantri',
+    shopping: 'Senarai Belanja',
+    waste: 'Log Pembaziran',
+    recipes: 'Resipi Untuk Anda',
+    receipt: 'Imbas Resit',
+    leaderboard: 'Papan Kedudukan',
+    awareness: 'Kesedaran',
+    quiz: 'Kuiz',
     totalItems: 'Jumlah Item',
     expired: 'Tamat Tempoh',
     expiringSoon: 'Hampir Tamat',
     monthlyWaste: 'Pembaziran Bulanan',
-    addItem: '➕ Tambah Item',
+    addItem: 'Tambah Item',
     searchPlaceholder: 'Cari bahan...',
     logOut: 'Log Keluar',
     homeSettings: 'Tetapan',
@@ -71,19 +71,19 @@ const TRANSLATIONS = {
     homeTagline: 'Jejak bahan, kurangkan pembaziran',
   },
   zh: {
-    pantry: '🥦 食品储藏',
-    shopping: '🛒 购物清单',
-    waste: '🗑️ 浪费记录',
-    recipes: '🍳 为你推荐食谱',
-    receipt: '🧾 扫描收据',
-    leaderboard: '🏆 排行榜',
-    awareness: '🌍 意识提升',
-    quiz: '📝 测验',
+    pantry: '食品储藏',
+    shopping: '购物清单',
+    waste: '浪费记录',
+    recipes: '为你推荐食谱',
+    receipt: '扫描收据',
+    leaderboard: '排行榜',
+    awareness: '意识提升',
+    quiz: '测验',
     totalItems: '总数',
     expired: '已过期',
     expiringSoon: '即将过期',
     monthlyWaste: '本月浪费',
-    addItem: '➕ 添加食材',
+    addItem: '添加食材',
     searchPlaceholder: '搜索食材...',
     logOut: '退出登录',
     homeSettings: '设置',
@@ -105,16 +105,16 @@ let currentLang = 'en';
 // ── SECTION MENUS（卡片菜单，新增功能只要在这里加一行）──
 const MENUS = {
   pantry: [
-    { view: 'pantry',      icon: '🥦', featured: true },
-    { view: 'shopping',    icon: '🛒' },
-    { view: 'waste',       icon: '🗑️' },
-    { view: 'recipes',     icon: '🍳' },
-    { view: 'receipt',     icon: '🧾' },
-    { view: 'leaderboard', icon: '🏆' },
+    { view: 'pantry',      icon: ic('pantry'), featured: true },
+    { view: 'shopping',    icon: ic('shopping') },
+    { view: 'waste',       icon: ic('trash') },
+    { view: 'recipes',     icon: ic('recipes') },
+    { view: 'receipt',     icon: ic('receipt') },
+    { view: 'leaderboard', icon: ic('leaderboard') },
   ],
   outside: [
-    { view: 'awareness', icon: '🌍' },
-    { view: 'quiz',      icon: '📝' },
+    { view: 'awareness', icon: ic('awareness') },
+    { view: 'quiz',      icon: ic('quiz') },
   ]
 };
 
@@ -128,7 +128,7 @@ function renderMenus() {
         <div class="menu-card-fallback">${c.icon}</div>
         <img class="menu-card-img" src="cards/${c.view}.jpg" alt="" onerror="this.style.display='none'" />
         <div class="menu-card-label">
-          <div class="menu-card-title">${t[c.view].replace(/^\S+\s+/, '')}</div>
+          <div class="menu-card-title">${stripLead(t[c.view])}</div>
         </div>
       </button>
     `).join('') + `</div>`;
@@ -156,20 +156,27 @@ function setLanguage(lang) {
   saveSetting({ lang });
 }
 
+// 设置面板里的 Dark Mode 开关跟着当前主题走
+function syncThemeUI(theme) {
+  const t = document.getElementById('theme-toggle');
+  if (!t) return;
+  t.className = 'toggle ' + (theme === 'dark' ? 'on' : 'off');
+  t.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+}
+
 function toggleTheme() {
   const html = document.documentElement;
   const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   html.setAttribute('data-theme', next);
   localStorage.setItem('fk_theme', next);
-  document.getElementById('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+  syncThemeUI(next);
   saveSetting({ theme: next });
 }
 
 function loadTheme() {
   const saved = localStorage.getItem('fk_theme') || 'light';
   document.documentElement.setAttribute('data-theme', saved);
-  const btn = document.getElementById('theme-btn');
-  if (btn) btn.textContent = saved === 'dark' ? '☀️' : '🌙';
+  syncThemeUI(saved);
 }
 
 function applyTranslations() {
@@ -215,9 +222,12 @@ const EMOJIS = {
 
 const ALL_EMOJIS = [...new Set([...EMOJIS.fridge, ...EMOJIS.freezer, ...EMOJIS.pantry])];
 const LOC_LABEL  = { fridge: 'Fridge', freezer: 'Freezer', pantry: 'Pantry' };
-const LOC_ICON   = { fridge: '🧊', freezer: '❄️', pantry: '🗄️' };
+const LOC_ICON   = { fridge: ic('fridge'), freezer: ic('snowflake'), pantry: ic('cabinet') };
 const CAT_LABEL  = { dairy: 'Dairy', produce: 'Produce', meat: 'Meat', grain: 'Grain', other: 'Other' };
 const CAT_ICON   = { dairy: '🥛', produce: '🥦', meat: '🥩', grain: '🌾', other: '📦' };
+// 显示用的线条图标（CAT_ICON 的 emoji 只留给存进数据库的食材图标用）
+const CAT_SVG = { dairy: 'droplet', produce: 'sprout', meat: 'utensils', grain: 'leaf', other: 'box' };
+const catIc = k => ic(CAT_SVG[k] || 'box');
 
 const ERROR_MAP = {
   'auth/invalid-email':           'Invalid email format',
@@ -307,13 +317,13 @@ function renderLeaderboard() {
     .slice(0, 10);
 
   if (top10.length === 0) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">🌱</div><p>No waste data yet — start tracking to see your leaderboard!</p></div>`;
+    container.innerHTML = `<div class="empty"><div class="empty-icon">${ic('sprout')}</div><p>No waste data yet — start tracking to see your leaderboard!</p></div>`;
     return;
   }
 
-  const medals = ['🥇','🥈','🥉'];
+  const medals = ['gold', 'silver', 'bronze'].map(c => `<span class="medal medal-${c}">${ic('medal')}</span>`);
   container.innerHTML = `
-    <div class="leaderboard-year-badge">📅 ${year} — Resets every January</div>
+    <div class="leaderboard-year-badge">${ic('calendar')} ${year} — Resets every January</div>
     <div class="leaderboard-list">
       ${top10.map((entry, i) => `
         <div class="leaderboard-row ${i===0?'top-1':i===1?'top-2':i===2?'top-3':''}">
@@ -340,14 +350,14 @@ function renderQuiz() {
   if (quizCurrent >= QUIZ_QUESTIONS.length) {
     if (quizScore > bestScore) saveSetting({ quizBest: quizScore });
     const pct = Math.round((quizScore / QUIZ_QUESTIONS.length) * 100);
-    const grade = pct >= 90 ? '🌟 Excellent!' : pct >= 70 ? '👍 Good Job!' : pct >= 50 ? '📚 Keep Learning!' : '💪 Try Again!';
+    const grade = pct >= 90 ? { i: ic('star'), t: 'Excellent!' } : pct >= 70 ? { i: ic('thumb'), t: 'Good Job!' } : pct >= 50 ? { i: ic('book'), t: 'Keep Learning!' } : { i: ic('zap'), t: 'Try Again!' };
     container.innerHTML = `
       <div class="quiz-result-card">
-        <div class="quiz-result-icon">${grade.split(' ')[0]}</div>
-        <h2 class="quiz-result-title">${grade.split(' ').slice(1).join(' ')}</h2>
+        <div class="quiz-result-icon">${grade.i}</div>
+        <h2 class="quiz-result-title">${grade.t}</h2>
         <div class="quiz-result-score">${quizScore} / ${QUIZ_QUESTIONS.length}</div>
         <div class="quiz-result-pct">${pct}% correct</div>
-        <div class="quiz-best">🏅 Best Score: ${Math.max(quizScore, bestScore)} / ${QUIZ_QUESTIONS.length}</div>
+        <div class="quiz-best">${ic('medal')} Best Score: ${Math.max(quizScore, bestScore)} / ${QUIZ_QUESTIONS.length}</div>
         <button class="btn-primary" style="margin-top:20px; background:var(--accent); color:white;" onclick="restartQuiz()">Try Again</button>
       </div>
     `;
@@ -361,7 +371,7 @@ function renderQuiz() {
       <div class="quiz-score-live">Score: ${quizScore}</div>
     </div>
     <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:${((quizCurrent)/QUIZ_QUESTIONS.length)*100}%"></div></div>
-    <div class="quiz-best-top">🏅 Best: ${bestScore} / ${QUIZ_QUESTIONS.length}</div>
+    <div class="quiz-best-top">${ic('medal')} Best: ${bestScore} / ${QUIZ_QUESTIONS.length}</div>
     <div class="quiz-card">
       <div class="quiz-question">${q.q}</div>
       <div class="quiz-options">
@@ -395,9 +405,9 @@ function answerQuiz(selected) {
   const feedback = document.getElementById('quiz-feedback');
   if (selected === correct) {
     quizScore++;
-    feedback.innerHTML = `<div class="quiz-feedback correct-fb">✅ Correct! Well done.</div>`;
+    feedback.innerHTML = `<div class="quiz-feedback correct-fb">${ic('checkCircle')} Correct! Well done.</div>`;
   } else {
-    feedback.innerHTML = `<div class="quiz-feedback wrong-fb">❌ Incorrect. The correct answer is <strong>${q.opts[correct]}</strong>.</div>`;
+    feedback.innerHTML = `<div class="quiz-feedback wrong-fb">${ic('xCircle')} Incorrect. The correct answer is <strong>${q.opts[correct]}</strong>.</div>`;
   }
   feedback.style.display = 'block';
   document.getElementById('quiz-next-btn').style.display = 'block';
@@ -423,7 +433,7 @@ function renderAwareness() {
   container.innerHTML = `
 
     <div class="awareness-hero">
-      <div class="awareness-hero-icon">🌍</div>
+      <div class="awareness-hero-icon">${ic('globe')}</div>
       <h2 class="awareness-hero-title">The Food Waste Crisis</h2>
       <p class="awareness-hero-sub">Every year, one third of all food produced for human consumption is lost or wasted globally.</p>
     </div>
@@ -447,86 +457,86 @@ function renderAwareness() {
       </div>
     </div>
 
-    <div class="awareness-section-title">⚠️ Why Food Waste is a Serious Problem</div>
+    <div class="awareness-section-title">${ic('alert')} Why Food Waste is a Serious Problem</div>
     <div class="awareness-cards-grid">
       <div class="awareness-info-card">
-        <div class="awareness-info-icon">💸</div>
+        <div class="awareness-info-icon">${ic('dollar')}</div>
         <h4>Financial Loss</h4>
         <p>Families spend money on food that is never consumed. Over a lifetime, this adds up to tens of thousands of ringgit wasted on groceries that ended up in the bin.</p>
       </div>
       <div class="awareness-info-card">
-        <div class="awareness-info-icon">🌡️</div>
+        <div class="awareness-info-icon">${ic('thermo')}</div>
         <h4>Climate Change</h4>
         <p>When food rots in landfills without oxygen, it produces methane — a greenhouse gas 80 times more potent than CO₂ over 20 years. Food waste is a major driver of climate change.</p>
       </div>
       <div class="awareness-info-card">
-        <div class="awareness-info-icon">🏔️</div>
+        <div class="awareness-info-icon">${ic('mountain')}</div>
         <h4>Landfill Burden</h4>
         <p>Food waste is one of the largest contributors to solid waste in Malaysia. Overflowing landfills pollute soil and groundwater and consume vast amounts of land.</p>
       </div>
       <div class="awareness-info-card">
-        <div class="awareness-info-icon">💧</div>
+        <div class="awareness-info-icon">${ic('droplet')}</div>
         <h4>Wasted Resources</h4>
         <p>Every discarded item also wastes the water, energy, and land used to grow, transport, and store it. Wasting food means wasting everything it took to produce it.</p>
       </div>
       <div class="awareness-info-card">
-        <div class="awareness-info-icon">🍽️</div>
+        <div class="awareness-info-icon">${ic('utensils')}</div>
         <h4>Food Insecurity</h4>
         <p>While food is wasted by some, millions face hunger. Reducing household waste is not just an environmental issue — it is a matter of social justice and responsibility.</p>
       </div>
       <div class="awareness-info-card">
-        <div class="awareness-info-icon">🧒</div>
+        <div class="awareness-info-icon">${ic('user')}</div>
         <h4>Future Generations</h4>
         <p>Children who grow up in waste-conscious households carry those habits for life. Every small change at home contributes to a more sustainable future for the next generation.</p>
       </div>
     </div>
 
-    <div class="awareness-section-title">♻️ The 5R Framework — What You Can Do</div>
+    <div class="awareness-section-title">${ic('recycle')} The 5R Framework — What You Can Do</div>
     <div class="awareness-5r-grid">
       <div class="awareness-5r-card r1">
         <div class="r-num">1</div>
         <div class="r-letter">REFUSE</div>
-        <div class="r-icon">🚫</div>
+        <div class="r-icon">${ic('ban')}</div>
         <h4>Say No</h4>
         <p>Refuse to buy food you do not need. Avoid impulse purchases and promotional bundles that lead to overconsumption. Check your pantry before shopping.</p>
-        <div class="r-tip">💡 Tip: Never shop when hungry — you will buy more than you need.</div>
+        <div class="r-tip">${ic('bulb')} Tip: Never shop when hungry — you will buy more than you need.</div>
       </div>
       <div class="awareness-5r-card r2">
         <div class="r-num">2</div>
         <div class="r-letter">REDUCE</div>
-        <div class="r-icon">📉</div>
+        <div class="r-icon">${ic('trendDown')}</div>
         <h4>Buy Less, Waste Less</h4>
         <p>Buy only what you will consume. Cook in smaller portions. Track expiry dates and use food before it spoils. Plan your meals for the week ahead.</p>
-        <div class="r-tip">💡 Tip: A shopping list prevents over-purchasing. Food Keeper's Shopping List helps!</div>
+        <div class="r-tip">${ic('bulb')} Tip: A shopping list prevents over-purchasing. Food Keeper's Shopping List helps!</div>
       </div>
       <div class="awareness-5r-card r3">
         <div class="r-num">3</div>
         <div class="r-letter">RECYCLE</div>
-        <div class="r-icon">♻️</div>
+        <div class="r-icon">${ic('recycle')}</div>
         <h4>Transform Waste</h4>
         <p>Turn food scraps into compost for plants. Recycle packaging materials. Use vegetable peels and bones to make stocks and broths instead of discarding them.</p>
-        <div class="r-tip">💡 Tip: Composting food scraps reduces landfill methane emissions significantly.</div>
+        <div class="r-tip">${ic('bulb')} Tip: Composting food scraps reduces landfill methane emissions significantly.</div>
       </div>
       <div class="awareness-5r-card r4">
         <div class="r-num">4</div>
         <div class="r-letter">REPAIR</div>
-        <div class="r-icon">🔧</div>
+        <div class="r-icon">${ic('wrench')}</div>
         <h4>Extend Food Life</h4>
         <p>Preserve food through proper storage, freezing, pickling, or fermenting. Revive slightly wilted vegetables with cold water. Store food correctly to extend its shelf life.</p>
-        <div class="r-tip">💡 Tip: Move items expiring soon to the front of the fridge — you will see and use them first.</div>
+        <div class="r-tip">${ic('bulb')} Tip: Move items expiring soon to the front of the fridge — you will see and use them first.</div>
       </div>
       <div class="awareness-5r-card r5">
         <div class="r-num">5</div>
         <div class="r-letter">RECONSIDER</div>
-        <div class="r-icon">🤔</div>
+        <div class="r-icon">${ic('help')}</div>
         <h4>Think Before You Act</h4>
         <p>Reconsider every food decision. Do you actually need that second pack? Is that promotional deal worth it if half goes to waste? Make mindful choices every time.</p>
-        <div class="r-tip">💡 Tip: Ask yourself — will I actually eat this before it expires?</div>
+        <div class="r-tip">${ic('bulb')} Tip: Ask yourself — will I actually eat this before it expires?</div>
       </div>
     </div>
 
     <div class="awareness-cta">
-      <div class="awareness-cta-icon">🌿</div>
+      <div class="awareness-cta-icon">${ic('leaf')}</div>
       <h3>Ready to Make a Change?</h3>
       <p>Start tracking your food today with Food Keeper. Every item saved is money in your pocket and methane kept out of the atmosphere.</p>
       <button class="btn-primary" style="background:var(--accent); color:white; margin-top:12px; width:auto; padding:12px 28px;" onclick="switchView('pantry')">Go to My Pantry →</button>
@@ -729,8 +739,7 @@ function applySettings() {
   if (settings.theme) {
     document.documentElement.setAttribute('data-theme', settings.theme);
     localStorage.setItem('fk_theme', settings.theme);
-    const btn = document.getElementById('theme-btn');
-    if (btn) btn.textContent = settings.theme === 'dark' ? '☀️' : '🌙';
+    syncThemeUI(settings.theme);
   }
   render();
 }
@@ -898,14 +907,14 @@ function render() {
     list.sort((a,b) => (b.added?.seconds || 0) - (a.added?.seconds || 0));
 
   if (list.length === 0) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">🧺</div><p>${query ? 'No matching ingredients found' : 'No ingredients yet — click ➕ Add Item to get started!'}</p></div>`;
+    container.innerHTML = `<div class="empty"><div class="empty-icon">${ic('basket')}</div><p>${query ? 'No matching ingredients found' : 'No ingredients yet — click ' + ic('add') + ' Add Item to get started!'}</p></div>`;
     return;
   }
 
   const groups = [
-    { label: '⚠️ Expired',       cls: 'expired-card', items: list.filter(f => daysLeft(f.expiry) < 0) },
-    { label: '🔔 Expiring Soon', cls: 'soon-card',    items: list.filter(f => { const d = daysLeft(f.expiry); return d >= 0 && d <= notifDays; }) },
-    { label: '✅ Fresh',         cls: '',             items: list.filter(f => daysLeft(f.expiry) > notifDays) },
+    { label: ic('alert') + ' Expired',       cls: 'expired-card', items: list.filter(f => daysLeft(f.expiry) < 0) },
+    { label: ic('bell') + ' Expiring Soon', cls: 'soon-card',    items: list.filter(f => { const d = daysLeft(f.expiry); return d >= 0 && d <= notifDays; }) },
+    { label: ic('checkCircle') + ' Fresh',         cls: '',             items: list.filter(f => daysLeft(f.expiry) > notifDays) },
   ].filter(g => g.items.length > 0);
 
   container.innerHTML = groups.map(g => `
@@ -918,8 +927,8 @@ function render() {
       if (e.target.closest('.action-btn') || e.target.closest('.card-actions')) return;
       if (bulkMode) {
         const id = card.dataset.id;
-        if (selectedIds.has(id)) { selectedIds.delete(id); card.classList.remove('selected'); card.querySelector('.food-select').textContent = ''; }
-        else { selectedIds.add(id); card.classList.add('selected'); card.querySelector('.food-select').textContent = '✓'; }
+        if (selectedIds.has(id)) { selectedIds.delete(id); card.classList.remove('selected'); card.querySelector('.food-select').innerHTML = ''; }
+        else { selectedIds.add(id); card.classList.add('selected'); card.querySelector('.food-select').innerHTML = ic('check'); }
         updateBulkBar();
       }
     });
@@ -932,7 +941,7 @@ function foodCardHTML(f, groupClass) {
   const isSelected = selectedIds.has(f.id);
   return `
     <div class="food-card ${groupClass} ${isSelected ? 'selected' : ''}" data-id="${f.id}">
-      <div class="food-select">${isSelected ? '✓' : ''}</div>
+      <div class="food-select">${isSelected ? ic('check') : ''}</div>
       <div class="food-emoji">${f.emoji || '🍽️'}</div>
       <div class="food-info">
         <div class="food-name-row">
@@ -940,7 +949,7 @@ function foodCardHTML(f, groupClass) {
           ${f.qty ? `<span class="food-qty">${esc(f.qty)}</span>` : ''}
         </div>
         <div class="food-meta">
-          <span>${LOC_ICON[f.location] || '📍'} ${LOC_LABEL[f.location] || ''}</span>
+          <span>${LOC_ICON[f.location] || ic('pin')} ${LOC_LABEL[f.location] || ''}</span>
           <span class="dot">·</span>
           <span>Exp: ${fmtDate(f.expiry)}</span>
         </div>
@@ -950,9 +959,9 @@ function foodCardHTML(f, groupClass) {
       <div class="card-badge-wrap">
         <span class="badge ${badge.cls}">${badge.text}</span>
         <div class="card-actions">
-          <button class="icon-btn action-btn" onclick="openEditModal('${f.id}')" title="Edit">✏️</button>
-          <button class="icon-btn action-btn check" onclick="eatFood('${f.id}')" title="Mark Consumed">✓</button>
-          <button class="icon-btn action-btn trash" onclick="wasteFood('${f.id}')" title="Log as Waste">🗑️</button>
+          <button class="icon-btn action-btn" onclick="openEditModal('${f.id}')" title="Edit">${ic('edit')}</button>
+          <button class="icon-btn action-btn check" onclick="eatFood('${f.id}')" title="Mark Consumed">${ic('check')}</button>
+          <button class="icon-btn action-btn trash" onclick="wasteFood('${f.id}')" title="Log as Waste">${ic('trash')}</button>
         </div>
       </div>
     </div>
@@ -1041,7 +1050,7 @@ function renderWasteLog() {
   const container = document.getElementById('waste-list-container');
   if (!container) return;
   if (wasteLog.length === 0) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">🌱</div><p>No waste logged — keep it up!</p></div>';
+    container.innerHTML = '<div class="empty"><div class="empty-icon">' + ic('sprout') + '</div><p>No waste logged — keep it up!</p></div>';
     return;
   }
   container.innerHTML = wasteLog.map(w => `
@@ -1059,14 +1068,14 @@ function renderShopList() {
   const container = document.getElementById('shop-list-container');
   if (!container) return;
   if (shopItems.length === 0) {
-    container.innerHTML = '<div class="empty" style="padding:2rem 1rem;"><div class="empty-icon">🛒</div><p>Shopping list is empty</p></div>';
+    container.innerHTML = '<div class="empty" style="padding:2rem 1rem;"><div class="empty-icon">' + ic('shopping') + '</div><p>Shopping list is empty</p></div>';
     return;
   }
   container.innerHTML = shopItems.map((item, i) => `
     <div class="shop-item">
-      <div class="shop-check ${item.checked ? 'checked' : ''}" onclick="toggleShopCheck(${i})">${item.checked ? '✓' : ''}</div>
+      <div class="shop-check ${item.checked ? 'checked' : ''}" onclick="toggleShopCheck(${i})">${item.checked ? ic('check') : ''}</div>
       <span class="shop-name ${item.checked ? 'done' : ''}">${esc(item.name)}</span>
-      <button class="shop-del" onclick="removeShopItem(${i})">✕</button>
+      <button class="shop-del" onclick="removeShopItem(${i})">${ic('x')}</button>
     </div>
   `).join('');
 }
@@ -1110,7 +1119,7 @@ function getSelectedEmoji() {
 
 function openModal() {
   editingId = null;
-  document.getElementById('modal-title').textContent = '✏️ Add Ingredient';
+  document.getElementById('modal-title').textContent = 'Add Ingredient';
   document.getElementById('input-name').value  = '';
   document.getElementById('input-qty').value   = '';
   document.getElementById('input-note').value  = '';
@@ -1128,7 +1137,7 @@ function openEditModal(id) {
   const f = foods.find(x => x.id === id);
   if (!f) return;
   editingId = id;
-  document.getElementById('modal-title').textContent = '✏️ Edit Ingredient';
+  document.getElementById('modal-title').textContent = 'Edit Ingredient';
   document.getElementById('input-name').value  = f.name;
   document.getElementById('input-qty').value   = f.qty || '';
   document.getElementById('input-note').value  = f.note || '';
@@ -1188,9 +1197,9 @@ function sendNotifications() {
   if (!expired.length && !today_.length && !soon_.length) return;
   if (localStorage.getItem(NOTIF_KEY) === today()) return;
   let body = '';
-  if (expired.length) body += `⚠️ ${expired.length} items expired! `;
-  if (today_.length)  body += `🔔 ${today_.length} expiring today! `;
-  if (soon_.length)   body += `⏳ ${soon_.length} expiring soon.`;
+  if (expired.length) body += `${expired.length} items expired! `;
+  if (today_.length)  body += `${today_.length} expiring today! `;
+  if (soon_.length)   body += `${soon_.length} expiring soon.`;
   new Notification('Food Keeper Alert', { body });
   localStorage.setItem(NOTIF_KEY, today());
 }
@@ -1228,7 +1237,7 @@ async function generateAICustomMenu() {
   if (outputDiv) outputDiv.innerHTML = '<div class="loading">Food Keeper AI analyzing your ingredients... Please wait...</div>';
   try {
     await ensurePuter();   // 放最前面，浏览器才不会拦截登录弹窗
-    if (!foods.length) { if (outputDiv) outputDiv.innerHTML = '<div class="empty">🧺 Add ingredients first.</div>'; return; }
+    if (!foods.length) { if (outputDiv) outputDiv.innerHTML = '<div class="empty">' + ic('basket') + ' Add ingredients first.</div>'; return; }
     const calcDL = d => d ? Math.ceil((new Date(d) - new Date()) / 86400000) : 999;
     const expiring = foods.filter(f => calcDL(f.expiry) <= 7);
     const toUse = expiring.length > 0 ? expiring : foods;
@@ -1251,7 +1260,7 @@ Requirements:
     }
   } catch(e) {
     console.error(e);
-    if (outputDiv) outputDiv.innerHTML = `<div style="background:var(--red-bg);color:var(--red-text);padding:12px;border-radius:8px;">⚠️ AI generation failed. Please try again.</div>`;
+    if (outputDiv) outputDiv.innerHTML = `<div style="background:var(--red-bg);color:var(--red-text);padding:12px;border-radius:8px;">${ic('alert')} AI generation failed. Please try again.</div>`;
   }
 }
 
@@ -1291,7 +1300,7 @@ async function processReceiptImage() {
   if (!currentReceiptBase64) { alert('Please upload a receipt image first.'); return; }
   if (scanBtn) { scanBtn.disabled = true; scanBtn.textContent = 'Analyzing...'; }
   if (addBtn) addBtn.style.display = 'none';
-  if (outputDiv) outputDiv.innerHTML = '<div class="loading">🧠 AI is reading your receipt...</div>';
+  if (outputDiv) outputDiv.innerHTML = '<div class="loading">' + ic('brain') + ' AI is reading your receipt...</div>';
   try {
     await ensurePuter();   // 放最前面
     const blob = dataURItoBlob(currentReceiptBase64);
@@ -1320,7 +1329,7 @@ Categories: dairy, produce, meat, grain, other. Locations: fridge, freezer, pant
     confetti(); toast('Receipt scanned successfully!');
   } catch(e) {
     console.error(e);
-    if (outputDiv) outputDiv.innerHTML = `<div style="background:var(--red-bg);color:var(--red-text);padding:12px;border-radius:8px;">⚠️ Scan failed. Ensure image is clear and try again.</div>`;
+    if (outputDiv) outputDiv.innerHTML = `<div style="background:var(--red-bg);color:var(--red-text);padding:12px;border-radius:8px;">${ic('alert')} Scan failed. Ensure image is clear and try again.</div>`;
   } finally {
     if (scanBtn) { scanBtn.disabled = false; scanBtn.textContent = 'Analyze & Compute Total'; }
   }
@@ -1354,6 +1363,6 @@ async function addScannedItemsToInventory() {
     console.error(e);
     toast('Error saving items. Please try again.');
   } finally {
-    if (addBtn) { addBtn.disabled = false; addBtn.textContent = 'Add All Items to Inventory ➕'; }
+    if (addBtn) { addBtn.disabled = false; addBtn.textContent = 'Add All Items to Inventory'; }
   }
 }
