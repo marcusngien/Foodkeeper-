@@ -40,11 +40,11 @@
   const _render = window.render, _renderWaste = window.renderWasteLog;   // 原来的 pantry / waste 渲染函数（文件末尾会包装）
 
   // ═════════ 1. 把新页面注册进现有框架 ═════════
-  const T_PURCHASES = { en: '🧾 Purchases', ms: '🧾 Pembelian', zh: '🧾 购买记录' };
-  const T_SPENDING = { en: '📊 Spending', ms: '📊 Perbelanjaan', zh: '📊 消费分析' };
+  const T_PURCHASES = { en: 'Purchases', ms: 'Pembelian', zh: '购买记录' };
+  const T_SPENDING = { en: 'Spending', ms: 'Perbelanjaan', zh: '消费分析' };
   ['en', 'ms', 'zh'].forEach(l => { TRANSLATIONS[l].purchases = T_PURCHASES[l]; TRANSLATIONS[l].spending = T_SPENDING[l]; });
   ALL_VIEWS.push('purchases', 'spending');
-  MENUS.pantry.push({ view: 'purchases', icon: '🧾' }, { view: 'spending', icon: '📊' });
+  MENUS.pantry.push({ view: 'purchases', icon: ic('receipt') }, { view: 'spending', icon: ic('chart') });
   IC.purchases = '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>';
   IC.spending = '<path d="M4 20V10M10 20V4M16 20v-7M2 20h20"/>';
   NAV_MAIN.splice(NAV_MAIN.indexOf('receipt') + 1, 0, 'purchases', 'spending');
@@ -107,7 +107,7 @@
   $('app').insertAdjacentHTML('beforeend', `
     <div class="overlay" id="pc-overlay" onclick="pcClose()">
       <div class="modal pc-modal" onclick="event.stopPropagation()">
-        <div class="modal-header"><h2 id="pcm-title">Add purchase</h2><button class="modal-close" onclick="pcClose()">✕</button></div>
+        <div class="modal-header"><h2 id="pcm-title">Add purchase</h2><button class="modal-close" onclick="pcClose()">${ic('x')}</button></div>
         <div class="modal-body">
           <div class="pcm-grid">
             <div class="form-field"><label class="form-label">Purchase date</label><input class="form-input" type="date" id="pcm-date" /></div>
@@ -130,7 +130,7 @@
   $('app').insertAdjacentHTML('beforeend', `
     <div class="overlay" id="pp-overlay" onclick="ppClose()">
       <div class="modal pc-modal" onclick="event.stopPropagation()">
-        <div class="modal-header"><h2>Add to pantry</h2><button class="modal-close" onclick="ppClose()">✕</button></div>
+        <div class="modal-header"><h2>Add to pantry</h2><button class="modal-close" onclick="ppClose()">${ic('x')}</button></div>
         <div class="modal-body">
           <p class="pg-muted" id="pp-sub"></p>
           <div class="pp-row pp-head"><span></span><span>Item</span><span>Qty</span><span>Storage</span><span>Expires</span></div>
@@ -221,15 +221,15 @@
       card('Adding older shops', '<p class="pg-muted">Food Keeper never guesses when you bought something. Add a past shop yourself and pick its real date.</p><button class="pg-btn line" onclick="pcOpen()">Add purchase</button>', 'tint-green');
 
     if (loadError) {
-      list.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load purchases. The Firestore rules probably do not allow the <b>purchases</b> collection yet. Publish the rules from <b>firestore.rules</b> and reload.</p></div>';
+      list.innerHTML = '<div class="empty"><div class="empty-icon">' + ic('alert') + '</div><p>Could not load purchases. The Firestore rules probably do not allow the <b>purchases</b> collection yet. Publish the rules from <b>firestore.rules</b> and reload.</p></div>';
       return;
     }
     if (!purchases.length) {
-      list.innerHTML = '<div class="empty"><div class="empty-icon">🧾</div><p>No purchases yet. Scan a receipt, or add one by hand.</p><button class="pg-btn solid" style="margin-top:14px" onclick="pcOpen()">Add purchase</button></div>';
+      list.innerHTML = '<div class="empty"><div class="empty-icon">' + ic('receipt') + '</div><p>No purchases yet. Scan a receipt, or add one by hand.</p><button class="pg-btn solid" style="margin-top:14px" onclick="pcOpen()">Add purchase</button></div>';
       return;
     }
     const rows = filtered();
-    if (!rows.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><p>No purchases match these filters.</p></div>'; return; }
+    if (!rows.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">' + ic('search') + '</div><p>No purchases match these filters.</p></div>'; return; }
 
     const groups = {};
     rows.forEach(p => (groups[p.date.slice(0, 7)] = groups[p.date.slice(0, 7)] || []).push(p));
@@ -395,8 +395,8 @@
     if (loadError || !purchases.length) {
       strip.innerHTML = ''; side.innerHTML = '';
       main.innerHTML = loadError
-        ? '<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load purchases. Publish the rules from <b>firestore.rules</b> and reload.</p></div>'
-        : '<div class="empty"><div class="empty-icon">📊</div><p>No spending to show yet. Save a purchase and your charts appear here.</p><div class="pc-empty-actions"><button class="pg-btn solid" onclick="switchView(\'receipt\')">Scan a receipt</button><button class="pg-btn line" onclick="switchView(\'purchases\'); pcOpen()">Add by hand</button></div></div>';
+        ? '<div class="empty"><div class="empty-icon">' + ic('alert') + '</div><p>Could not load purchases. Publish the rules from <b>firestore.rules</b> and reload.</p></div>'
+        : '<div class="empty"><div class="empty-icon">' + ic('chart') + '</div><p>No spending to show yet. Save a purchase and your charts appear here.</p><div class="pc-empty-actions"><button class="pg-btn solid" onclick="switchView(\'receipt\')">Scan a receipt</button><button class="pg-btn line" onclick="switchView(\'purchases\'); pcOpen()">Add by hand</button></div></div>';
       return;
     }
 
@@ -421,7 +421,7 @@
     const cats = Object.entries(sumBy(inR, 'category')).sort((a, b) => b[1] - a[1]);
     const catTotal = cats.reduce((s, c) => s + c[1], 0) || 1;
     const catCard = card('Spending by category', cats.length
-      ? cats.map(([c, v]) => `<div class="pg-row"><div class="pg-row-top"><span>${CAT_ICON[c] || '📦'} ${CAT_LABEL[c] || 'Other'}</span><b>${RM(v)} · ${Math.round(v / catTotal * 100)}%</b></div><div class="pg-bar"><i style="width:${Math.round(v / catTotal * 100)}%"></i></div></div>`).join('')
+      ? cats.map(([c, v]) => `<div class="pg-row"><div class="pg-row-top"><span>${catIc(c)} ${CAT_LABEL[c] || 'Other'}</span><b>${RM(v)} · ${Math.round(v / catTotal * 100)}%</b></div><div class="pg-bar"><i style="width:${Math.round(v / catTotal * 100)}%"></i></div></div>`).join('')
       : '<p class="pg-muted">No purchases in this range.</p>');
 
     // 频率
@@ -451,7 +451,7 @@
         return `<div class="pg-kpi-num">${RM(wasted)}</div><p class="pg-muted">${nW} item${nW === 1 ? '' : 's'} logged as waste in this range${total > 0 ? `, about ${Math.round(wasted / total * 100)}% of the ${RM(total)} you spent` : ''}.</p>`;
       })()) +
       card('Biggest category changes', diffs.length && lm.length
-        ? `<ul class="pg-mini">${diffs.map(([c, v]) => `<li><span class="pg-emo">${CAT_ICON[c] || '📦'}</span><span class="pg-grow">${CAT_LABEL[c] || 'Other'}</span><b>${v >= 0 ? '+' : '−'}${RM(Math.abs(v))}</b></li>`).join('')}</ul>`
+        ? `<ul class="pg-mini">${diffs.map(([c, v]) => `<li><span class="pg-emo">${catIc(c)}</span><span class="pg-grow">${CAT_LABEL[c] || 'Other'}</span><b>${v >= 0 ? '+' : '−'}${RM(Math.abs(v))}</b></li>`).join('')}</ul>`
         : '<p class="pg-muted">Needs purchases from both months to compare.</p>') +
       card('Keep it accurate', '<p class="pg-muted">Charts only count saved purchases. If you shopped before using Food Keeper, add those shops with their real dates.</p><button class="pg-btn line" onclick="switchView(\'purchases\'); pcOpen()">Add past purchase</button>', 'tint-green');
   }
@@ -490,7 +490,7 @@
       <select class="form-input sc-cat" aria-label="Category">${catOpts(CATS.includes(it.category) ? it.category : 'other')}</select>
       <select class="form-input sc-loc" aria-label="Storage">${locOpts(['fridge', 'freezer', 'pantry'].includes(it.location) ? it.location : 'fridge')}</select>
       <input class="form-input sc-days" type="number" min="0" step="1" value="${days}" aria-label="Days until expiry" />
-      <button type="button" class="icon-btn sc-del" aria-label="Remove line">✕</button></div>`;
+      <button type="button" class="icon-btn sc-del" aria-label="Remove line">${ic('x')}</button></div>`;
   }
 
   function setupScanEditor() {
@@ -524,7 +524,7 @@
     $('receipt-results-container').innerHTML = '';
     $('receipt-file').value = '';
     $('receipt-preview-box').style.display = 'none';
-    const b = $('add-to-inventory-btn'); if (b) { b.style.display = 'none'; b.textContent = 'Add All Items to Inventory ➕'; }
+    const b = $('add-to-inventory-btn'); if (b) { b.style.display = 'none'; b.textContent = 'Add All Items to Inventory'; }
   }
 
   const _addScanned = window.addScannedItemsToInventory;
@@ -600,7 +600,7 @@
   window.pcChip = f => {
     if (!f.purchaseId) return '';
     const p = purchases.find(x => x.id === f.purchaseId);
-    return p ? `<button class="pc-chip" onclick="pcJump('${p.id}')" title="Open this purchase">🧾 ${esc(p.retailer || 'Purchase')} · ${fmtDate(p.date)}</button>` : '';
+    return p ? `<button class="pc-chip" onclick="pcJump('${p.id}')" title="Open this purchase">${ic('receipt')} ${esc(p.retailer || 'Purchase')} · ${fmtDate(p.date)}</button>` : '';
   };
 
   // Pantry → 购买记录
