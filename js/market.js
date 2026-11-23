@@ -118,11 +118,11 @@
     const list = data.mine.slice().sort((a, b) => ts(b) - ts(a));
     const open = list.filter(l => l.status === 'open'), acc = list.filter(l => l.status === 'accepted'), done = list.filter(l => l.status === 'completed');
     const soon = open.filter(l => l.mode === 'donate' && daysLeft(l.expiry) !== null && daysLeft(l.expiry) <= SOON_DAYS);
-    const warn = soon.map(l => `<div class="mk-warn"><span aria-hidden="true">⚠️</span><div><b>No receiver yet for “${esc(l.title)}”</b>It ${esc(expLabel(l.expiry))} and nobody has accepted it. It may end up as waste. Consider selling it to a food-recovery buyer, such as a biogas or waste-to-energy company.<br><button class="pg-btn solid" onclick="fkMarket.convert('${l.id}')">Convert to sale</button></div></div>`).join('');
+    const warn = soon.map(l => `<div class="mk-warn"><span aria-hidden="true">${ic('alert')}</span><div><b>No receiver yet for “${esc(l.title)}”</b>It ${esc(expLabel(l.expiry))} and nobody has accepted it. It may end up as waste. Consider selling it to a food-recovery buyer, such as a biogas or waste-to-energy company.<br><button class="pg-btn solid" onclick="fkMarket.convert('${l.id}')">Convert to sale</button></div></div>`).join('');
     return `${errBox(['mine'])}
       <section class="pg-strip">${kpi(open.length, 'Open')}${kpi(acc.length, 'Accepted')}${kpi(done.length, 'Completed')}${kpi(data.interestsIn.length, 'Buyer interests')}</section>
       ${warn}
-      ${list.length ? `<div class="mk-list">${list.map(sellerRow).join('')}</div>` : empty('📦', 'No listings yet. Post your first surplus item above.')}`;
+      ${list.length ? `<div class="mk-list">${list.map(sellerRow).join('')}</div>` : empty(ic('box'), 'No listings yet. Post your first surplus item above.')}`;
   }
   function sellerRow(l) {
     const n = daysLeft(l.expiry), live = l.status === 'open' || l.status === 'accepted';
@@ -184,7 +184,7 @@
   function donationList() {
     const mine = (A().business() || {}).district, list = data.donations.filter(live)
       .sort((a, b) => (b.district === mine) - (a.district === mine) || (daysLeft(a.expiry) ?? 999) - (daysLeft(b.expiry) ?? 999));
-    if (!list.length) return empty('🤲', `No open donations in ${esc((A().business() || {}).state || 'your state')} right now. New ones appear here as soon as sellers post them.`);
+    if (!list.length) return empty(ic('hand'), `No open donations in ${esc((A().business() || {}).state || 'your state')} right now. New ones appear here as soon as sellers post them.`);
     return `<div class="mk-list">${list.map(l => {
       const near = l.district === mine, n = daysLeft(l.expiry);
       return `<article class="mk-item ${n !== null && n <= SOON_DAYS ? 'soon' : ''}"><div class="mk-title">${esc(l.title)} ${tag('donate')}</div><div class="mk-side"></div>
@@ -195,7 +195,7 @@
   function saleList() {
     const st = (A().business() || {}).state, sent = new Set(data.interestsMine.map(i => i.listingId));
     const list = data.sales.filter(live).sort((a, b) => (b.state === st) - (a.state === st) || (daysLeft(a.expiry) ?? 999) - (daysLeft(b.expiry) ?? 999));
-    if (!list.length) return empty('♻️', 'No items for sale right now. Check back soon.');
+    if (!list.length) return empty(ic('recycle'), 'No items for sale right now. Check back soon.');
     return `<div class="mk-list">${list.map(l => `<article class="mk-item"><div class="mk-title">${esc(l.title)} ${tag('sell')}</div><div class="mk-side"><span class="mk-price">${money(l.price)}</span></div>
       <div class="mk-meta"><span><b>${esc(l.qty)} ${esc(l.unit)}</b></span><span>${esc(CAT[l.category] || '')}</span><span>From <b>${esc(l.orgName)}</b></span><span>${esc([l.district, l.state].filter(Boolean).join(', '))}</span><span>${l.expiry ? esc(expLabel(l.expiry)) : ''}</span>${l.note ? `<span>${esc(l.note)}</span>` : ''}</div>
       <div class="mk-acts">${sent.has(l.id) ? `<span class="st-chip green">Interest sent</span><button class="pg-btn line" onclick="fkMarket.withdraw('${l.id}__${uid()}')">Withdraw</button>` : `<button class="pg-btn solid" onclick="fkMarket.interest('${l.id}')">I am interested</button>`}</div></article>`).join('')}</div>`;
@@ -212,14 +212,14 @@
         return `<article class="mk-item ${l.status === 'accepted' ? '' : 'gone'}"><div class="mk-title">${esc(l.title)} ${tag('donate')} ${chipLS(l)}</div><div class="mk-side"></div>
           <div class="mk-meta"><span><b>${esc(l.qty)} ${esc(l.unit)}</b></span><span>From <b>${esc(l.orgName)}</b> · ${esc(l.district)}</span>${l.expiry ? `<span>Best before ${esc(l.expiry)}</span>` : ''}${l.note ? `<span>${esc(l.note)}</span>` : ''}</div>
           ${l.status === 'accepted' ? `<div class="mk-sub"><b>Contact the seller to arrange pickup</b><br>${c ? contactLine(c) : '<small>Loading contact…</small>'}</div>` : ''}${acts ? `<div class="mk-acts">${acts}</div>` : ''}</article>`;
-      }).join('')}</div>` : empty('📭', 'Nothing accepted yet. Donations you accept show up here.'));
+      }).join('')}</div>` : empty(ic('inbox'), 'Nothing accepted yet. Donations you accept show up here.'));
     }
     if (can('buyer')) {
       const list = data.interestsMine.slice().sort((a, b) => ts(b) - ts(a));
       h += `<h4 class="section-label">${can('receiver') ? 'Buyer interests' : 'Your interests'}</h4>` + (list.length ? `<div class="mk-list">${list.map(i => `<article class="mk-item"><div class="mk-title">${esc(i.listingTitle || 'Listing')} ${tag('sell')}</div><div class="mk-side"></div>
         <div class="mk-meta"><span>Seller <b>${esc(i.ownerOrg || '')}</b></span>${i.message ? `<span>“${esc(i.message)}”</span>` : ''}</div>
         <div class="mk-sub"><small>The seller can see your contact details and will reach out to you.</small></div>
-        <div class="mk-acts"><button class="pg-btn line" onclick="fkMarket.withdraw('${i.id}')">Withdraw interest</button></div></article>`).join('')}</div>` : empty('♻️', 'No interests yet. Browse the marketplace and tap “I am interested”.'));
+        <div class="mk-acts"><button class="pg-btn line" onclick="fkMarket.withdraw('${i.id}')">Withdraw interest</button></div></article>`).join('')}</div>` : empty(ic('recycle'), 'No interests yet. Browse the marketplace and tap “I am interested”.'));
     }
     return h;
   }
@@ -305,7 +305,7 @@
     const n = nav(); if (!n.length) return '';
     ensureWatches();
     const soon = data.mine.filter(l => l.mode === 'donate' && l.status === 'open' && daysLeft(l.expiry) !== null && daysLeft(l.expiry) <= SOON_DAYS);
-    const warn = soon.length ? `<div class="mk-warn"><span aria-hidden="true">⚠️</span><div><b>${soon.length} donation${soon.length > 1 ? 's' : ''} close to expiry with no receiver</b>They may go to waste. You can convert them to a sale for food-recovery buyers.<br><button class="pg-btn solid" onclick="bizGo('biz-mine')">Review listings</button></div></div>` : '';
+    const warn = soon.length ? `<div class="mk-warn"><span aria-hidden="true">${ic('alert')}</span><div><b>${soon.length} donation${soon.length > 1 ? 's' : ''} close to expiry with no receiver</b>They may go to waste. You can convert them to a sale for food-recovery buyers.<br><button class="pg-btn solid" onclick="bizGo('biz-mine')">Review listings</button></div></div>` : '';
     const text = [can('seller') && 'post surplus food', can('receiver') && 'accept donations near you', can('buyer') && 'browse food-resource listings'].filter(Boolean).join(', ');
     return card('Food board', `<p class="pg-muted">Here you can ${text}. We match people; pickup and payment are arranged directly between you.</p>${warn}<div class="pg-actions">${n.map(([id, l]) => `<button class="pg-btn line" onclick="bizGo('${id}')">${l}</button>`).join('')}</div>`, 'tint-green');
   }
