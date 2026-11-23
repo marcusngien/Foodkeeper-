@@ -158,3 +158,15 @@
 [data-theme="dark"] { --fk-ink1: #e4f3e6; --fk-ink2: #86d391; --fk-ink3: #bfe0c6; }
 .logo-img { width: 32px; height: 32px; flex-shrink: 0; }
 .auth-logo-svg { display: block; width: 100%; max-width: 300px; height: auto; margin: 0 auto; }
+
+/* ── 线条图标（js/icons.js 的 ic()）── */
+.ic { vertical-align: -0.14em; }
+.menu-card-fallback .ic { width: 1.1em; height: 1.1em; opacity: .85; }
+.empty-icon .ic { width: 1.4em; height: 1.4em; stroke-width: 1.4; opacity: .7; }
+.icon-btn .ic { width: 16px; height: 16px; }
+.modal-close .ic { width: 18px; height: 18px; }
+.action-btn .ic, .bulk-btn .ic { margin-right: 4px; }
+.lb-rank .medal { display: inline-flex; }
+.lb-rank .medal .ic { width: 1.3em; height: 1.3em; }
+.medal-gold { color: #d4a017; } .medal-silver { color: #98a1ab; } .medal-bronze { color: #b87333; }
+.food-select .ic, .shop-check .ic { width: 0.9em; height: 0.9em; stroke-width: 2.4; vertical-align: middle; }
