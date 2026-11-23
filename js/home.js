@@ -1,19 +1,3 @@
-const IC = {
-  home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/>',
-  pantry: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 12h16M9 7.5h6"/>',
-  shopping: '<path d="M3 4h2l2.5 11h10L20 7H6"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
-  recipes: '<circle cx="11" cy="13" r="7"/><circle cx="11" cy="13" r="3"/><path d="M19 3v4M17 5h4"/>',
-  receipt: '<path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4"/><path d="M8 10h8M8 14h8"/>',
-  waste: '<path d="M20 12a8 8 0 0 1-14 5.3M4 12a8 8 0 0 1 14-5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>',
-  leaderboard: '<path d="M4 20v-8h5v8M9 20V5h6v15M15 20v-9h5v9"/>',
-  awareness: '<path d="M5 19C5 10 10 5 20 5c0 10-5 15-14 15"/><path d="M5 19 13 11"/>',
-  quiz: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17v.01"/>',
-  settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
-  add: '<path d="M12 5v14M5 12h14"/>',
-  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-};
-const ic = (n, s = 20) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
-
 // ── 侧边栏 ──
 const NAV_MAIN      = ['home', 'pantry', 'shopping', 'recipes', 'receipt', 'waste'];
 const NAV_COMMUNITY = ['leaderboard', 'awareness', 'quiz'];
@@ -22,9 +6,9 @@ const NAV_EN = { pantry: 'Pantry Tracker', recipes: 'AI Recipes', receipt: 'Rece
 
 function navLabel(id) {
   const t = TRANSLATIONS[currentLang];
-  if (id === 'home') return t.backHome.replace(/^\S+\s+/, '');
+  if (id === 'home') return stripLead(t.backHome);
   if (currentLang === 'en' && NAV_EN[id]) return NAV_EN[id];
-  return t[id].replace(/^\S+\s+/, '');   // 去掉原来的 emoji
+  return stripLead(t[id]);   // 去掉原来的 emoji
 }
 
 function navBtn(id) {
