@@ -133,7 +133,7 @@
         <div class="pg-step"><i>3</i><div><b>Add</b><small>Send them all to your pantry</small></div></div>
       </section>`,
       side: `
-        ${card('For a good scan', `<ul class="pg-mini"><li><span class="pg-emo">💡</span><span class="pg-grow">Shoot in bright, even light</span></li><li><span class="pg-emo">📄</span><span class="pg-grow">Flatten the paper and keep the whole receipt in frame</span></li><li><span class="pg-emo">🔍</span><span class="pg-grow">Make sure the text is sharp, not blurry</span></li></ul>`, 'tint-green')}
+        ${card('For a good scan', `<ul class="pg-mini"><li><span class="pg-emo">${ic('bulb')}</span><span class="pg-grow">Shoot in bright, even light</span></li><li><span class="pg-emo">${ic('file')}</span><span class="pg-grow">Flatten the paper and keep the whole receipt in frame</span></li><li><span class="pg-emo">${ic('search')}</span><span class="pg-grow">Make sure the text is sharp, not blurry</span></li></ul>`, 'tint-green')}
         ${card('What gets added', `<p class="pg-muted">Only food items. Tax, service charge and non-food lines are skipped. You can read the table before anything is saved to your pantry.</p>`)}`
     });
     if (rc) {
@@ -201,7 +201,7 @@
         return `<div class="pg-loc-row"><span>${LOC_ICON[l]}</span><span>${LOC_LABEL[l]}</span><b>${n}</b><div class="pg-bar"><i style="width:${Math.round(n / totalN * 100)}%"></i></div></div>`;
       }).join('')) +
       card('Stock value', `<div class="pg-kpi-num">${fmtRM(value)}</div><p class="pg-muted">Total price of what is in your kitchen right now.</p>` +
-        (Object.keys(cats).length ? `<div class="pg-cats">${Object.entries(cats).map(([k, n]) => `<span class="pg-tag">${CAT_ICON[k] || '📦'} ${CAT_LABEL[k] || k} ${n}</span>`).join('')}</div>` : '')) +
+        (Object.keys(cats).length ? `<div class="pg-cats">${Object.entries(cats).map(([k, n]) => `<span class="pg-tag">${catIc(k)} ${CAT_LABEL[k] || k} ${n}</span>`).join('')}</div>` : '')) +
       card('Tip of the day', `<p class="pg-tip">${TIPS[new Date().getDate() % TIPS.length]}</p>`, 'tint-green');
     refreshChips();
   }
@@ -293,10 +293,10 @@
   // ═════════ Recipes ═════════
   const STYLES = [
     { l: 'Surprise me', p: '' },
-    { l: '🇲🇾 Malaysian', p: 'Prefer Malaysian home-style dishes.' },
-    { l: '⏱ Under 20 min', p: 'Each recipe must take 20 minutes or less.' },
-    { l: '🥗 Light and healthy', p: 'Keep the dishes light and healthy.' },
-    { l: '🧒 Kid-friendly', p: 'Make the dishes mild and kid-friendly.' }
+    { l: 'Malaysian', p: 'Prefer Malaysian home-style dishes.' },
+    { l: ic('clock') + ' Under 20 min', p: 'Each recipe must take 20 minutes or less.' },
+    { l: ic('leaf') + ' Light and healthy', p: 'Keep the dishes light and healthy.' },
+    { l: ic('user') + ' Kid-friendly', p: 'Make the dishes mild and kid-friendly.' }
   ];
   let styleIdx = 0;
   window.pgStyle = i => { styleIdx = i; refreshStyles(); };
@@ -330,9 +330,9 @@
           ? `<ul class="pg-mini">${pool.slice(0, 8).map(f => `<li><span class="pg-emo">${esc(f.emoji || '🍽️')}</span><span class="pg-grow">${esc(f.name)}${f.qty ? `<br><small>${esc(f.qty)}</small>` : ''}</span><small>${LOC_LABEL[f.location] || ''}</small></li>`).join('')}</ul>${pool.length > 8 ? `<p class="pg-muted">and ${pool.length - 8} more</p>` : ''}`
           : '<p class="pg-muted">Add a few ingredients in the pantry first. The AI plans around what you have.</p>', 'tint-blue') +
       card('Zero-waste kitchen habits', `<ul class="pg-mini">
-        <li><span class="pg-emo">🍲</span><span class="pg-grow">Soft vegetables become soup</span></li>
-        <li><span class="pg-emo">🍚</span><span class="pg-grow">Day-old rice makes the best fried rice</span></li>
-        <li><span class="pg-emo">🥶</span><span class="pg-grow">Freeze leftovers within two days</span></li></ul>`);
+        <li><span class="pg-emo">${ic('bowl')}</span><span class="pg-grow">Soft vegetables become soup</span></li>
+        <li><span class="pg-emo">${ic('bowl')}</span><span class="pg-grow">Day-old rice makes the best fried rice</span></li>
+        <li><span class="pg-emo">${ic('snowflake')}</span><span class="pg-grow">Freeze leftovers within two days</span></li></ul>`);
   }
 
   // ═════════ Leaderboard：周日期 + 日历 ═════════
@@ -388,7 +388,7 @@
       const items = byDay[calSel] || [], lbl = parseYMD(calSel).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
       detail = `<div class="cal-detail"><div class="cal-detail-h"><b>${lbl}</b><span>${items.length ? fmtRM(sum(items)) : ''}</span></div>` + (items.length
         ? items.map(w => `<div class="waste-item"><span class="waste-emoji">${esc(w.emoji || '🍽️')}</span><span class="waste-name">${esc(w.name)}</span>${w.price ? `<span class="waste-price">${fmtRM(w.price)}</span>` : ''}</div>`).join('')
-        : '<p class="pg-muted">Nothing wasted on this day. 🌱</p>') + '</div>';
+        : '<p class="pg-muted">Nothing wasted on this day. ' + ic('sprout') + '</p>') + '</div>';
     }
     const atNow = calY === now.getFullYear() && calM === now.getMonth();
     const title = new Date(calY, calM, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
@@ -444,7 +444,7 @@
 
     const rank = ranked.length
       ? card('Your 10 heaviest weeks', `<ol class="lb-list2">${ranked.map((r, i) => `<li><span class="lb-n">${i + 1}</span><div><div class="lb-top"><b>Week ${r.n} <small class="lb-range">${weekRange(year, r.n)}</small></b><span>${fmtRM(r.a)}</span></div><div class="pg-bar warn"><i style="width:${Math.round(r.a / max * 100)}%"></i></div></div></li>`).join('')}</ol>`)
-      : `<div class="empty"><div class="empty-icon">🌱</div><p>No waste logged this year. Log items in the Waste Log and your weeks show up here.</p></div>`;
+      : `<div class="empty"><div class="empty-icon">${ic('sprout')}</div><p>No waste logged this year. Log items in the Waste Log and your weeks show up here.</p></div>`;
     c.innerHTML = calendarCard() + heat + rank;
 
     let delta;
@@ -456,7 +456,7 @@
     box.innerHTML =
       card(`This week <span class="lb-range">${weekRange(year, cw)}</span>`, `<div class="pg-kpi-num">${fmtRM(thisW)}</div>${delta}`, 'tint-yellow') +
       card('Clean streak', `<div class="pg-flame">${streak}<small>week${streak === 1 ? '' : 's'} in a row</small></div><p class="pg-muted">Weeks in a row with nothing logged as waste.</p>`) +
-      card('Badges', `<div class="pg-badges">${badge(clean >= 1, '🌱', 'First clean week')}${badge(streak >= 4, '🔥', '4-week clean streak')}${badge(streak >= 8, '🏅', '8-week clean streak')}${badge(thisW === 0 && lastW > 0, '💚', 'Beat last week')}</div>`, 'tint-green');
+      card('Badges', `<div class="pg-badges">${badge(clean >= 1, ic('sprout'), 'First clean week')}${badge(streak >= 4, ic('flame'), '4-week clean streak')}${badge(streak >= 8, ic('medal'), '8-week clean streak')}${badge(thisW === 0 && lastW > 0, ic('heart'), 'Beat last week')}</div>`, 'tint-green');
   };
 
   // ═════════ Quiz ═════════
