@@ -2018,4 +2018,11 @@ body.bulk-active .card-actions {
   .quiz-result-card {
     padding: 1.7rem 1rem;
   }
+  .recipe-search-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 4px;
 }
+}
+
