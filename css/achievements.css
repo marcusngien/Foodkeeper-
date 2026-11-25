@@ -234,3 +234,340 @@
 @media (prefers-reduced-motion: reduce) {
   .ab *, .am *, .ach-card, .ach-card *, .ach-pop *, .ach-pop, .ach-bg *, .ach-navdot, .ach-new { animation: none !important; }
 }
+
+
+/* ═══ Food Keeper — Extra Animations ═══ 放在 achievements.css 之后加载（最后一个 css）。只加新样式，不改旧文件。
+   规则：进场动画只在「切换页面」时播放（JS 给页面加 .fk-enter，1.5 秒后移除），
+   所以搜索、实时刷新数据时不会重复闪烁。 */
+
+:root {
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-spring: cubic-bezier(.3, 1.5, .5, 1);
+}
+
+/* ───────── 1. 通用关键帧 ───────── */
+@keyframes fk-rise   { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes fk-slide  { from { opacity: 0; transform: translateX(-22px); } to { opacity: 1; transform: none; } }
+@keyframes fk-slide-r{ from { opacity: 0; transform: translateX(22px); } to { opacity: 1; transform: none; } }
+@keyframes fk-pop    { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+@keyframes fk-grow-w { from { width: 0; } }
+@keyframes fk-grow-h { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes fk-float  { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-8px) rotate(1.5deg); } }
+@keyframes fk-sway   { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+@keyframes fk-shake  { 0%, 100% { transform: none; } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+@keyframes fk-bounce { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes fk-ping   { 0% { box-shadow: 0 0 0 0 rgba(244, 216, 74, .7); } 100% { box-shadow: 0 0 0 12px rgba(244, 216, 74, 0); } }
+@keyframes fk-blink  { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+@keyframes fk-shimmer{ to { background-position: -200% 0; } }
+@keyframes fk-dash   { to { stroke-dashoffset: -60; } }
+@keyframes fk-gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes fk-draw   { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+@keyframes fk-wobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+
+/* ───────── 2. 登录页 ───────── */
+.auth-screen { background: radial-gradient(circle at 20% 15%, color-mix(in srgb, var(--fk-yellow) 22%, transparent), transparent 40%), radial-gradient(circle at 85% 85%, color-mix(in srgb, var(--fk-blue) 20%, transparent), transparent 45%); background-size: 140% 140%; animation: fk-gradient 16s ease-in-out infinite; }
+.auth-card { animation: fk-rise .7s var(--ease-out) both; }
+.auth-card .auth-logo { animation: fk-pop .7s var(--ease-spring) .15s both; }
+.auth-card .auth-tabs, .auth-card .form-field, .auth-card .btn-primary, .auth-card .link-btn { animation: fk-rise .55s var(--ease-out) both; }
+.auth-card .form-field:nth-of-type(1) { animation-delay: .25s; }
+.auth-card .form-field:nth-of-type(2) { animation-delay: .32s; }
+.auth-card .btn-primary { animation-delay: .42s; }
+.auth-card .auth-tabs { animation-delay: .18s; }
+.auth-error.show { animation: fk-shake .45s ease both; }
+.auth-success.show { animation: fk-pop .4s var(--ease-spring) both; }
+.form-input { transition: border-color .2s, box-shadow .2s, transform .2s; }
+.form-input:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+
+/* ───────── 3. 侧边栏 / 顶栏 ───────── */
+#sidebar { animation: fk-slide .6s var(--ease-out) both; }
+.nav-item { position: relative; transition: background .2s, color .2s, transform .2s var(--ease-out), padding-left .2s var(--ease-out); }
+.nav-item:hover { transform: translateX(4px); }
+.nav-item:active { transform: scale(.97); }
+.nav-item .ic { transition: transform .3s var(--ease-spring); }
+.nav-item:hover .ic { transform: scale(1.2) rotate(-6deg); }
+.nav-item.active .ic { animation: fk-bounce .5s var(--ease-spring); }
+.nav-item.active::before { content: ""; position: absolute; left: -14px; top: 22%; bottom: 22%; width: 4px; border-radius: 0 4px 4px 0; background: var(--fk-yellow); animation: fk-grow-h .35s var(--ease-out) both; transform-origin: center; }
+#sidebar .nav-item { animation: fk-slide .5s var(--ease-out) both; }
+#sidebar .nav-item:nth-child(1) { animation-delay: .05s; } #sidebar .nav-item:nth-child(2) { animation-delay: .1s; }
+#sidebar .nav-item:nth-child(3) { animation-delay: .15s; } #sidebar .nav-item:nth-child(4) { animation-delay: .2s; }
+#sidebar .nav-item:nth-child(5) { animation-delay: .25s; } #sidebar .nav-item:nth-child(6) { animation-delay: .3s; }
+.sb-brand { transition: transform .3s var(--ease-spring); }
+.sb-brand:hover { transform: scale(1.04) rotate(-1deg); }
+.logo-img { animation: fk-sway 5s ease-in-out infinite; transform-origin: 50% 90%; }
+.header { animation: fk-rise .5s var(--ease-out) both; }
+.icon-btn { transition: background .2s, border-color .2s, transform .3s var(--ease-spring); }
+.icon-btn:hover { transform: rotate(60deg) scale(1.08); }
+.logout-btn { transition: background .2s, transform .2s; }
+.logout-btn:hover { transform: translateY(-1px); }
+.acct-pill { animation: fk-pop .5s var(--ease-spring) .2s both; }
+
+/* ───────── 4. 按钮 / 标签：悬停 + 按下 + 光泽扫过 ───────── */
+.pg-btn, .hd-btn, .action-btn, .btn-primary, .bulk-btn, .shop-add-btn, .ghost-btn, .export-btn, .pg-chip, .quiz-opt-btn {
+  transition: transform .2s var(--ease-out), box-shadow .2s, background .2s, color .2s, border-color .2s, opacity .2s;
+}
+.pg-btn:active, .hd-btn:active, .action-btn:active, .btn-primary:active, .bulk-btn:active, .shop-add-btn:active, .ghost-btn:active, .pg-chip:active { transform: scale(.95); }
+.pg-btn:hover, .hd-btn:hover { box-shadow: 0 6px 16px rgba(0, 0, 0, .12); }
+.pg-btn.solid, .hd-btn.solid, .btn-primary { position: relative; overflow: hidden; }
+.pg-btn.solid::after, .hd-btn.solid::after, .btn-primary::after {
+  content: ""; position: absolute; top: 0; left: -80%; width: 50%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .35), transparent);
+  transform: skewX(-20deg); pointer-events: none;
+}
+.pg-btn.solid:hover::after, .hd-btn.solid:hover::after, .btn-primary:hover::after { left: 130%; transition: left .6s ease; }
+.pg-chip.on { animation: fk-bounce .35s var(--ease-spring); }
+.pg-chip:hover { transform: translateY(-2px); }
+.badge { animation: fk-pop .4s var(--ease-spring) both; }
+.badge-red { animation: fk-pop .4s var(--ease-spring) both, fk-blink 2.2s ease-in-out 1s infinite; }
+
+/* ───────── 5. 页面进场（.fk-enter 由 JS 在切换页面时加上）───────── */
+.fk-enter .pg-hero { animation: fk-rise .6s var(--ease-out) both; }
+.fk-enter .pg-hero h2 { animation: fk-slide .7s var(--ease-out) .1s both; }
+.fk-enter .pg-hero p { animation: fk-slide .7s var(--ease-out) .2s both; }
+.fk-enter .pg-hero .pg-actions { animation: fk-rise .6s var(--ease-out) .3s both; }
+.fk-enter .pg-art { animation: fk-pop .8s var(--ease-spring) .25s both; }
+.fk-enter .pg-strip, .fk-enter.stats, .fk-enter .stats { animation: fk-rise .6s var(--ease-out) .12s both; }
+.fk-enter .pg-kpi, .fk-enter .stat { animation: fk-rise .55s var(--ease-out) both; }
+.fk-enter .pg-kpi:nth-child(1), .fk-enter .stat:nth-child(1) { animation-delay: .15s; }
+.fk-enter .pg-kpi:nth-child(2), .fk-enter .stat:nth-child(2) { animation-delay: .22s; }
+.fk-enter .pg-kpi:nth-child(3), .fk-enter .stat:nth-child(3) { animation-delay: .29s; }
+.fk-enter .pg-kpi:nth-child(4), .fk-enter .stat:nth-child(4) { animation-delay: .36s; }
+.fk-enter .pg-side > * { animation: fk-slide-r .6s var(--ease-out) both; }
+.fk-enter .pg-side > *:nth-child(1) { animation-delay: .2s; } .fk-enter .pg-side > *:nth-child(2) { animation-delay: .3s; }
+.fk-enter .pg-side > *:nth-child(3) { animation-delay: .4s; } .fk-enter .pg-side > *:nth-child(4) { animation-delay: .5s; }
+.fk-enter .pg-main > * { animation: fk-rise .55s var(--ease-out) .2s both; }
+.fk-enter .pg-main > *:nth-child(2) { animation-delay: .28s; }
+.fk-enter .pg-main > *:nth-child(3) { animation-delay: .36s; }
+.fk-enter .food-card, .fk-enter .waste-item, .fk-enter .pc-card, .fk-enter .mk-item, .fk-enter .shop-item, .fk-enter .adm-row, .fk-enter .leaderboard-row, .fk-enter .lb-list2 li {
+  animation: fk-rise .5s var(--ease-out) both;
+}
+.fk-enter .food-card:nth-child(1), .fk-enter .waste-item:nth-child(1), .fk-enter .pc-card:nth-child(1), .fk-enter .mk-item:nth-child(1), .fk-enter .shop-item:nth-child(1) { animation-delay: .25s; }
+.fk-enter .food-card:nth-child(2), .fk-enter .waste-item:nth-child(2), .fk-enter .pc-card:nth-child(2), .fk-enter .mk-item:nth-child(2), .fk-enter .shop-item:nth-child(2) { animation-delay: .31s; }
+.fk-enter .food-card:nth-child(3), .fk-enter .waste-item:nth-child(3), .fk-enter .pc-card:nth-child(3), .fk-enter .mk-item:nth-child(3), .fk-enter .shop-item:nth-child(3) { animation-delay: .37s; }
+.fk-enter .food-card:nth-child(4), .fk-enter .waste-item:nth-child(4), .fk-enter .pc-card:nth-child(4), .fk-enter .mk-item:nth-child(4), .fk-enter .shop-item:nth-child(4) { animation-delay: .43s; }
+.fk-enter .food-card:nth-child(5), .fk-enter .waste-item:nth-child(5), .fk-enter .pc-card:nth-child(5), .fk-enter .mk-item:nth-child(5), .fk-enter .shop-item:nth-child(5) { animation-delay: .49s; }
+.fk-enter .food-card:nth-child(n+6), .fk-enter .waste-item:nth-child(n+6), .fk-enter .pc-card:nth-child(n+6), .fk-enter .mk-item:nth-child(n+6), .fk-enter .shop-item:nth-child(n+6) { animation-delay: .55s; }
+.fk-enter .lb-list2 li:nth-child(1) { animation-delay: .3s; } .fk-enter .lb-list2 li:nth-child(2) { animation-delay: .38s; }
+.fk-enter .lb-list2 li:nth-child(3) { animation-delay: .46s; } .fk-enter .lb-list2 li:nth-child(n+4) { animation-delay: .54s; }
+.fk-enter .section-label { animation: fk-slide .5s var(--ease-out) .2s both; }
+.fk-enter .empty { animation: fk-pop .6s var(--ease-spring) .2s both; }
+.fk-enter .empty-icon { animation: fk-float 3.5s ease-in-out .8s infinite; }
+
+/* Hero 插画：持续轻轻漂浮 */
+.pg-art svg, .hd-art { animation: fk-float 6s ease-in-out infinite; }
+.pg-art svg path:last-child { stroke-dasharray: 400; animation: fk-draw 1.6s ease-out .4s both; }
+
+/* ───────── 6. 首页 ───────── */
+#home-screen.fk-enter .hd-hero h2 { animation: fk-slide .8s var(--ease-out) both; }
+#home-screen.fk-enter .hd-hero p { animation: fk-slide .8s var(--ease-out) .12s both; }
+#home-screen.fk-enter .hd-cta { animation: fk-rise .7s var(--ease-out) .25s both; }
+#home-screen.fk-enter .hd-art { animation: fk-pop .9s var(--ease-spring) .2s both, fk-float 6s ease-in-out 1.2s infinite; }
+#home-screen.fk-enter .hd-overview, #home-screen.fk-enter .hd-work > *, #home-screen.fk-enter .hd-quick, #home-screen.fk-enter .hd-explore > *, #home-screen.fk-enter .hd-life, #home-screen.fk-enter .hd-ach { animation: fk-rise .65s var(--ease-out) both; }
+#home-screen.fk-enter .hd-overview { animation-delay: .25s; }
+#home-screen.fk-enter .hd-work > *:nth-child(1) { animation-delay: .35s; } #home-screen.fk-enter .hd-work > *:nth-child(2) { animation-delay: .45s; }
+#home-screen.fk-enter .hd-quick { animation-delay: .5s; }
+#home-screen.fk-enter .hd-ach { animation-delay: .55s; }
+#home-screen.fk-enter .hd-explore > *:nth-child(1) { animation-delay: .6s; } #home-screen.fk-enter .hd-explore > *:nth-child(2) { animation-delay: .7s; } #home-screen.fk-enter .hd-explore > *:nth-child(3) { animation-delay: .8s; }
+#home-screen.fk-enter .hd-life { animation-delay: .85s; }
+#home-screen.fk-enter .pv-row { animation: fk-slide .5s var(--ease-out) both; }
+#home-screen.fk-enter .pv-row:nth-child(1) { animation-delay: .45s; } #home-screen.fk-enter .pv-row:nth-child(2) { animation-delay: .52s; }
+#home-screen.fk-enter .pv-row:nth-child(3) { animation-delay: .59s; } #home-screen.fk-enter .pv-row:nth-child(4) { animation-delay: .66s; } #home-screen.fk-enter .pv-row:nth-child(5) { animation-delay: .73s; }
+.ov-warn.on { animation: fk-ping 2s ease-out infinite; }
+.ov-num { display: inline-block; }
+.hd-hero h2 { background: linear-gradient(90deg, var(--accent), #2f8a40, var(--accent)); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: fk-shimmer 6s linear infinite; }
+.hd-quick button { transition: background .2s, transform .25s var(--ease-out); }
+.hd-quick button:hover { transform: translateY(-3px); }
+.hd-quick button .ic { transition: transform .3s var(--ease-spring); }
+.hd-quick button:hover .ic { transform: scale(1.25) rotate(-8deg); }
+.hd-pantry, .hd-recipe, .ex-aware, .ex-quiz, .ex-lb, .hd-ach { transition: transform .3s var(--ease-out), box-shadow .3s; }
+.hd-pantry:hover, .hd-recipe:hover, .ex-aware:hover, .ex-quiz:hover, .ex-lb:hover, .hd-ach:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.ex-art { animation: fk-sway 4.5s ease-in-out infinite; }
+.pv-row { transition: background .2s, transform .2s var(--ease-out); }
+.pv-row:hover { transform: translateX(4px); }
+.hd-life i { transition: background .2s, transform .3s var(--ease-spring); }
+.hd-life button:hover i { transform: scale(1.5); }
+.hd-life ol::before { transform-origin: left; animation: fk-grow-w 1.2s ease-out .9s both; }
+.hd-life i { animation: fk-pop .5s var(--ease-spring) both; }
+.hd-life li:nth-child(1) i { animation-delay: .9s; } .hd-life li:nth-child(2) i { animation-delay: 1.05s; } .hd-life li:nth-child(3) i { animation-delay: 1.2s; } .hd-life li:nth-child(4) i { animation-delay: 1.35s; } .hd-life li:nth-child(5) i { animation-delay: 1.5s; }
+
+/* ───────── 7. 卡片悬停 ───────── */
+.food-card, .waste-item, .pc-card, .mk-item, .pg-card, .aw-card, .awareness-info-card, .awareness-stat-card, .adm-row, .biz-cap, .menu-card {
+  transition: transform .25s var(--ease-out), box-shadow .25s, border-color .25s, background .25s;
+}
+.food-card:hover, .pc-card:hover, .mk-item:hover, .aw-card:hover, .adm-row:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.pg-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.waste-item:hover { transform: translateX(4px); }
+.food-emoji { transition: transform .35s var(--ease-spring); }
+.food-card:hover .food-emoji { transform: scale(1.2) rotate(-8deg); }
+.food-card.expired-card .food-emoji { animation: fk-wobble 2.8s ease-in-out infinite; }
+.food-card.soon-card { animation: none; }
+.food-card.soon-card .badge-amber { animation: fk-pop .4s var(--ease-spring) both, fk-ping 2.4s ease-out 1s infinite; }
+.card-actions .action-btn { transition: transform .2s var(--ease-spring), background .2s, color .2s, border-color .2s; }
+.card-actions .action-btn:hover { transform: scale(1.2); }
+.food-select { transition: width .2s ease, margin .2s ease, transform .25s var(--ease-spring); }
+.food-card.selected .food-select { transform: scale(1.15); }
+.food-card.selected { animation: fk-bounce .3s var(--ease-spring); }
+.bulk-bar { animation: fk-rise .35s var(--ease-out) both; }
+.pc-chip { transition: transform .2s var(--ease-spring), border-color .2s, color .2s; }
+.pc-chip:hover { transform: translateY(-2px) scale(1.04); }
+.pc-st { transition: transform .2s var(--ease-spring), border-color .2s, color .2s; }
+button.pc-st:hover { transform: scale(1.06); }
+.pc-body { animation: fk-rise .35s var(--ease-out) both; }
+.pc-head .pc-date { transition: transform .25s var(--ease-spring); }
+.pc-head:hover .pc-date { transform: rotate(-5deg) scale(1.08); }
+
+/* ───────── 8. 进度条 / 柱状图 / 热力图 / 日历 ───────── */
+.pg-bar > i { animation: fk-grow-w 1s var(--ease-out) both; }
+.pg-cols .pg-col i { transform-origin: bottom; animation: fk-grow-h .8s var(--ease-out) both; }
+.pg-cols .pg-col:nth-child(2) i { animation-delay: .08s; } .pg-cols .pg-col:nth-child(3) i { animation-delay: .16s; }
+.pg-cols .pg-col:nth-child(4) i { animation-delay: .24s; } .pg-cols .pg-col:nth-child(5) i { animation-delay: .32s; }
+.pg-cols .pg-col:nth-child(6) i { animation-delay: .4s; } .pg-cols .pg-col:nth-child(n+7) i { animation-delay: .48s; }
+.pg-col i { transition: filter .2s, transform .25s var(--ease-spring); }
+.pg-col:hover i { filter: brightness(1.12); transform: scaleX(1.08); }
+.pg-col b { animation: fk-rise .5s var(--ease-out) .6s both; }
+.pg-heat .pg-cell { animation: fk-pop .4s var(--ease-spring) both; transition: transform .2s var(--ease-spring); }
+.pg-heat .pg-cell:hover { transform: scale(1.5); z-index: 2; position: relative; }
+.pg-heat .pg-cell:nth-child(4n+1) { animation-delay: .02s; } .pg-heat .pg-cell:nth-child(4n+2) { animation-delay: .1s; }
+.pg-heat .pg-cell:nth-child(4n+3) { animation-delay: .18s; } .pg-heat .pg-cell:nth-child(4n) { animation-delay: .26s; }
+.cal-day { transition: transform .2s var(--ease-spring), border-color .2s, box-shadow .2s; }
+.cal-day:hover:not(:disabled) { transform: scale(1.12); z-index: 1; box-shadow: var(--shadow); }
+.cal-day.today { animation: fk-ping 2.2s ease-out infinite; }
+.cal-day.sel { animation: fk-bounce .3s var(--ease-spring); }
+.cal-detail { animation: fk-rise .35s var(--ease-out) both; }
+.cal-grid { animation: fk-pop .4s var(--ease-out) both; }
+.qz-ring { transition: transform .4s var(--ease-spring); }
+.qz-ring:hover { transform: scale(1.06) rotate(6deg); }
+.pg-flame { display: inline-block; animation: fk-bounce 2.2s ease-in-out infinite; }
+.pg-badge.on i { display: inline-block; animation: fk-bounce 2s ease-in-out infinite; }
+.lb-n { transition: transform .25s var(--ease-spring); }
+.lb-list2 li:hover .lb-n { transform: scale(1.35); }
+.leaderboard-row { transition: transform .25s var(--ease-out), box-shadow .25s; }
+.leaderboard-row:hover { transform: translateX(6px) scale(1.01); box-shadow: var(--shadow-md); }
+.medal-gold { animation: fk-wobble 2.6s ease-in-out infinite; display: inline-block; }
+
+/* ───────── 9. 购物清单 ───────── */
+.shop-item { transition: background .2s, transform .2s var(--ease-out); }
+.shop-item:hover { transform: translateX(4px); background: var(--surface2); }
+.shop-check { transition: all .25s var(--ease-spring); }
+.shop-check:hover { transform: scale(1.2); border-color: var(--accent); }
+.shop-check.checked { animation: fk-bounce .4s var(--ease-spring); }
+.shop-name { transition: color .3s, opacity .3s; }
+.shop-name.done { opacity: .6; }
+.shop-del { transition: transform .2s var(--ease-spring), color .2s; }
+.shop-del:hover { transform: rotate(90deg) scale(1.2); }
+.pg-have { animation: fk-slide .45s var(--ease-out) both; }
+
+/* ───────── 10. 弹窗 / 侧滑面板 / Toast ───────── */
+.overlay .modal { transform: translateY(24px) scale(.94); opacity: 0; transition: transform .35s var(--ease-spring), opacity .25s; }
+.overlay.open .modal { transform: none; opacity: 1; }
+.overlay.open .modal-body > .form-field, .overlay.open .pcm-row, .overlay.open .pp-row { animation: fk-rise .4s var(--ease-out) both; }
+.overlay.open .modal-body > .form-field:nth-child(2) { animation-delay: .06s; } .overlay.open .modal-body > .form-field:nth-child(3) { animation-delay: .12s; }
+.overlay.open .modal-body > .form-field:nth-child(4) { animation-delay: .18s; }
+.modal-close { transition: transform .3s var(--ease-spring), color .2s; }
+.modal-close:hover { transform: rotate(90deg) scale(1.15); }
+.emoji-opt { transition: transform .2s var(--ease-spring), background .15s; }
+.emoji-opt:hover { transform: scale(1.35) rotate(-6deg); }
+.emoji-opt.sel { animation: fk-bounce .35s var(--ease-spring); }
+.overlay.open .side-panel .setting-row { animation: fk-slide-r .45s var(--ease-out) both; }
+.overlay.open .side-panel .setting-row:nth-of-type(1) { animation-delay: .1s; } .overlay.open .side-panel .setting-row:nth-of-type(2) { animation-delay: .17s; }
+.overlay.open .side-panel .setting-row:nth-of-type(3) { animation-delay: .24s; } .overlay.open .side-panel .setting-row:nth-of-type(4) { animation-delay: .31s; }
+.toggle::after { transition: transform .3s var(--ease-spring); }
+.toggle:active::after { width: 24px; }
+.toast { animation: toastFade 2.4s var(--ease-spring) forwards; }
+.confetti-piece:nth-child(3n) { border-radius: 50%; }
+.confetti-piece:nth-child(3n+1) { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+
+/* ───────── 11. AI 食谱 / 收据 / 加载 ───────── */
+.loading { position: relative; overflow: hidden; border-radius: 12px; animation: fk-blink 1.4s ease-in-out infinite; }
+.loading::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--accent) 14%, transparent) 50%, transparent 70%); background-size: 200% 100%; animation: fk-shimmer 1.4s linear infinite; }
+.recipe-card { animation: fk-rise .6s var(--ease-out) both; }
+.ai-generated-html h3 { animation: fk-slide .5s var(--ease-out) both; }
+.ai-generated-html > * { animation: fk-rise .5s var(--ease-out) both; }
+.ai-generated-html li { animation: fk-slide .4s var(--ease-out) both; }
+.ai-generated-html li:nth-child(2) { animation-delay: .05s; } .ai-generated-html li:nth-child(3) { animation-delay: .1s; }
+.ai-generated-html li:nth-child(4) { animation-delay: .15s; } .ai-generated-html li:nth-child(n+5) { animation-delay: .2s; }
+.pg-step > i { animation: fk-pop .5s var(--ease-spring) both; }
+.pg-step:nth-child(2) > i { animation-delay: .15s; } .pg-step:nth-child(3) > i { animation-delay: .3s; }
+.pg-step { transition: background .2s; } .pg-step:hover { background: var(--accent-light); }
+.receipt-data-table-wrapper tr { animation: fk-slide .4s var(--ease-out) both; }
+.receipt-data-table-wrapper tr:nth-child(2) { animation-delay: .06s; } .receipt-data-table-wrapper tr:nth-child(3) { animation-delay: .12s; }
+.receipt-data-table-wrapper tr:nth-child(4) { animation-delay: .18s; } .receipt-data-table-wrapper tr:nth-child(5) { animation-delay: .24s; } .receipt-data-table-wrapper tr:nth-child(n+6) { animation-delay: .3s; }
+.sc-row, .pcm-row { animation: fk-slide .35s var(--ease-out) both; }
+#receipt-img-preview { animation: fk-pop .5s var(--ease-spring) both; }
+.pg-receipt .receipt-card.drag { animation: fk-bounce .5s ease infinite; }
+.pg-receipt #receipt-file:hover { border-color: var(--accent); background: var(--accent-light); }
+
+/* ───────── 12. 测验 / 知识页 ───────── */
+.quiz-card, .quiz-header { animation: fk-rise .5s var(--ease-out) both; }
+.quiz-question { animation: fk-slide .5s var(--ease-out) .1s both; }
+.quiz-opt-btn { animation: fk-rise .45s var(--ease-out) both; }
+.quiz-opt-btn:nth-child(1) { animation-delay: .15s; } .quiz-opt-btn:nth-child(2) { animation-delay: .22s; }
+.quiz-opt-btn:nth-child(3) { animation-delay: .29s; } .quiz-opt-btn:nth-child(4) { animation-delay: .36s; }
+.quiz-opt-btn:hover:not(:disabled) .quiz-opt-letter { transform: scale(1.15) rotate(-8deg); background: var(--accent); color: #fff; }
+.quiz-opt-letter { transition: transform .25s var(--ease-spring), background .2s, color .2s; }
+.quiz-opt-btn.correct { animation: fk-bounce .5s var(--ease-spring), fk-ping 1.2s ease-out 1; }
+.quiz-opt-btn.wrong { animation: fk-shake .5s ease; }
+.quiz-feedback { animation: fk-pop .4s var(--ease-spring) both; }
+.quiz-progress-fill { transition: width .6s var(--ease-out); position: relative; overflow: hidden; }
+.quiz-progress-fill::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .45), transparent); background-size: 200% 100%; animation: fk-shimmer 1.8s linear infinite; }
+.quiz-result-card { animation: fk-pop .7s var(--ease-spring) both; }
+.quiz-result-icon { display: inline-block; animation: fk-bounce 1.6s ease-in-out .6s infinite; }
+.quiz-result-score { animation: fk-pop .6s var(--ease-spring) .3s both; }
+.qz-intro { animation: fk-pop .6s var(--ease-spring) both; }
+.pg-5r li { animation: fk-slide .45s var(--ease-out) both; }
+.pg-5r li:nth-child(2) { animation-delay: .07s; } .pg-5r li:nth-child(3) { animation-delay: .14s; } .pg-5r li:nth-child(4) { animation-delay: .21s; } .pg-5r li:nth-child(5) { animation-delay: .28s; }
+.aw-tile { transition: transform .35s var(--ease-spring); }
+.aw-card:hover .aw-tile, .aw-r5-item:hover .aw-tile { transform: rotate(-10deg) scale(1.15); }
+.aw-r5-panel { animation: fk-pop .45s var(--ease-out) both; }
+.aw-r5-panel .aw-tile.big { animation: fk-bounce .7s var(--ease-spring) .1s both, fk-float 4s ease-in-out .9s infinite; }
+.aw-r5-item { transition: transform .2s var(--ease-out), background .2s, border-color .2s; }
+.aw-r5-item:hover { transform: translateX(5px); }
+.aw-go { transition: background .2s, transform .2s var(--ease-out); }
+.aw-go:hover { transform: translateX(5px); }
+.aw-go svg:last-child { transition: transform .25s var(--ease-spring); }
+.aw-go:hover svg:last-child { transform: translateX(5px); }
+.awareness-stat-card .awareness-stat-num { animation: fk-pop .6s var(--ease-spring) both; }
+.aw-vs .pg-bar > i { animation: fk-grow-w 1.4s var(--ease-out) .3s both; }
+
+/* ───────── 13. 卡片菜单（旧版入口）/ 空状态图标 ───────── */
+.menu-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: var(--shadow-md); }
+.menu-card-fallback .ic { transition: transform .35s var(--ease-spring); }
+.menu-card:hover .menu-card-fallback .ic { transform: scale(1.25) rotate(-8deg); }
+.empty-icon { display: inline-block; animation: fk-float 4s ease-in-out infinite; }
+
+/* ───────── 14. Business / 告示板 ───────── */
+.mk-warn { animation: fk-slide .5s var(--ease-out) both, fk-ping 3s ease-out 1s infinite; }
+.biz-cap.on { animation: fk-pop .5s var(--ease-spring) both; }
+.biz-check li { animation: fk-slide .4s var(--ease-out) both; }
+.biz-check li:nth-child(2) { animation-delay: .06s; } .biz-check li:nth-child(3) { animation-delay: .12s; } .biz-check li:nth-child(4) { animation-delay: .18s; } .biz-check li:nth-child(5) { animation-delay: .24s; } .biz-check li:nth-child(6) { animation-delay: .3s; }
+.biz-check li.ok i { animation: fk-pop .4s var(--ease-spring) both; }
+.st-chip.amber { animation: fk-blink 2.4s ease-in-out infinite; }
+.st-chip.green { animation: fk-pop .4s var(--ease-spring) both; }
+.mk-tag { transition: transform .2s var(--ease-spring); } .mk-item:hover .mk-tag { transform: scale(1.12); }
+.sb-org { animation: fk-pop .5s var(--ease-spring) .2s both; }
+.mk-seg label { transition: background .2s, color .2s; }
+.pg-view { position: relative; }
+
+/* ───────── 15. 成就页补充 ───────── */
+.ach-card:active { transform: scale(.97); }
+.ach-chips .pg-chip { animation: fk-pop .35s var(--ease-spring) both; }
+.ach-sec { animation: fk-rise .55s var(--ease-out) both; }
+.ach-secs > .ach-sec:nth-child(2) { animation-delay: .08s; } .ach-secs > .ach-sec:nth-child(3) { animation-delay: .16s; } .ach-secs > .ach-sec:nth-child(4) { animation-delay: .24s; }
+.hd-ach-b.on .ab-wrap { animation: ab-float 4s ease-in-out infinite; }
+
+/* ───────── 16. 页面顶部滚动进度条 + 点击水波（由 JS 生成）───────── */
+#fk-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 2000; background: linear-gradient(90deg, #5fd08f, #F4D84A, #4C91D8); transition: width .15s linear, opacity .3s; pointer-events: none; box-shadow: 0 0 8px rgba(76, 145, 216, .6); }
+.fk-ripple { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, .45); transform: scale(0); animation: fk-ripple-go .6s ease-out forwards; pointer-events: none; }
+@keyframes fk-ripple-go { to { transform: scale(4); opacity: 0; } }
+.fk-count { font-variant-numeric: tabular-nums; }
+.fk-bump { animation: fk-bounce .45s var(--ease-spring); }
+.fk-top { position: fixed; right: 22px; bottom: 22px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 20px; cursor: pointer; z-index: 40; box-shadow: var(--shadow-md); opacity: 0; transform: translateY(20px) scale(.7); pointer-events: none; transition: opacity .3s, transform .35s var(--ease-spring); }
+.fk-top.show { opacity: 1; transform: none; pointer-events: auto; }
+.fk-top:hover { transform: translateY(-4px) scale(1.08); }
+[data-theme="dark"] .fk-top { color: #0f2a05; }
+@media (max-width: 960px) { .fk-top { bottom: 84px; } }
+
+/* ───────── 17. 减少动态效果：全部静止 ───────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important; transition-duration: .001ms !important; }
+  .hd-hero h2 { -webkit-text-fill-color: var(--accent); background: none; }
+}
