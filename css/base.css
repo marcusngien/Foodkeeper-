@@ -1,0 +1,443 @@
+/* ═══════════════════════════════════════════════════════════════
+   base.css  —  最底层：颜色变量、主题、reset、顶栏、页面容器
+   ───────────────────────────────────────────────────────────────
+   加载顺序：必须第一个加载（后面所有文件都会用到这里的变量）
+
+   目录
+   1. Reset（清除浏览器默认间距）
+   2. 颜色变量与主题（浅色 / 深色）
+   3. 页面基础（body、滚动条）
+   4. 顶栏 (Header)
+   5. 页面容器与切换动画
+   6. 旧版导航（待确认：可能已不用）
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ───────────────────────────────────────────────
+   1. Reset
+   ─────────────────────────────────────────────── */
+
+/* 所有元素：宽度包含 padding 和 border，并清掉默认间距 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* ───────────────────────────────────────────────
+   2. 颜色变量与主题
+   用法：别的文件写 var(--text) 就会跟着主题自动变色
+   ─────────────────────────────────────────────── */
+
+/* 默认（浅色）变量。其他文件也会用这些变量，所以不要随便改名 */
+:root {
+  /* 背景与表面：bg = 页面底色，surface = 卡片，数字越大越深 */
+  --bg: #f5f3ee;
+  --surface: #ffffff;
+  --surface2: #eceae3;
+  --surface3: #e2dfd7;
+
+  /* 边框：border = 淡，border2 = 稍深 */
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+
+  /* 文字：text = 主要，text2 = 次要，text3 = 最淡（提示用） */
+  --text: #1c1b18;
+  --text2: #6b6860;
+  --text3: #a09e99;
+
+  /* 绿色（新鲜、成功）：背景 / 文字 / 边框 */
+  --green-bg: #e8f5d9;
+  --green-text: #2d5a0e;
+  --green-border: #b8dca0;
+
+  /* 琥珀色（快过期、警告） */
+  --amber-bg: #fef3d8;
+  --amber-text: #754400;
+  --amber-border: #f5d078;
+
+  /* 红色（已过期、危险、错误） */
+  --red-bg: #fde8e8;
+  --red-text: #911f1f;
+  --red-border: #f0a0a0;
+
+  /* 蓝色（信息） */
+  --blue-bg: #e8f0fe;
+  --blue-text: #1a4ac0;
+  --blue-border: #99b4f8;
+
+  /* 主题强调色（按钮、选中状态） */
+  --accent: #2d6a2d;
+  --accent-light: #e8f5d9;
+
+  /* 圆角：普通 / 大 / 特大 */
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* 字体：一般文字 / 数字用的等宽字体 */
+  --font: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  /* 阴影：普通 / 稍重 */
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* 系统设为深色，且用户没有手动选浅色时，自动用深色 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171715;
+    --surface: #212120;
+    --surface2: #2a2a28;
+    --surface3: #333330;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0ede6;
+    --text2: #9a9890;
+    --text3: #635f5a;
+    --green-bg: #162c07;
+    --green-text: #9fd070;
+    --green-border: #2d5a0e;
+    --amber-bg: #2e1d00;
+    --amber-text: #f5c96a;
+    --amber-border: #7a4800;
+    --red-bg: #2e0d0d;
+    --red-text: #f0a0a0;
+    --red-border: #911f1f;
+    --blue-bg: #0d1e40;
+    --blue-text: #99b4f8;
+    --blue-border: #1a4ac0;
+    --accent: #6bbb3e;
+    --accent-light: #162c07;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
+  }
+}
+
+/* 用户在设置里手动选「深色」（<html data-theme="dark">） */
+[data-theme="dark"] {
+  --bg: #171715;
+  --surface: #212120;
+  --surface2: #2a2a28;
+  --surface3: #333330;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --text: #f0ede6;
+  --text2: #9a9890;
+  --text3: #635f5a;
+  --green-bg: #162c07;
+  --green-text: #9fd070;
+  --green-border: #2d5a0e;
+  --amber-bg: #2e1d00;
+  --amber-text: #f5c96a;
+  --amber-border: #7a4800;
+  --red-bg: #2e0d0d;
+  --red-text: #f0a0a0;
+  --red-border: #911f1f;
+  --blue-bg: #0d1e40;
+  --blue-text: #99b4f8;
+  --blue-border: #1a4ac0;
+  --accent: #6bbb3e;
+  --accent-light: #162c07;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* 用户手动选「浅色」（<html data-theme="light">）：在系统是深色时也强制用浅色 */
+[data-theme="light"] {
+  --bg: #f5f3ee;
+  --surface: #ffffff;
+  --surface2: #eceae3;
+  --surface3: #e2dfd7;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+  --text: #1c1b18;
+  --text2: #6b6860;
+  --text3: #a09e99;
+  --green-bg: #e8f5d9;
+  --green-text: #2d5a0e;
+  --green-border: #b8dca0;
+  --amber-bg: #fef3d8;
+  --amber-text: #754400;
+  --amber-border: #f5d078;
+  --red-bg: #fde8e8;
+  --red-text: #911f1f;
+  --red-border: #f0a0a0;
+  --blue-bg: #e8f0fe;
+  --blue-text: #1a4ac0;
+  --blue-border: #99b4f8;
+  --accent: #2d6a2d;
+  --accent-light: #e8f5d9;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+}
+
+
+/* ───────────────────────────────────────────────
+   3. 页面基础
+   ─────────────────────────────────────────────── */
+
+/* 整个页面的底色、文字颜色、默认字体 */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+  font-size: 15px;
+}
+
+/* 自定义滚动条：细一点，颜色跟着主题 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface3);
+  border-radius: 3px;
+}
+
+
+/* ───────────────────────────────────────────────
+   4. 顶栏 (Header)
+   ─────────────────────────────────────────────── */
+
+/* 顶栏外壳：粘在页面最上面，带一点模糊背景 */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+}
+
+/* 顶栏内容：限制最大宽度并居中，左右分开排列 */
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 左边的 logo 区域 */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* 【待确认：可能已不用】旧版 emoji logo 的大小 */
+.logo-icon {
+  font-size: 24px;
+}
+
+/* logo 旁边的 "Food Keeper" 文字 */
+.logo h1 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+/* 右边区域（邮箱、设置按钮、登出） */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 用户邮箱：太长时显示省略号 */
+.user-email {
+  font-size: 12px;
+  color: var(--text2);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 圆形图标按钮（设置、卡片上的编辑/删除也在用） */
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+
+.icon-btn:hover {
+  background: var(--surface2);
+  border-color: var(--border2);
+}
+
+/* 登出按钮：椭圆形轮廓 */
+.logout-btn {
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  cursor: pointer;
+  color: var(--text2);
+  font-family: var(--font);
+  transition: background 0.15s;
+}
+
+.logout-btn:hover {
+  background: var(--surface2);
+}
+
+
+/* ───────────────────────────────────────────────
+   5. 页面容器与切换动画
+   ─────────────────────────────────────────────── */
+
+/* 主内容区：最大宽度 1200px，居中 */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.4rem 1.5rem;
+}
+
+/* 每个页面（pantry、waste …）切换时轻轻淡入 */
+.view-section {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* 淡入动画：从透明、偏下 4px 到完全显示 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ───────────────────────────────────────────────
+   6. 旧版导航（待确认：可能已不用）
+   现在导航已经改成侧边栏（home.css）。
+   请先在项目里搜索 nav-tab / nav-hamburger，
+   没有任何地方用到的话，这一整段可以删除。
+   ─────────────────────────────────────────────── */
+
+/* 旧的横向标签栏外壳 */
+.nav-tabs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+
+/* 隐藏标签栏的横向滚动条 */
+.nav-tabs::-webkit-scrollbar {
+  height: 0;
+}
+
+/* 标签的容器 */
+.nav-tab-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  width: 100%;
+}
+
+/* 单个标签 */
+.nav-tab {
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+/* 当前选中的标签 */
+.nav-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* 鼠标移到未选中的标签上 */
+.nav-tab:hover:not(.active) {
+  color: var(--text);
+}
+
+/* 手机版：标签变成竖向菜单，由汉堡按钮展开 */
+@media (max-width: 600px) {
+  /* 汉堡按钮 */
+  .nav-hamburger {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--surface);
+    border: none;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* 标签容器：默认收起 */
+  .nav-tab-wrap {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    background: var(--surface);
+  }
+
+  /* 展开状态 */
+  .nav-tab-wrap.show {
+    display: flex;
+  }
+
+  /* 手机上的标签：竖排，左边用色条表示选中 */
+  .nav-tab {
+    width: 100%;
+    text-align: left;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
+
+  .nav-tab.active {
+    border-bottom-color: transparent;
+    border-left-color: var(--accent);
+    background: var(--surface2);
+  }
+}
+
+/* 电脑版：不显示汉堡按钮 */
+@media (min-width: 601px) {
+  .nav-hamburger {
+    display: none;
+  }
+}
