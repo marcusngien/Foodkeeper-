@@ -1,89 +1,540 @@
-/* ═══ Purchases / Spending / Receipt editor — 放在 pages.css 之后加载 ═══
-   只用现有的颜色变量和组件（.toolbar、.overlay、.modal、.pg-card 等），没有新的视觉风格。 */
+/* ═══════════════════════════════════════════════════════════════
+   purchase.css  —  购买记录 / 支出统计 / 收据确认 / 与 Pantry 的连接
+   ───────────────────────────────────────────────────────────────
+   加载顺序：必须放在 pages.css 之后（会用到它的 .pg-card、.pg-bar 等）
+   颜色：全部使用 style.css / home.css 里定义的变量，不写死颜色
 
-/* ── Purchase History 列表 ── */
-.pc-sum { font: 600 13px var(--font-mono); color: var(--text); }
-.pc-card { background: var(--surface); border: 1px solid var(--border2); border-left: 4px solid var(--fk-blue); border-radius: 12px; margin-top: 8px; overflow: hidden; }
-.pc-card.src-m { border-left-color: var(--fk-yellow); }
-.pc-head { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: transparent; border: 0; color: var(--text); text-align: left; cursor: pointer; font-family: var(--font); }
-.pc-head:hover { background: var(--surface2); }
-.pc-head:focus-visible, .pc-del:focus-visible { outline: 2px solid var(--fk-blue); outline-offset: -2px; }
-.pc-date { width: 46px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 6px 0; border-radius: 8px; background: var(--surface2); font-size: 11px; color: var(--text2); line-height: 1.1; }
-.pc-date b { font: 600 18px var(--font-mono); color: var(--text); }
-.pc-store { display: block; font-weight: 600; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pc-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 12.5px; color: var(--text2); }
-.pc-total { font: 600 16px var(--font-mono); letter-spacing: -.5px; }
-.pc-body { padding: 4px 16px 16px; border-top: 1px solid var(--border); }
-.pc-items { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13.5px; }
-.pc-items th { text-align: left; font-weight: 600; font-size: 12px; color: var(--text2); padding: 6px 4px; border-bottom: 1px solid var(--border2); }
-.pc-items td { padding: 7px 4px; border-bottom: 1px solid var(--border); }
-.pc-items th:last-child, .pc-items td:last-child { text-align: right; font-family: var(--font-mono); }
-.pc-actions { display: flex; gap: 8px; margin-top: 10px; }
-.pc-del:hover { color: var(--red-text); border-color: var(--red-border); background: var(--red-bg); }
-.pc-empty-actions { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
-.pg-purchases .toolbar { margin: 0; padding: 10px; background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; }
-.pg-purchases .toolbar .search-bar { min-width: 180px; }
+   目录
+   1. 购买记录列表 (Purchase History)
+   2. 手动新增购买记录弹窗
+   3. 支出统计 (Spending)
+   4. 收据扫描后的确认表格
+   5. Pantry 卡片上的来源标签
+   6. 购买记录里每一行的 Pantry 状态
+   7. 「同时加入 Pantry」勾选框
+   8. 「加入 Pantry」弹窗
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ── 弹窗 ── */
-.pc-modal { max-width: 680px; max-height: 92vh; overflow-y: auto; }
-.pcm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0 12px; }
-.pcm-row { display: grid; grid-template-columns: minmax(0, 1fr) 70px 90px 110px 34px; gap: 8px; align-items: center; margin-top: 8px; }
-.pcm-row .form-input { padding: 8px 10px; font-size: 13.5px; }
-.pcm-head { font-size: 12px; color: var(--text2); font-weight: 500; margin-top: 4px; }
-.pcm-total { display: flex; justify-content: flex-end; align-items: baseline; gap: 10px; margin: 14px 0 6px; font-size: 14px; color: var(--text2); }
-.pcm-total b { font: 600 20px var(--font-mono); color: var(--text); letter-spacing: -.5px; }
-@media (max-width: 560px) {
-  .pcm-row { grid-template-columns: minmax(0, 1fr) 60px 80px 34px; }
-  .pcm-row .pcm-cat, .pcm-head span:nth-child(4) { display: none; }
+
+/* ───────────────────────────────────────────────
+   1. 购买记录列表 (Purchase History)
+   ─────────────────────────────────────────────── */
+
+/* 顶部显示的总金额文字（等宽字体，数字对齐） */
+.pc-sum {
+  font: 600 13px var(--font-mono);
+  color: var(--text);
 }
 
-/* ── Spending ── */
-.sp-custom { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--text2); }
-.sp-custom label { display: flex; align-items: center; gap: 8px; }
-.pg-spending .pg-main { gap: 16px; }
-.sp-tall { height: 170px; }
-.sp-short { height: 90px; }
-.pg-delta { font-size: 14px; line-height: 1.5; }
+/* 一张购买记录卡片。左边的蓝色竖条表示「收据扫描」来源 */
+.pc-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-left: 4px solid var(--fk-blue);
+  border-radius: 12px;
+  margin-top: 8px;
+  overflow: hidden;
+}
 
-/* ── 收据：可编辑的确认表 ── */
-.sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 12px; }
-.sc-grid { overflow-x: auto; padding-bottom: 4px; }
-.sc-row { display: grid; grid-template-columns: 52px minmax(150px, 1fr) 64px 90px 104px 96px 86px 32px; gap: 8px; align-items: center; margin-top: 8px; min-width: 740px; }
-.sc-row .form-input { padding: 7px 9px; font-size: 13px; }
-.sc-row input[type="checkbox"] { width: 18px; height: 18px; justify-self: center; accent-color: var(--accent); }
-.sc-headrow { margin-top: 0; font-size: 12px; font-weight: 500; color: var(--text2); }
-.sc-headrow span:first-child { text-align: center; }
+/* 手动输入的购买记录：竖条改成黄色，和扫描收据区分开 */
+.pc-card.src-m {
+  border-left-color: var(--fk-yellow);
+}
 
-/* ── Purchases ↔ Pantry 连接 ── */
-/* Pantry 卡片上的来源标签 */
-.pc-chip { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; padding: 3px 9px; border: 1px solid var(--border2); border-radius: 999px; background: var(--surface2); color: var(--text2); font: 500 11.5px var(--font); cursor: pointer; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pc-chip:hover { border-color: var(--fk-blue); color: var(--text); }
-.pc-chip:focus-visible, .pc-st:focus-visible { outline: 2px solid var(--fk-blue); outline-offset: 1px; }
-body.bulk-active .pc-chip { pointer-events: none; }
+/* 卡片头部（整行可点击，用来展开 / 收起明细） */
+.pc-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font);
+}
 
-/* Purchases 里每一行的 pantry 状态 */
-.pc-items th:nth-last-child(2), .pc-items td.pc-stcell { text-align: left; font-family: var(--font); white-space: nowrap; }
-.pc-st { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font: 500 12px var(--font); }
-button.pc-st { cursor: pointer; }
-.pc-st.add { background: transparent; border-style: dashed; color: var(--text); }
-.pc-st.add:hover { border-color: var(--accent); color: var(--accent); }
-.pc-st.in.badge-green { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
-.pc-st.in.badge-amber { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
-.pc-st.in.badge-red   { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red-border); }
-.pc-st.waste { background: var(--red-bg); color: var(--red-text); border-color: var(--red-border); }
-.pc-in-count { color: var(--green-text); font-weight: 600; }
+.pc-head:hover {
+  background: var(--surface2);
+}
 
-/* 手动新增弹窗里的「同时加入 pantry」 */
-.pcm-pantry { display: flex; align-items: flex-start; gap: 8px; margin: 4px 0 10px; font-size: 13.5px; cursor: pointer; }
-.pcm-pantry input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); }
+/* 键盘聚焦时的蓝色外框；删除按钮也共用 */
+.pc-head:focus-visible,
+.pc-del:focus-visible {
+  outline: 2px solid var(--fk-blue);
+  outline-offset: -2px;
+}
 
-/* 「加入 pantry」弹窗 */
-.pp-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) 70px 104px 138px; gap: 8px; align-items: center; margin-top: 8px; }
-.pp-row .form-input { padding: 8px 10px; font-size: 13.5px; }
-.pp-row input[type="checkbox"] { width: 18px; height: 18px; justify-self: center; accent-color: var(--accent); }
-.pp-head { font-size: 12px; color: var(--text2); font-weight: 500; margin-top: 10px; }
+/* 头部左侧的小日期块（上面月份，下面日期数字） */
+.pc-date {
+  width: 46px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  border-radius: 8px;
+  background: var(--surface2);
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.1;
+}
+
+/* 日期数字 */
+.pc-date b {
+  font: 600 18px var(--font-mono);
+  color: var(--text);
+}
+
+/* 店名，太长时显示省略号 */
+.pc-store {
+  display: block;
+  font-weight: 600;
+  font-size: 14.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 店名下面的小字（项目数、来源等） */
+.pc-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--text2);
+}
+
+/* 头部右侧的这笔购买总金额 */
+.pc-total {
+  font: 600 16px var(--font-mono);
+  letter-spacing: -.5px;
+}
+
+/* 展开后的明细区域 */
+.pc-body {
+  padding: 4px 16px 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* 明细表格（每行一个食材） */
+.pc-items {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13.5px;
+}
+
+.pc-items th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text2);
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.pc-items td {
+  padding: 7px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* 最后一列是价格：靠右，用等宽字体 */
+.pc-items th:last-child,
+.pc-items td:last-child {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+/* 明细下方的按钮行（编辑 / 删除） */
+.pc-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* 删除按钮：悬停时变红，提醒这是危险操作 */
+.pc-del:hover {
+  color: var(--red-text);
+  border-color: var(--red-border);
+  background: var(--red-bg);
+}
+
+/* 还没有任何记录时，空状态下方居中的按钮组 */
+.pc-empty-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+/* 页面顶部的搜索 / 筛选工具栏（盒子样式） */
+.pg-purchases .toolbar {
+  margin: 0;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+}
+
+.pg-purchases .toolbar .search-bar {
+  min-width: 180px;
+}
+
+
+/* ───────────────────────────────────────────────
+   2. 手动新增 / 编辑购买记录弹窗
+   ─────────────────────────────────────────────── */
+
+/* 弹窗外壳：比普通弹窗宽，内容太多时可以上下滚动 */
+.pc-modal {
+  max-width: 680px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+/* 顶部的基本信息栏位（店名、日期等），按宽度自动排成几列 */
+.pcm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0 12px;
+}
+
+/* 食材输入的每一行：名称 | 数量 | 价格 | 分类 | 删除按钮 */
+.pcm-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 70px 90px 110px 34px;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.pcm-row .form-input {
+  padding: 8px 10px;
+  font-size: 13.5px;
+}
+
+/* 上面那行的表头文字（名称 / 数量 / 价格 …） */
+.pcm-head {
+  font-size: 12px;
+  color: var(--text2);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* 弹窗底部的合计金额，靠右显示 */
+.pcm-total {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 10px;
+  margin: 14px 0 6px;
+  font-size: 14px;
+  color: var(--text2);
+}
+
+.pcm-total b {
+  font: 600 20px var(--font-mono);
+  color: var(--text);
+  letter-spacing: -.5px;
+}
+
+/* 手机：隐藏「分类」那一列，让每行放得下 */
 @media (max-width: 560px) {
-  .pp-row { grid-template-columns: 26px minmax(0, 1fr) 56px 94px; }
-  .pp-row .pp-exp, .pp-head span:nth-child(5) { grid-column: 2 / -1; }
-  .pp-head span:nth-child(5) { display: none; }
+  .pcm-row {
+    grid-template-columns: minmax(0, 1fr) 60px 80px 34px;
+  }
+
+  .pcm-row .pcm-cat,
+  .pcm-head span:nth-child(4) {
+    display: none;
+  }
+}
+
+
+/* ───────────────────────────────────────────────
+   3. 支出统计 (Spending)
+   ─────────────────────────────────────────────── */
+
+/* 自定义日期范围那一行（开始日期 / 结束日期） */
+.sp-custom {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.sp-custom label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 这个页面的主内容区，卡片之间的间距比默认的小 */
+.pg-spending .pg-main {
+  gap: 16px;
+}
+
+/* 图表高度：高（主图） */
+.sp-tall {
+  height: 170px;
+}
+
+/* 图表高度：矮（小图） */
+.sp-short {
+  height: 90px;
+}
+
+/* 与上个月比较的说明文字（pages.css 里也有同样的定义，这里保留不影响） */
+.pg-delta {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+/* ───────────────────────────────────────────────
+   4. 收据扫描后的确认表格（可编辑）
+   ─────────────────────────────────────────────── */
+
+/* 顶部的店名、日期等栏位，自动分列 */
+.sc-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0 12px;
+}
+
+/* 表格外层：窄屏时可以左右滑动，不会把页面撑宽 */
+.sc-grid {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+/* 每一行：勾选 | 名称 | 数量 | 价格 | 分类 | 位置 | 保质天数 | 删除
+   min-width 保证窄屏时是滑动，而不是把列挤变形 */
+.sc-row {
+  display: grid;
+  grid-template-columns: 52px minmax(150px, 1fr) 64px 90px 104px 96px 86px 32px;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+  min-width: 740px;
+}
+
+.sc-row .form-input {
+  padding: 7px 9px;
+  font-size: 13px;
+}
+
+.sc-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  justify-self: center;
+  accent-color: var(--accent);
+}
+
+/* 表头那一行 */
+.sc-headrow {
+  margin-top: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+}
+
+/* 表头第一格是「全选」勾选框，所以居中 */
+.sc-headrow span:first-child {
+  text-align: center;
+}
+
+
+/* ───────────────────────────────────────────────
+   5. Pantry 卡片上的「来源」小标签
+   点击后会跳到对应的购买记录
+   ─────────────────────────────────────────────── */
+
+.pc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 3px 9px;
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  background: var(--surface2);
+  color: var(--text2);
+  font: 500 11.5px var(--font);
+  cursor: pointer;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc-chip:hover {
+  border-color: var(--fk-blue);
+  color: var(--text);
+}
+
+/* 键盘聚焦外框（标签和下面的状态按钮共用） */
+.pc-chip:focus-visible,
+.pc-st:focus-visible {
+  outline: 2px solid var(--fk-blue);
+  outline-offset: 1px;
+}
+
+/* 批量选择模式下，标签不能点，避免误触跳页 */
+body.bulk-active .pc-chip {
+  pointer-events: none;
+}
+
+
+/* ───────────────────────────────────────────────
+   6. 购买记录里每一行的 Pantry 状态
+   （告诉你这件东西现在在不在 Pantry 里）
+   ─────────────────────────────────────────────── */
+
+/* 状态那一列（倒数第二列）靠左，并改回普通字体
+   （因为上面的规则把最后一列设成了靠右 + 等宽字体） */
+.pc-items th:nth-last-child(2),
+.pc-items td.pc-stcell {
+  text-align: left;
+  font-family: var(--font);
+  white-space: nowrap;
+}
+
+/* 状态小药丸（默认：灰色，表示一般信息） */
+.pc-st {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  font: 500 12px var(--font);
+}
+
+/* 如果它是按钮（可以点），显示手指光标 */
+button.pc-st {
+  cursor: pointer;
+}
+
+/* 「加入 Pantry」：虚线空心，表示还没加入，可以点 */
+.pc-st.add {
+  background: transparent;
+  border-style: dashed;
+  color: var(--text);
+}
+
+.pc-st.add:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* 「已在 Pantry 里」：颜色跟着保质期变（绿 = 新鲜，黄 = 快过期，红 = 已过期）
+   颜色类名 badge-green / badge-amber / badge-red 来自 style.css */
+.pc-st.in.badge-green {
+  background: var(--green-bg);
+  color: var(--green-text);
+  border-color: var(--green-border);
+}
+
+.pc-st.in.badge-amber {
+  background: var(--amber-bg);
+  color: var(--amber-text);
+  border-color: var(--amber-border);
+}
+
+.pc-st.in.badge-red {
+  background: var(--red-bg);
+  color: var(--red-text);
+  border-color: var(--red-border);
+}
+
+/* 「已被浪费」：红色，表示这件东西最后被记成浪费了 */
+.pc-st.waste {
+  background: var(--red-bg);
+  color: var(--red-text);
+  border-color: var(--red-border);
+}
+
+/* 购买记录头部里「已加入 Pantry 的数量」文字 */
+.pc-in-count {
+  color: var(--green-text);
+  font-weight: 600;
+}
+
+
+/* ───────────────────────────────────────────────
+   7. 手动新增弹窗里的「同时加入 Pantry」勾选框
+   ─────────────────────────────────────────────── */
+
+.pcm-pantry {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0 10px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.pcm-pantry input {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+
+/* ───────────────────────────────────────────────
+   8. 「加入 Pantry」弹窗
+   每一行：勾选 | 名称 | 数量 | 位置 | 过期日期
+   ─────────────────────────────────────────────── */
+
+.pp-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 70px 104px 138px;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.pp-row .form-input {
+  padding: 8px 10px;
+  font-size: 13.5px;
+}
+
+.pp-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  justify-self: center;
+  accent-color: var(--accent);
+}
+
+/* 表头文字 */
+.pp-head {
+  font-size: 12px;
+  color: var(--text2);
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+/* 手机：去掉「位置」那一列的表头，过期日期（.pp-exp）换到下一行占满宽度 */
+@media (max-width: 560px) {
+  .pp-row {
+    grid-template-columns: 26px minmax(0, 1fr) 56px 94px;
+  }
+
+  .pp-row .pp-exp,
+  .pp-head span:nth-child(5) {
+    grid-column: 2 / -1;
+  }
+
+  .pp-head span:nth-child(5) {
+    display: none;
+  }
 }
