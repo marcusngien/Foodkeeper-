@@ -1,0 +1,731 @@
+/* ═══════════════════════════════════════════════════════════════
+   components.css  —  到处都会用到的通用零件
+   ───────────────────────────────────────────────────────────────
+   加载顺序：放在 base.css 之后、其他页面文件之前
+
+   目录
+   1. 登录 / 注册页
+   2. 表单（标签、输入框）
+   3. 按钮
+   4. 工具栏（搜索、筛选）
+   5. 状态标签 (Badge)
+   6. 弹窗 (Modal) 与表情选择器
+   7. 右侧设置面板与开关
+   8. 空状态、加载中、提示条、彩带
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ───────────────────────────────────────────────
+   1. 登录 / 注册页
+   ─────────────────────────────────────────────── */
+
+/* 整个登录页：内容垂直水平居中 */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* 登录卡片 */
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-xl);
+  padding: 2.2rem;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: var(--shadow-md);
+}
+
+/* 「← Back to Home」链接 */
+.back-link {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--text2);
+}
+
+/* 卡片上方的 logo 区域 */
+.auth-logo {
+  text-align: center;
+  margin-bottom: 1.8rem;
+}
+
+/* 【待确认：可能已不用】旧版 emoji logo */
+.auth-logo-icon {
+  font-size: 44px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.auth-logo h1 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.auth-logo p {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 5px;
+}
+
+/* 「Log In / Register」切换标签的外框 */
+.auth-tabs {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+/* 单个切换标签 */
+.auth-tab {
+  flex: 1;
+  padding: 9px;
+  font-size: 13px;
+  font-family: var(--font);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text2);
+  transition: all 0.15s;
+}
+
+/* 当前选中的标签：反色显示 */
+.auth-tab.active {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 500;
+}
+
+/* 错误提示（红色）：默认隐藏，加上 .show 才显示 */
+.auth-error {
+  font-size: 13px;
+  color: var(--red-text);
+  background: var(--red-bg);
+  border: 1px solid var(--red-border);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  margin-bottom: 12px;
+  display: none;
+}
+
+.auth-error.show {
+  display: block;
+}
+
+/* 成功提示（绿色）：默认隐藏，加上 .show 才显示 */
+.auth-success {
+  font-size: 13px;
+  color: var(--green-text);
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  margin-bottom: 12px;
+  display: none;
+}
+
+.auth-success.show {
+  display: block;
+}
+
+
+/* ───────────────────────────────────────────────
+   2. 表单
+   ─────────────────────────────────────────────── */
+
+/* 一个表单栏位（标签 + 输入框）的外框 */
+.form-field {
+  margin-bottom: 14px;
+}
+
+/* 栏位上方的小标签文字 */
+.form-label {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 5px;
+  display: block;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* 输入框 / 下拉选单 */
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+/* 点进去输入时，边框变成主题色 */
+.form-input:focus {
+  border-color: var(--accent);
+}
+
+
+/* ───────────────────────────────────────────────
+   3. 按钮
+   ─────────────────────────────────────────────── */
+
+/* 主要大按钮（整行宽度，例如「Log In」「Save」） */
+.btn-primary {
+  width: 100%;
+  padding: 11px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  margin-top: 4px;
+}
+
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+/* 按钮不可点击时（例如正在登录中） */
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 像文字链接的小按钮（例如「Forgot Password?」） */
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+/* 工具栏上的一般按钮（基础样式，下面再分 primary / secondary） */
+.action-btn {
+  padding: 9px 15px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font);
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.1s;
+}
+
+/* 实心深色版（例如「Add Item」） */
+.action-btn.primary {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.action-btn.primary:hover {
+  opacity: 0.9;
+}
+
+/* 空心浅色版（例如「Bulk Actions」） */
+.action-btn.secondary {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text2);
+}
+
+.action-btn.secondary:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+/* 空心按钮被打开时（例如批量选择模式开着），变成实心 */
+.action-btn.secondary.active {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+/* 幽灵按钮：几乎透明的次要按钮（例如「Clear Checked」） */
+.ghost-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ghost-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+
+/* ───────────────────────────────────────────────
+   4. 工具栏（搜索、筛选）
+   ─────────────────────────────────────────────── */
+
+/* 一排搜索框 + 下拉选单 + 按钮，放不下时自动换行 */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+/* 搜索框：占满剩下的宽度 */
+.search-bar {
+  flex: 1;
+  min-width: 160px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  outline: none;
+}
+
+.search-bar:focus {
+  border-color: var(--border2);
+}
+
+/* 下拉筛选（位置、排序） */
+.filter-dropdown {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  outline: none;
+}
+
+
+/* ───────────────────────────────────────────────
+   5. 状态标签 (Badge)
+   例如「3d left」「Expired」
+   ─────────────────────────────────────────────── */
+
+/* 小药丸基础样式 */
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+
+/* 红色：已过期 / 今天过期 */
+.badge-red {
+  background: var(--red-bg);
+  color: var(--red-text);
+  border: 1px solid var(--red-border);
+}
+
+/* 琥珀色：快过期（7 天内） */
+.badge-amber {
+  background: var(--amber-bg);
+  color: var(--amber-text);
+  border: 1px solid var(--amber-border);
+}
+
+/* 绿色：还很新鲜 */
+.badge-green {
+  background: var(--green-bg);
+  color: var(--green-text);
+  border: 1px solid var(--green-border);
+}
+
+
+/* ───────────────────────────────────────────────
+   6. 弹窗 (Modal) 与表情选择器
+   ─────────────────────────────────────────────── */
+
+/* 弹窗背后的半透明遮罩：默认看不见也点不到，加上 .open 才出现 */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(3px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* 深色主题：遮罩加深（手动选深色） */
+[data-theme="dark"] .overlay {
+  background: rgba(0,0,0,0.5);
+}
+
+/* 深色主题：遮罩加深（系统自动深色） */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .overlay {
+    background: rgba(0,0,0,0.5);
+  }
+}
+
+/* 打开状态：显示并可以点击 */
+.overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 弹窗本体 */
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-md);
+  transform: translateY(10px);
+  transition: transform 0.2s ease;
+}
+
+/* 打开时弹窗从下方轻轻升上来 */
+.overlay.open .modal {
+  transform: translateY(0);
+}
+
+/* 弹窗标题栏 */
+.modal-header {
+  padding: 1.2rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 右上角的关闭（×）按钮 */
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--text3);
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+/* 弹窗内容区 */
+.modal-body {
+  padding: 1.4rem;
+}
+
+/* 表情选择器：每行 6 个，太多时可以上下滚动 */
+.emoji-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  max-height: 110px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+/* 单个表情 */
+.emoji-opt {
+  font-size: 22px;
+  text-align: center;
+  padding: 4px 0;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.1s;
+}
+
+.emoji-opt:hover {
+  background: var(--surface2);
+}
+
+/* 被选中的表情：外面加一圈框 */
+.emoji-opt.sel {
+  background: var(--surface);
+  box-shadow: 0 0 0 1.5px var(--text);
+}
+
+
+/* ───────────────────────────────────────────────
+   7. 右侧设置面板与开关
+   ─────────────────────────────────────────────── */
+
+/* 从右边滑出的设置面板：平时藏在屏幕外，.overlay.open 时滑进来 */
+.side-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 340px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.overlay.open .side-panel {
+  transform: translateX(0);
+}
+
+/* 面板标题栏 */
+.panel-header {
+  padding: 1.2rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* 面板内容区：内容多时可以滚动 */
+.panel-body {
+  padding: 1.4rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 设置里的一行（左边说明，右边开关或输入框） */
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--border);
+}
+
+/* 设置名称 */
+.setting-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* 设置下方的小说明 */
+.setting-desc {
+  font-size: 11.5px;
+  color: var(--text2);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* 开关（默认关闭，灰色） */
+.toggle {
+  width: 40px;
+  height: 22px;
+  border-radius: 20px;
+  background: var(--surface3);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+/* 开关里面的小圆球 */
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* 开关打开：变成主题色，小圆球滑到右边 */
+.toggle.on {
+  background: var(--accent);
+}
+
+.toggle.on::after {
+  transform: translateX(18px);
+}
+
+/* 「提前几天提醒」的数字输入框 */
+.notif-days-input {
+  width: 54px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+}
+
+/* 「Export CSV」按钮 */
+.export-btn {
+  padding: 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text2);
+  font-family: var(--font);
+}
+
+.export-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+
+/* ───────────────────────────────────────────────
+   8. 空状态、加载中、提示条、彩带
+   ─────────────────────────────────────────────── */
+
+/* 空状态：没有资料时显示的虚线框 */
+.empty {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: var(--surface);
+  border: 1px dashed var(--border2);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+}
+
+/* 空状态上方的大图标 */
+.empty-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+  opacity: 0.85;
+}
+
+/* 空状态里的说明文字 */
+.empty p {
+  font-size: 13.5px;
+  color: var(--text2);
+}
+
+/* 「Loading…」文字 */
+.loading {
+  text-align: center;
+  padding: 2.5rem;
+  color: var(--text2);
+  font-size: 13.5px;
+  font-style: italic;
+}
+
+/* 底部弹出的短提示（例如「Added!」），2.4 秒后自动消失 */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--bg);
+  padding: 9px 18px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  animation: toastFade 2.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+
+/* 提示条动画：淡入往上浮，最后淡出 */
+@keyframes toastFade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+
+  10%,
+  90% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+}
+
+/* 彩带碎片（吃掉食物时的庆祝效果） */
+.confetti-piece {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  z-index: 999;
+  pointer-events: none;
+  animation: confettiFall 1.5s ease-out forwards;
+}
+
+/* 彩带动画：往下掉并旋转，同时淡出 */
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(60vh) rotate(720deg);
+    opacity: 0;
+  }
+}
